@@ -713,6 +713,17 @@ function buildWorkoutSection() {
 
   if (activeDay === 'cardio') {
     section.innerHTML = `
+      <div class="day-tabs">
+        <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')">
+          <span class="day-tab-icon">🦵</span>Day A
+        </div>
+        <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')">
+          <span class="day-tab-icon">💪</span>Day B
+        </div>
+        <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')">
+          <span class="day-tab-icon">🏃</span>Kardio
+        </div>
+      </div>
       <div class="session-card" style="border-color:rgba(255,107,53,0.3);">
         <div class="session-card-header">
           <div>
