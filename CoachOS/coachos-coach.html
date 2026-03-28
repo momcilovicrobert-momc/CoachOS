@@ -1,39 +1,3 @@
-<!DOCTYPE html>
-<html lang="sl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoachOS — Trener</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0d0d0d;
-  --surface: #141414;
-  --surface2: #1c1c1c;
-  --border: #2a2a2a;
-  --accent: #c8f135;
-  --accent2: #ff6b35;
-  --text: #f0f0f0;
-  --muted: #666;
-  --muted2: #444;
-  --red: #ff4444;
-  --blue: #4488ff;
-  --purple: #a78bfa;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
-
-.shell { display:grid; grid-template-columns:220px 1fr; grid-template-rows:auto 1fr; min-height:100vh; }
-
-/* SIDEBAR */
-.sidebar { grid-row:1/3; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
-.logo { padding:22px 20px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
-.logo-mark { width:30px; height:30px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; }
-.logo-mark svg { width:16px; height:16px; }
-.logo-text { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; }
-.logo-text span { color:var(--accent); }
-
-.nav-section { padding:14px 12px 6px; }
 .nav-label { font-size:10px; font-weight:600; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; padding:0 8px; margin-bottom:5px; }
 .nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; font-size:13px; color:var(--muted); cursor:pointer; transition:all .15s; margin-bottom:2px; }
 .nav-item:hover { background:var(--surface2); color:var(--text); }
