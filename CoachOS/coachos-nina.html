@@ -524,8 +524,12 @@ function parseMultiDayProgram(text) {
     const header = lines[0].trim().toLowerCase();
     const exercises = parseProgramText(lines.slice(1).join('\n'));
     if (exercises.length === 0) continue;
-    if (header.includes('a') || header.includes('lower') || header.includes('spodnji')) result.A = exercises;
-    else if (header.includes('b') || header.includes('upper') || header.includes('zgornji')) result.B = exercises;
+    // Match "day a", "a -", "lower", "spodnji" but NOT just any word with 'a'
+    if (/\bday\s*a\b/.test(header) || /\ba\s*[-—]/.test(header) || header.includes('lower') || header.includes('spodnji')) {
+      result.A = exercises;
+    } else if (/\bday\s*b\b/.test(header) || /\bb\s*[-—]/.test(header) || header.includes('upper') || header.includes('zgornji')) {
+      result.B = exercises;
+    }
   }
   return result;
 }
