@@ -143,6 +143,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .history-val-num{font-family:'JetBrains Mono',monospace;font-weight:500;}
 .history-val-label{font-size:10px;color:var(--muted);}
 
+/* DAY TABS */
+.day-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.day-tab{flex:1;padding:10px 6px;border-radius:12px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:var(--muted);}
+.day-tab.active{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent);}
+.day-tab.cardio-tab.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+.day-tab-icon{font-size:16px;display:block;margin-bottom:3px;}
+
 /* CARDIO BUTTON */
 .cardio-add-btn{width:100%;margin-top:10px;padding:13px;background:transparent;border:1px dashed rgba(255,107,53,0.4);border-radius:12px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .cardio-add-btn:hover{background:rgba(255,107,53,0.06);border-color:var(--accent2);}
@@ -230,7 +237,7 @@ input[type=range]{width:100%;}
     </div>
     <div class="logo-text">COACH<span>OS</span></div>
   </div>
-  <div class="avatar">EL</div>
+  <div class="avatar">NI</div>
 </div>
 
 <div class="greeting" style="padding:20px 20px 0;">
@@ -290,6 +297,11 @@ input[type=range]{width:100%;}
 
     <div class="section" id="workout-section">
       <!-- filled by JS -->
+    </div>
+
+    <!-- STANDALONE CARDIO BUTTON — always visible -->
+    <div class="section" id="cardio-standalone-section">
+      <div id="cardio-standalone-btn"></div>
     </div>
 
   </div>
@@ -467,13 +479,26 @@ input[type=range]{width:100%;}
 const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
 const CLIENT = 'Nina';
 
-let PROGRAM = [
+let PROGRAM_A = [
   { name:'Heels Elevated Goblet Squat', sets:3, reps:'10', tip:'3s spust, premor spodaj. Prva serija dotik droga za samozavest.' },
   { name:'DB Romanian Deadlift', sets:3, reps:'12', tip:'Spust samo do raztega, ne do tal. Počasen ekscentrik.' },
   { name:'Hip Thrust', sets:3, reps:'15', tip:'Stisni zadnjico na vrhu, kontroliran spust.' },
   { name:'Dead Hang', sets:3, reps:'20-30s', tip:'Lopatice dol in skupaj. Dekompresija hrbtenice.' },
   { name:'Dead Bug', sets:3, reps:'6 / stran', tip:'Brez loka v križu. Ustavi če forma odpove.' }
 ];
+
+let PROGRAM_B = [
+  { name:'Single Arm DB Row', sets:3, reps:'12', tip:'Brez momenta, nasprotna roka na kolenu.' },
+  { name:'Band Pull-down', sets:3, reps:'12', tip:'Kontroliran spust, čuti late.' },
+  { name:'DB Floor Press', sets:3, reps:'12', tip:'Premor spodaj, poln obseg.' },
+  { name:'DB Lateral Raise', sets:3, reps:'15', tip:'Rahlo naprej, vodi s komolcem.' },
+  { name:'Band Face Pull', sets:3, reps:'20', tip:'Komolci visoko, zunanja rotacija.' },
+  { name:'Push-up (elevated)', sets:3, reps:'submaks.', tip:'3 reps od odpovedi.' },
+  { name:'Pallof Press', sets:3, reps:'10 / stran', tip:'Počasen in kontroliran.' }
+];
+
+let PROGRAM = PROGRAM_A; // default
+let activeDay = 'A'; // 'A', 'B', or 'cardio'
 
 // Parse pipe-format program text into PROGRAM array
 function parseProgramText(text) {
@@ -489,18 +514,52 @@ function parseProgramText(text) {
   }).filter(e => e.name);
 }
 
+// Parse multi-day format: ## Day A\n...exercises\n## Day B\n...
+function parseMultiDayProgram(text) {
+  const result = { A: null, B: null };
+  const sections = text.split(/^##\s*/m);
+  for (const section of sections) {
+    const lines = section.trim().split('\n');
+    const header = lines[0].trim().toLowerCase();
+    const exercises = parseProgramText(lines.slice(1).join('\n'));
+    if (exercises.length === 0) continue;
+    if (header.includes('a') || header.includes('lower') || header.includes('spodnji')) result.A = exercises;
+    else if (header.includes('b') || header.includes('upper') || header.includes('zgornji')) result.B = exercises;
+  }
+  return result;
+}
+
 // Load program from Sheets
 async function loadProgramFromSheets() {
   try {
     const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
     const data = await res.json();
     if (data && data.program && data.program.trim()) {
-      const parsed = parseProgramText(data.program);
-      if (parsed.length > 0) {
-        PROGRAM = parsed;
-        buildWorkoutSection();
-        buildExerciseList();
+      const text = data.program;
+      if (text.includes('##')) {
+        // Multi-day format
+        const multi = parseMultiDayProgram(text);
+        if (multi.A && multi.A.length > 0) PROGRAM_A = multi.A;
+        if (multi.B && multi.B.length > 0) PROGRAM_B = multi.B;
+      } else {
+        // Single day — put in active day
+        const parsed = parseProgramText(text);
+        if (parsed.length > 0) {
+          PROGRAM_A = parsed;
+        }
       }
+      PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
+      loggedExercises = {};
+      buildWorkoutSection();
+    }
+    // Load mobility from Sheets
+    if (data && data.mobility && data.mobility.trim()) {
+      const mobLines = data.mobility.trim().split('\n').filter(l => l.trim());
+      MOBILITY = mobLines.map(line => {
+        const parts = line.split('|').map(p => p.trim());
+        return { name: parts[0] || '', detail: parts[1] || '', tip: parts[2] || '' };
+      }).filter(m => m.name);
+      buildWorkoutSection();
     }
   } catch(e) {
     console.log('Program load failed, using default');
@@ -518,16 +577,8 @@ let currentSetCount = 0;
 let selectedEnergy = '💪';
 let mobilityDone = {};
 
-// Mobility drills — you add these per client from coach view
-// Format: { name, detail }
-const MOBILITY = [
-  { name: '90/90 Hip Switches', detail: '2 minuti počasi · Kolki', tip: 'Sedi pokončno, ne pomagaj si z rokami, če je le mogoče.' },
-  { name: "World's Greatest Stretch", detail: '5 ponovitev / stran · Celotna veriga', tip: 'Komolec potisni čim bližje tlom, nato poglej za roko v strop.' },
-  { name: 'Cat-Cow', detail: '10 počasnih ciklov · Hrbtenica', tip: 'Gibanje naj se začne v medenici in potuje do vratu.' },
-  { name: 'Thread the Needle', detail: '8 ponovitev / stran · T-spine', tip: 'Ob izdihu potisni ramo globoko pod telo.' },
-  { name: 'Adductor Rock-backs', detail: '10 ponovitev / stran · Notranja stegna', tip: 'Iztegnjena noga naj bo s celim stopalom na tleh.' },
-  { name: 'Lying Leg Flossing', detail: '12 ponovitev / stran · Hams & išias', tip: 'Ne vleči noge na silo; fokus je na počasnem iztegu kolena.' }
-];
+// Mobility loaded from Sheets — coach sets per client from dashboard
+let MOBILITY = [];
 
 // DATE
 const dayNames = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob'];
@@ -625,9 +676,58 @@ function buildWeek() {
 buildWeek();
 loadProgramFromSheets();
 
+// DAY TAB SWITCH
+function switchDay(day) {
+  activeDay = day;
+  loggedExercises = {};
+  if (day === 'A') PROGRAM = PROGRAM_A;
+  else if (day === 'B') PROGRAM = PROGRAM_B;
+  buildWorkoutSection();
+  buildCardioStandalone();
+}
+
+// STANDALONE CARDIO BUTTON
+function buildCardioStandalone() {
+  const el = document.getElementById('cardio-standalone-btn');
+  if (!el) return;
+  const cardioLogged = cardioLogs.find(c => c.date === todayStr);
+  if (cardioLogged) {
+    el.innerHTML = `
+      <div class="session-card" style="border-color:rgba(255,107,53,0.3);">
+        <div class="session-card-header" style="border-bottom:none;">
+          <div>
+            <div class="session-name" style="font-size:18px;">🏃 Kardio</div>
+            <div class="session-meta">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div>
+          </div>
+          <button class="start-btn" style="background:rgba(255,107,53,0.15);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);" onclick="openCardioSheet()">+ Posodobi</button>
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML = `<button class="cardio-add-btn" onclick="openCardioSheet()">🏃 + Zabeleži kardio (kadarkoli)</button>`;
+  }
+}
+
 // WORKOUT SECTION
 function buildWorkoutSection() {
   const section = document.getElementById('workout-section');
+
+  if (activeDay === 'cardio') {
+    section.innerHTML = `
+      <div class="session-card" style="border-color:rgba(255,107,53,0.3);">
+        <div class="session-card-header">
+          <div>
+            <div class="session-name">🏃 Kardio dan</div>
+            <div class="session-meta">Zone 2 · 30–45 min · konverzacijski tempo</div>
+          </div>
+        </div>
+        <div style="padding:16px 18px;">
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">Danes je kardio dan. Cilj: ohranjaj tempo, pri katerem lahko govoriš v stavkih. Polar bo beležil zone — fokus na zoni 2.</div>
+          <button class="cardio-add-btn" style="border-color:var(--accent2);" onclick="openCardioSheet()">🏃 + Zabeleži kardio ↗</button>
+        </div>
+      </div>`;
+    return;
+  }
+
   const allLogged = PROGRAM.every((_, i) => loggedExercises[i]);
 
   if (allLogged) {
@@ -635,24 +735,13 @@ function buildWorkoutSection() {
       <div class="rest-card">
         <div class="rest-emoji">🎉</div>
         <div class="rest-title">Trening zaključen!</div>
-        <div class="rest-text">Odlično opravljeno, Eli. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
-      </div>
-    `;
+        <div class="rest-text">Odlično opravljeno, Nina. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
+      </div>`;
     return;
   }
 
-  const cardioLogged = cardioLogs.find(c => c.date === todayStr);
-  const cardioHTML = cardioLogged
-    ? `<div class="cardio-logged-row">
-        <div class="cardio-icon">🏃</div>
-        <div class="cardio-info">
-          <div class="cardio-name">Tek / Hoja</div>
-          <div class="cardio-vals">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div>
-        </div>
-       </div>`
-    : `<div style="padding:12px 18px;border-top:1px solid rgba(42,42,42,0.4);">
-        <button class="cardio-add-btn" onclick="openCardioSheet()">🏃 + Dodaj kardio</button>
-       </div>`;
+  const dayLabel = activeDay === 'A' ? 'Day A — Lower + Core' : 'Day B — Upper + Core';
+  const dayMeta = activeDay === 'A' ? '5 vaj · ~50 min' : '7 vaj · ~55 min';
 
   const mobilityHTML = MOBILITY.length > 0
     ? `<div style="border-top:1px solid var(--border);padding:10px 18px 6px;">
@@ -671,17 +760,27 @@ function buildWorkoutSection() {
     : '';
 
   section.innerHTML = `
+    <div class="day-tabs">
+      <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')">
+        <span class="day-tab-icon">🦵</span>Day A
+      </div>
+      <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')">
+        <span class="day-tab-icon">💪</span>Day B
+      </div>
+      <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')">
+        <span class="day-tab-icon">🏃</span>Kardio
+      </div>
+    </div>
     <div class="session-card">
       <div class="session-card-header">
         <div>
-          <div class="session-name">Full Body A</div>
-          <div class="session-meta">7 vaj · ~55 min</div>
+          <div class="session-name">${dayLabel}</div>
+          <div class="session-meta">${dayMeta}</div>
         </div>
         <button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button>
       </div>
       <div id="exercise-list"></div>
       ${mobilityHTML}
-      ${cardioHTML}
     </div>
   `;
   buildExerciseList();
@@ -803,7 +902,7 @@ async function saveExercise() {
   const entry = {
     action: 'logWorkout',
     client: CLIENT,
-    session: 'Full Body A',
+    session: 'Day ' + activeDay,
     exercise: ex.name,
     sets: currentSetCount,
     reps: r1,
@@ -886,7 +985,7 @@ function renderWeightHistory() {
 
 // PROGRESS
 function updateProgress() {
-  const uniqueDays = new Set(logs.filter(l=>l.session==='Full Body A').map(l=>l.date)).size;
+  const uniqueDays = new Set(logs.filter(l=>l.session==='Day A'||l.session==='Day B').map(l=>l.date)).size;
   document.getElementById('prog-sessions').textContent = uniqueDays;
   if (uniqueDays > 0) document.getElementById('prog-sub').textContent = 'treningov opravljenih 💪';
   const totalSets = logs.reduce((a,l) => a + (parseInt(l.sets)||0), 0);
@@ -964,6 +1063,7 @@ async function saveCardio() {
 
   closeCardioSheet();
   buildWorkoutSection();
+  buildCardioStandalone();
   showToast('✓ Kardio shranjen!');
 }
 
@@ -978,6 +1078,7 @@ function toggleMobility(btn, idx) {
 // INIT
 renderWeightHistory();
 updateProgress();
+buildCardioStandalone();
 </script>
 </body>
 </html>
