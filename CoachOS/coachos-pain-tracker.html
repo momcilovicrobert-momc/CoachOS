@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CoachOS · Pain Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0d0d;
+  --accent: #c8f135;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #2a2a2a;
+  --text: #e0e0e0;
+  --muted: #555;
+  --p1: #4cde6a;
+  --p2: #a8d120;
+  --p3: #f0c020;
+  --p4: #f07020;
+  --p5: #ff2525;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--accent); letter-spacing: 3px; }
+.header-right { display: flex; gap: 8px; }
+
+.client-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px;
+  color: var(--muted); background: var(--surface2); padding: 5px 14px;
+  border-radius: 20px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+}
+.client-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(200,241,53,0.06); }
+
+.view-toggle {
+  display: flex; gap: 0; background: var(--surface2); border-radius: 8px;
+  border: 1px solid var(--border); overflow: hidden; margin: 12px 20px;
+}
+.view-btn {
+  flex: 1; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 2px;
+  color: var(--muted); background: none; border: none; padding: 9px; cursor: pointer; transition: all 0.2s;
+}
+.view-btn.active { background: var(--accent); color: #0d0d0d; }
+
+.model-container {
+  position: relative; margin: 0 auto; max-width: 420px;
+  padding: 0 20px; display: flex; justify-content: center;
+}
+
+.model-wrap {
+  position: relative; display: inline-block; width: 100%; max-width: 340px;
+}
+
+.model-img {
+  width: 100%; height: auto; display: block; border-radius: 12px;
+  object-fit: contain; min-height: 380px; background: #111;
+}
+
+.model-placeholder {
+  width: 100%; min-height: 420px; border-radius: 12px; background: #111;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 1px solid var(--border); gap: 8px;
+}
+.placeholder-icon { font-size: 48px; opacity: 0.15; }
+.placeholder-text { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 2px; color: var(--muted); }
+.placeholder-sub { font-size: 11px; color: #333; letter-spacing: 1px; text-align: center; padding: 0 20px; }
+
+.dots-layer {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+.zone-area {
+  position: absolute; cursor: pointer; border-radius: 50%;
+  background: transparent; pointer-events: all;
+  transition: background 0.15s;
+}
+.zone-area:hover { background: rgba(200,241,53,0.08); }
+.zone-area:active { background: rgba(200,241,53,0.15); }
+
+.pain-dot {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.5);
+  transition: all 0.3s;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(0,0,0,0.5), 0 0 0 0px currentColor; }
+  50% { box-shadow: 0 0 0 3px rgba(0,0,0,0.5), 0 0 8px 4px currentColor; }
+}
+
+.pain-panel {
+  margin: 14px 20px 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; display: none;
+}
+.pain-panel.show { display: block; }
+.pain-panel-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px;
+  color: var(--accent); margin-bottom: 14px;
+}
+
+.pain-scale {
+  display: flex; gap: 8px; margin-bottom: 14px;
+}
+.pain-btn {
+  flex: 1; aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  font-weight: bold; color: #0d0d0d; transition: all 0.15s; position: relative;
+}
+.pain-btn:nth-child(1) { background: var(--p1); }
+.pain-btn:nth-child(2) { background: var(--p2); }
+.pain-btn:nth-child(3) { background: var(--p3); }
+.pain-btn:nth-child(4) { background: var(--p4); color: #fff; }
+.pain-btn:nth-child(5) { background: var(--p5); color: #fff; }
+.pain-btn.selected { border-color: #fff; transform: scale(1.15); box-shadow: 0 0 12px currentColor; }
+.pain-btn:hover { transform: scale(1.1); }
+
+.pain-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--muted); letter-spacing: 1px;
+  margin-bottom: 14px; padding: 0 2px;
+}
+
+.panel-actions { display: flex; gap: 8px; }
+.btn-save {
+  flex: 1; padding: 11px; background: var(--accent); color: #0d0d0d;
+  font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px;
+  border: none; border-radius: 8px; cursor: pointer; transition: opacity 0.15s;
+}
+.btn-save:hover { opacity: 0.88; }
+.btn-clear {
+  padding: 11px 16px; background: none; color: var(--muted);
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 1px;
+  border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.btn-clear:hover { border-color: #ff4040; color: #ff4040; }
+
+.zones-summary {
+  margin: 12px 20px 20px; display: flex; flex-direction: column; gap: 5px;
+}
+.zone-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 12px; background: var(--surface); border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.zone-name { font-size: 13px; color: var(--text); }
+.zone-level {
+  font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 6px;
+}
+.zone-dot { width: 10px; height: 10px; border-radius: 50%; }
+.zone-delete { color: var(--muted); cursor: pointer; font-size: 16px; margin-left: 8px; padding: 2px 6px; }
+.zone-delete:hover { color: #ff4040; }
+
+.empty-state {
+  text-align: center; padding: 20px; color: var(--muted);
+  font-size: 12px; letter-spacing: 1px;
+}
+
+.section-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 2px;
+  color: var(--muted); padding: 0 20px; margin-top: 14px; margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">CoachOS</div>
+  <div class="header-right">
+    <button class="client-btn active" onclick="switchClient('hana')">HANA</button>
+    <button class="client-btn" onclick="switchClient('niki')">NIKI</button>
+  </div>
+</div>
+
+<div class="view-toggle">
+  <button class="view-btn active" onclick="switchView('front')">SPREDAJ</button>
+  <button class="view-btn" onclick="switchView('back')">ZADAJ</button>
+</div>
+
+<div class="model-container">
+  <div class="model-wrap" id="model-wrap">
+
+    <!-- IMAGE — replace src with actual paths when uploaded to GitHub -->
+    <!-- Hana front: images/clients/hana-front.png -->
+    <!-- Hana back:  images/clients/hana-back.png  -->
+    <!-- Niki front: images/clients/niki-front.png  -->
+    <!-- Niki back:  images/clients/niki-back.png   -->
+
+    <div class="model-placeholder" id="model-placeholder">
+      <div class="placeholder-icon">◈</div>
+      <div class="placeholder-text">MODEL</div>
+      <div class="placeholder-sub">Naloži slike v<br>images/clients/</div>
+    </div>
+
+    <!-- Uncomment when images are on GitHub:
+    <img class="model-img" id="model-img" src="images/clients/hana-front.png" alt="Model">
+    -->
+
+    <div class="dots-layer" id="dots-layer">
+      <!-- Zone hit areas — % based on image dimensions -->
+      <!-- These zones work for BOTH hana and niki since proportions are similar -->
+
+      <!-- === FRONT ZONES === -->
+      <div class="zone-group" id="zones-front">
+        <!-- Vrat / Trapezius -->
+        <div class="zone-area" style="left:38%;top:8%;width:24%;height:7%" onclick="tapZone('Vrat / Trapezius')"></div>
+        <!-- L Deltoid -->
+        <div class="zone-area" style="left:12%;top:13%;width:16%;height:10%" onclick="tapZone('L. Deltoid')"></div>
+        <!-- D Deltoid -->
+        <div class="zone-area" style="left:72%;top:13%;width:16%;height:10%" onclick="tapZone('D. Deltoid')"></div>
+        <!-- L Pektoralis -->
+        <div class="zone-area" style="left:20%;top:17%;width:20%;height:10%" onclick="tapZone('L. Pektoralis')"></div>
+        <!-- D Pektoralis -->
+        <div class="zone-area" style="left:60%;top:17%;width:20%;height:10%" onclick="tapZone('D. Pektoralis')"></div>
+        <!-- Trebuh / Abs -->
+        <div class="zone-area" style="left:32%;top:28%;width:36%;height:14%" onclick="tapZone('Trebuh / Abs')"></div>
+        <!-- L Oblique -->
+        <div class="zone-area" style="left:16%;top:28%;width:16%;height:14%" onclick="tapZone('L. Oblique')"></div>
+        <!-- D Oblique -->
+        <div class="zone-area" style="left:68%;top:28%;width:16%;height:14%" onclick="tapZone('D. Oblique')"></div>
+        <!-- L Biceps -->
+        <div class="zone-area" style="left:6%;top:23%;width:14%;height:14%" onclick="tapZone('L. Biceps')"></div>
+        <!-- D Biceps -->
+        <div class="zone-area" style="left:80%;top:23%;width:14%;height:14%" onclick="tapZone('D. Biceps')"></div>
+        <!-- L Podlaket -->
+        <div class="zone-area" style="left:4%;top:37%;width:13%;height:12%" onclick="tapZone('L. Podlaket')"></div>
+        <!-- D Podlaket -->
+        <div class="zone-area" style="left:83%;top:37%;width:13%;height:12%" onclick="tapZone('D. Podlaket')"></div>
+        <!-- L Quadriceps -->
+        <div class="zone-area" style="left:18%;top:48%;width:22%;height:22%" onclick="tapZone('L. Quadriceps')"></div>
+        <!-- D Quadriceps -->
+        <div class="zone-area" style="left:60%;top:48%;width:22%;height:22%" onclick="tapZone('D. Quadriceps')"></div>
+        <!-- L Koleno -->
+        <div class="zone-area" style="left:20%;top:70%;width:18%;height:7%" onclick="tapZone('L. Koleno')"></div>
+        <!-- D Koleno -->
+        <div class="zone-area" style="left:62%;top:70%;width:18%;height:7%" onclick="tapZone('D. Koleno')"></div>
+        <!-- L Golen -->
+        <div class="zone-area" style="left:19%;top:77%;width:18%;height:16%" onclick="tapZone('L. Golen')"></div>
+        <!-- D Golen -->
+        <div class="zone-area" style="left:63%;top:77%;width:18%;height:16%" onclick="tapZone('D. Golen')"></div>
+      </div>
+
+      <!-- === BACK ZONES === -->
+      <div class="zone-group" id="zones-back" style="display:none">
+        <!-- Vrat zgoraj -->
+        <div class="zone-area" style="left:36%;top:7%;width:28%;height:7%" onclick="tapZone('Vrat / Zgornji Trapezius')"></div>
+        <!-- L Trapezius / Lopatica -->
+        <div class="zone-area" style="left:14%;top:13%;width:30%;height:14%" onclick="tapZone('L. Trapezius / Lopatica')"></div>
+        <!-- D Trapezius / Lopatica -->
+        <div class="zone-area" style="left:56%;top:13%;width:30%;height:14%" onclick="tapZone('D. Trapezius / Lopatica')"></div>
+        <!-- L Deltoid zadaj -->
+        <div class="zone-area" style="left:10%;top:14%;width:14%;height:10%" onclick="tapZone('L. Deltoid (zadaj)')"></div>
+        <!-- D Deltoid zadaj -->
+        <div class="zone-area" style="left:76%;top:14%;width:14%;height:10%" onclick="tapZone('D. Deltoid (zadaj)')"></div>
+        <!-- Spodnji hrbet / Lumbar -->
+        <div class="zone-area" style="left:28%;top:34%;width:44%;height:12%" onclick="tapZone('Spodnji Hrbet / Lumbar')"></div>
+        <!-- L Triceps -->
+        <div class="zone-area" style="left:6%;top:22%;width:12%;height:14%" onclick="tapZone('L. Triceps')"></div>
+        <!-- D Triceps -->
+        <div class="zone-area" style="left:82%;top:22%;width:12%;height:14%" onclick="tapZone('D. Triceps')"></div>
+        <!-- Gluteus -->
+        <div class="zone-area" style="left:26%;top:46%;width:48%;height:12%" onclick="tapZone('Gluteus')"></div>
+        <!-- L Hamstring -->
+        <div class="zone-area" style="left:18%;top:58%;width:24%;height:18%" onclick="tapZone('L. Hamstring')"></div>
+        <!-- D Hamstring -->
+        <div class="zone-area" style="left:58%;top:58%;width:24%;height:18%" onclick="tapZone('D. Hamstring')"></div>
+        <!-- L Koleno zadaj -->
+        <div class="zone-area" style="left:19%;top:76%;width:20%;height:6%" onclick="tapZone('L. Koleno (zadaj)')"></div>
+        <!-- D Koleno zadaj -->
+        <div class="zone-area" style="left:61%;top:76%;width:20%;height:6%" onclick="tapZone('D. Koleno (zadaj)')"></div>
+        <!-- L Gastrocnemius -->
+        <div class="zone-area" style="left:18%;top:82%;width:20%;height:14%" onclick="tapZone('L. Gastrocnemius')"></div>
+        <!-- D Gastrocnemius -->
+        <div class="zone-area" style="left:62%;top:82%;width:20%;height:14%" onclick="tapZone('D. Gastrocnemius')"></div>
+      </div>
+
+      <!-- Pain dots rendered here by JS -->
+      <div id="active-dots"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pain intensity panel -->
+<div class="pain-panel" id="pain-panel">
+  <div class="pain-panel-title" id="panel-zone-name">Zona</div>
+  <div class="pain-scale">
+    <button class="pain-btn" onclick="selectPain(1)">1</button>
+    <button class="pain-btn" onclick="selectPain(2)">2</button>
+    <button class="pain-btn" onclick="selectPain(3)">3</button>
+    <button class="pain-btn" onclick="selectPain(4)">4</button>
+    <button class="pain-btn" onclick="selectPain(5)">5</button>
+  </div>
+  <div class="pain-labels">
+    <span>Blago</span>
+    <span>Zmerno</span>
+    <span>Hudo</span>
+  </div>
+  <div class="panel-actions">
+    <button class="btn-save" onclick="savePain()">SHRANI</button>
+    <button class="btn-clear" onclick="clearZone()">BRIŠI</button>
+  </div>
+</div>
+
+<!-- Saved zones list -->
+<div id="summary-area"></div>
+
+<script>
+const painColors = { 1:'#4cde6a', 2:'#a8d120', 3:'#f0c020', 4:'#f07020', 5:'#ff2525' };
+const painLabels = { 1:'Blago', 2:'Blago+', 3:'Zmerno', 4:'Hudo', 5:'Zelo hudo' };
+
+// Client image config — update paths when uploaded to GitHub
+const clientImages = {
+  hana: {
+    front: 'images/clients/hana-front.png',
+    back:  'images/clients/hana-back.png'
+  },
+  niki: {
+    front: 'images/clients/niki-front.png',
+    back:  'images/clients/niki-back.png'
+  }
+};
+
+// State
+let currentClient = 'hana';
+let currentView = 'front';
+let currentZone = null;
+let selectedPain = null;
+
+// Data: { clientId: { zoneName: { level, view } } }
+const data = { hana: {}, niki: {} };
+
+// Zone center positions (% x, % y) for dot placement
+const zoneCenters = {
+  front: {
+    'Vrat / Trapezius':     [50, 11],
+    'L. Deltoid':           [20, 18],
+    'D. Deltoid':           [80, 18],
+    'L. Pektoralis':        [30, 22],
+    'D. Pektoralis':        [70, 22],
+    'Trebuh / Abs':         [50, 35],
+    'L. Oblique':           [24, 35],
+    'D. Oblique':           [76, 35],
+    'L. Biceps':            [13, 30],
+    'D. Biceps':            [87, 30],
+    'L. Podlaket':          [10, 43],
+    'D. Podlaket':          [90, 43],
+    'L. Quadriceps':        [29, 59],
+    'D. Quadriceps':        [71, 59],
+    'L. Koleno':            [29, 73],
+    'D. Koleno':            [71, 73],
+    'L. Golen':             [28, 85],
+    'D. Golen':             [72, 85],
+  },
+  back: {
+    'Vrat / Zgornji Trapezius':  [50, 10],
+    'L. Trapezius / Lopatica':   [29, 20],
+    'D. Trapezius / Lopatica':   [71, 20],
+    'L. Deltoid (zadaj)':        [17, 19],
+    'D. Deltoid (zadaj)':        [83, 19],
+    'Spodnji Hrbet / Lumbar':    [50, 40],
+    'L. Triceps':                [12, 29],
+    'D. Triceps':                [88, 29],
+    'Gluteus':                   [50, 52],
+    'L. Hamstring':              [30, 67],
+    'D. Hamstring':              [70, 67],
+    'L. Koleno (zadaj)':         [29, 79],
+    'D. Koleno (zadaj)':         [71, 79],
+    'L. Gastrocnemius':          [28, 89],
+    'D. Gastrocnemius':          [72, 89],
+  }
+};
+
+function switchClient(id) {
+  currentClient = id;
+  currentZone = null;
+  selectedPain = null;
+  document.querySelectorAll('.client-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('pain-panel').classList.remove('show');
+  renderDots();
+  renderSummary();
+}
+
+function switchView(view) {
+  currentView = view;
+  currentZone = null;
+  selectedPain = null;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('zones-front').style.display = view === 'front' ? '' : 'none';
+  document.getElementById('zones-back').style.display  = view === 'back'  ? '' : 'none';
+  document.getElementById('pain-panel').classList.remove('show');
+  renderDots();
+}
+
+function tapZone(name) {
+  currentZone = name;
+  selectedPain = data[currentClient][name]?.level || null;
+  document.getElementById('panel-zone-name').textContent = name;
+  document.querySelectorAll('.pain-btn').forEach((b,i) => {
+    b.classList.toggle('selected', (i+1) === selectedPain);
+  });
+  const panel = document.getElementById('pain-panel');
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function selectPain(level) {
+  selectedPain = level;
+  document.querySelectorAll('.pain-btn').forEach((b,i) => {
+    b.classList.toggle('selected', (i+1) === level);
+  });
+}
+
+function savePain() {
+  if (!currentZone || !selectedPain) return;
+  data[currentClient][currentZone] = { level: selectedPain, view: currentView };
+  document.getElementById('pain-panel').classList.remove('show');
+  renderDots();
+  renderSummary();
+}
+
+function clearZone() {
+  if (!currentZone) return;
+  delete data[currentClient][currentZone];
+  document.getElementById('pain-panel').classList.remove('show');
+  currentZone = null;
+  selectedPain = null;
+  renderDots();
+  renderSummary();
+}
+
+function renderDots() {
+  const layer = document.getElementById('active-dots');
+  layer.innerHTML = '';
+  const wrap = document.getElementById('model-wrap');
+  const w = wrap.offsetWidth;
+  const h = wrap.offsetHeight;
+  const clientData = data[currentClient];
+  const centers = zoneCenters[currentView];
+
+  for (const [name, info] of Object.entries(clientData)) {
+    if (info.view !== currentView) continue;
+    const pos = centers[name];
+    if (!pos) continue;
+    const dot = document.createElement('div');
+    dot.className = 'pain-dot';
+    const col = painColors[info.level];
+    dot.style.cssText = `
+      left: ${pos[0]}%;
+      top: ${pos[1]}%;
+      width: 22px; height: 22px;
+      background: ${col};
+      color: ${col};
+      border: 2px solid #0d0d0d;
+    `;
+    dot.textContent = '';
+    layer.appendChild(dot);
+  }
+}
+
+function renderSummary() {
+  const area = document.getElementById('summary-area');
+  const clientData = data[currentClient];
+  const entries = Object.entries(clientData);
+
+  if (!entries.length) {
+    area.innerHTML = '<div class="empty-state">Tapni mišico za označitev bolečine</div>';
+    return;
+  }
+
+  const rows = entries.map(([name, info]) => {
+    const col = painColors[info.level];
+    const label = painLabels[info.level];
+    return `
+      <div class="zone-row">
+        <span class="zone-name">${name}</span>
+        <span class="zone-level">
+          <span class="zone-dot" style="background:${col}"></span>
+          ${info.level}/5 · ${label}
+          <span class="zone-delete" onclick="deleteZone('${name}')">×</span>
+        </span>
+      </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="section-label">OZNAČENE CONE</div>
+    <div class="zones-summary">${rows}</div>`;
+}
+
+function deleteZone(name) {
+  delete data[currentClient][name];
+  renderDots();
+  renderSummary();
+}
+
+// Init
+renderSummary();
+</script>
+</body>
+</html>
