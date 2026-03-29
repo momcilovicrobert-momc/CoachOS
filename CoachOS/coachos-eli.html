@@ -467,15 +467,112 @@ input[type=range]{width:100%;}
 const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
 const CLIENT = 'Eli';
 
-const PROGRAM = [
-  { name:'Lying/Seated Leg Curls', sets:3, reps:'12–15', tip:null },
-  { name:'Goblet Squat (Ročka)', sets:3, reps:'10–12', tip:'Globok razteg, trup pokončen.' },
-  { name:'RDL (Ročke)', sets:3, reps:'10–12', tip:'Spust samo do raztega, ne do tal.' },
-  { name:'Incline Chest Press (Naprava)', sets:3, reps:'10–12', tip:null },
-  { name:'Lat Pulldown (Široko)', sets:3, reps:'12–15', tip:'Fokus na lopatice, odpiranje prsnega koša.' },
-  { name:'Seated Lateral Raises', sets:2, reps:'15–20', tip:null },
-  { name:'Plank / Dead Bug', sets:2, reps:'45s / 10', tip:null }
-];
+// Fallback program (če Sheets ni dostopen)
+const FALLBACK_PROGRAM = {
+  'Full Body A': [
+    { name:'Lying/Seated Leg Curls', sets:3, reps:'12–15', tip:'' },
+    { name:'Goblet Squat (Ročka)', sets:3, reps:'10–12', tip:'Globok razteg, trup pokončen.' },
+    { name:'RDL (Ročke)', sets:3, reps:'10–12', tip:'Spust samo do raztega, ne do tal.' },
+    { name:'Incline Chest Press (Naprava)', sets:3, reps:'10–12', tip:'' },
+    { name:'Lat Pulldown (Široko)', sets:3, reps:'12–15', tip:'Fokus na lopatice, odpiranje prsnega koša.' },
+    { name:'Seated Lateral Raises', sets:2, reps:'15–20', tip:'' },
+    { name:'Plank / Dead Bug', sets:2, reps:'45s / 10', tip:'' }
+  ]
+};
+
+let PROGRAMS = { ...FALLBACK_PROGRAM };
+let activeDay = localStorage.getItem('eli_activeDay') || Object.keys(PROGRAMS)[0];
+let PROGRAM = PROGRAMS[activeDay] || PROGRAMS[Object.keys(PROGRAMS)[0]];
+
+// ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
+function parseProgramText(rawText) {
+  if (!rawText || !rawText.trim()) return {};
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const days = {};
+  let currentDay = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) return;
+    if (line.startsWith('##')) {
+      currentDay = line.replace(/^##\s*/, '').trim();
+      if (!days[currentDay]) days[currentDay] = [];
+    } else {
+      if (!currentDay) { currentDay = 'Full Body A'; days[currentDay] = []; }
+      const parts = line.split('|').map(p => p.trim());
+      if (!parts[0]) return;
+      days[currentDay].push({
+        name: parts[0], sets: parseInt(parts[1]) || 3,
+        reps: parts[2] || '—', tip: parts[3] || '', note: parts[4] || ''
+      });
+    }
+  });
+  Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
+  return days;
+}
+
+async function loadProgramFromSheets() {
+  try {
+    const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
+    const data = await res.json();
+    if (data && data.program && data.program.trim()) {
+      const parsed = parseProgramText(data.program);
+      const keys = Object.keys(parsed);
+      if (keys.length > 0) {
+        PROGRAMS = parsed;
+        if (!PROGRAMS[activeDay]) activeDay = keys[0];
+        PROGRAM = PROGRAMS[activeDay];
+        buildDaySelector();
+        buildWorkoutSection();
+        buildExerciseList();
+      }
+    }
+    if (data && data.mobility && data.mobility.trim()) {
+      MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
+        .filter(l => l.trim())
+        .map(line => {
+          const p = line.split('|').map(x => x.trim());
+          return { name: p[0]||'', detail: p[1]||'', tip: p[2]||'' };
+        }).filter(m => m.name);
+    }
+    if (data && data.message && data.message.trim()) {
+      const el = document.getElementById('coach-message-text');
+      if (el) el.textContent = data.message.trim();
+    }
+  } catch(e) {
+    console.log('Program load failed, using fallback');
+  }
+}
+
+function buildDaySelector() {
+  const keys = Object.keys(PROGRAMS);
+  const existing = document.getElementById('eli-day-selector');
+  if (existing) existing.remove();
+  if (keys.length <= 1) return;
+  const sel = document.createElement('div');
+  sel.id = 'eli-day-selector';
+  sel.style.cssText = 'display:flex;gap:8px;padding:0 20px 12px;flex-wrap:wrap;';
+  keys.forEach(day => {
+    const btn = document.createElement('button');
+    btn.textContent = day;
+    btn.style.cssText = 'padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:'
+      + (day === activeDay ? 'var(--accent)' : 'var(--surface2)')
+      + ';color:' + (day === activeDay ? '#0d0d0d' : 'var(--text)')
+      + ';font-size:12px;font-weight:600;cursor:pointer;';
+    btn.onclick = () => {
+      activeDay = day;
+      localStorage.setItem('eli_activeDay', day);
+      PROGRAM = PROGRAMS[day];
+      loggedExercises = {};
+      buildDaySelector();
+      buildWorkoutSection();
+      buildExerciseList();
+    };
+    sel.appendChild(btn);
+  });
+  const ws = document.getElementById('workout-section');
+  if (ws) ws.parentNode.insertBefore(sel, ws);
+}
 
 let logs = JSON.parse(localStorage.getItem('eli_logs') || '[]');
 let checkins = JSON.parse(localStorage.getItem('eli_checkins') || '[]');
@@ -643,8 +740,8 @@ function buildWorkoutSection() {
     <div class="session-card">
       <div class="session-card-header">
         <div>
-          <div class="session-name">Full Body A</div>
-          <div class="session-meta">7 vaj · ~55 min</div>
+          <div class="session-name">${activeDay}</div>
+          <div class="session-meta">${PROGRAM.length} vaj</div>
         </div>
         <button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button>
       </div>
@@ -677,7 +774,7 @@ function buildExerciseList() {
   }).join('');
 }
 
-buildWorkoutSection();
+buildWorkoutSection(); // Takoj prikaže fallback; loadProgramFromSheets() ga nato posodobi
 
 // SHEET
 function openSheet(idx) {
@@ -947,6 +1044,7 @@ function toggleMobility(btn, idx) {
 // INIT
 renderWeightHistory();
 updateProgress();
+loadProgramFromSheets(); // Naloži program iz Sheets (fallback: hardcoded)
 </script>
 </body>
 </html>

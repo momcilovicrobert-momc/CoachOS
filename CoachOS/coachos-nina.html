@@ -517,13 +517,42 @@ function buildWeek() {
 // ============================================================
 // PROGRAM — NALOŽI IZ SHEETS (samo enkrat, brez podvajanja)
 // ============================================================
-function parseProgramLines(lines) {
-  return lines
-    .filter(l => l.trim() && !l.trim().startsWith('##'))
-    .map(line => {
+// ============================================================
+// ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
+// ============================================================
+function parseProgramText(rawText) {
+  if (!rawText || !rawText.trim()) return {};
+  // Normalize line endings
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const days = {};
+  let currentDay = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) return;
+    if (line.startsWith('##')) {
+      currentDay = line.replace(/^##\s*/, '').trim();
+      if (!days[currentDay]) days[currentDay] = [];
+    } else {
+      if (!currentDay) { currentDay = 'A'; days[currentDay] = []; }
       const parts = line.split('|').map(p => p.trim());
-      return { name: parts[0] || '', sets: parseInt(parts[1]) || 3, reps: parts[2] || '—', tip: parts[3] || null };
-    }).filter(e => e.name);
+      if (!parts[0]) return;
+      days[currentDay].push({
+        name: parts[0], sets: parseInt(parts[1]) || 3,
+        reps: parts[2] || '—', tip: parts[3] || '', note: parts[4] || ''
+      });
+    }
+  });
+  Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
+  return days;
+}
+
+// Pomožna: vrne vaje za en dan kot array (backward compat)
+function parseProgramLines(lines) {
+  const joined = lines.join('\n');
+  const result = parseProgramText(joined);
+  const keys = Object.keys(result);
+  return keys.length ? result[keys[0]] : [];
 }
 
 async function loadProgramFromSheets() {
@@ -532,36 +561,33 @@ async function loadProgramFromSheets() {
     const data = await res.json();
     if (!data || !data.program || !data.program.trim()) return;
 
-    const text = data.program.trim();
+    const parsed = parseProgramText(data.program);
+    const keys = Object.keys(parsed);
+    if (!keys.length) return;
 
-    if (text.includes('##')) {
-      // Multi-day format
-      const sections = text.split(/\n(?=##)/);
-      sections.forEach(section => {
-        const lines = section.trim().split('\n');
-        const header = lines[0].replace('##','').trim().toLowerCase();
-        const exs = parseProgramLines(lines.slice(1));
-        if (!exs.length) return;
-        if (/day.?a|lower|spodnji/.test(header) || header.trim() === 'a') PROGRAM_A = exs;
-        else if (/day.?b|upper|zgornji/.test(header) || header.trim() === 'b') PROGRAM_B = exs;
-      });
-    } else {
-      // En dan
-      const parsed = parseProgramLines(text.split('\n'));
-      if (parsed.length) PROGRAM_A = parsed;
-    }
+    // Dinamično mapiranje: prvi dan → A, drugi → B (ne glede na ime)
+    keys.forEach((key, idx) => {
+      const k = key.toLowerCase().replace(/\s+/g, '');
+      if (idx === 0 || /a$|lower|spodnji/.test(k)) PROGRAM_A = parsed[key];
+      else if (idx === 1 || /b$|upper|zgornji/.test(k)) PROGRAM_B = parsed[key];
+    });
+    // Fallback: če samo en dan, daj v A
+    if (keys.length === 1) PROGRAM_A = parsed[keys[0]];
 
     // Naloži mobilnost
     if (data.mobility && data.mobility.trim()) {
-      MOBILITY = data.mobility.trim().split('\n').filter(l => l.trim()).map(line => {
-        const p = line.split('|').map(x => x.trim());
-        return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
-      }).filter(m => m.name);
+      MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
+        .filter(l => l.trim())
+        .map(line => {
+          const p = line.split('|').map(x => x.trim());
+          return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
+        }).filter(m => m.name);
     }
 
     // Naloži sporočilo trenerja
     if (data.message && data.message.trim()) {
-      document.getElementById('coach-message-text').textContent = data.message.trim();
+      const el = document.getElementById('coach-message-text');
+      if (el) el.textContent = data.message.trim();
     }
 
     PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;

@@ -476,36 +476,97 @@ let PROGRAM = [
   { name:'Plank (Deska)', sets:3, reps:'Do odpovedi', tip:'Trup raven kot deska — boki ne smejo iti gor ali dol.' }
 ];
 
-// Parse pipe-format program text into PROGRAM array
-function parseProgramText(text) {
-  const lines = text.trim().split('\n').filter(l => l.trim() && !l.startsWith('##'));
-  return lines.map(line => {
-    const parts = line.split('|').map(p => p.trim());
-    return {
-      name: parts[0] || '',
-      sets: parseInt(parts[1]) || 3,
-      reps: parts[2] || '—',
-      tip: parts[3] || ''
-    };
-  }).filter(e => e.name);
+// ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
+function parseProgramText(rawText) {
+  if (!rawText || !rawText.trim()) return {};
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const days = {};
+  let currentDay = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) return;
+    if (line.startsWith('##')) {
+      currentDay = line.replace(/^##\s*/, '').trim();
+      if (!days[currentDay]) days[currentDay] = [];
+    } else {
+      if (!currentDay) { currentDay = 'A'; days[currentDay] = []; }
+      const parts = line.split('|').map(p => p.trim());
+      if (!parts[0]) return;
+      days[currentDay].push({
+        name: parts[0], sets: parseInt(parts[1]) || 3,
+        reps: parts[2] || '—', tip: parts[3] || '', note: parts[4] || ''
+      });
+    }
+  });
+  Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
+  return days;
 }
 
-// Load program from Sheets, update PROGRAM array
+let PROGRAMS = { 'A': PROGRAM }; // dict za multi-day podporo
+let activeDay = localStorage.getItem('hana_activeDay') || Object.keys(PROGRAMS)[0];
+
 async function loadProgramFromSheets() {
   try {
     const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
     const data = await res.json();
     if (data && data.program && data.program.trim()) {
       const parsed = parseProgramText(data.program);
-      if (parsed.length > 0) {
-        PROGRAM = parsed;
+      const keys = Object.keys(parsed);
+      if (keys.length > 0) {
+        PROGRAMS = parsed;
+        if (!PROGRAMS[activeDay]) activeDay = keys[0];
+        PROGRAM = PROGRAMS[activeDay];
+        buildDaySelector();
         buildWorkoutSection();
         buildExerciseList();
       }
     }
+    if (data && data.mobility && data.mobility.trim()) {
+      MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
+        .filter(l => l.trim())
+        .map(line => {
+          const p = line.split('|').map(x => x.trim());
+          return { name: p[0]||'', detail: p[1]||'', tip: p[2]||'' };
+        }).filter(m => m.name);
+    }
+    if (data && data.message && data.message.trim()) {
+      const el = document.getElementById('coach-message-text');
+      if (el) el.textContent = data.message.trim();
+    }
   } catch(e) {
     console.log('Program load failed, using default');
   }
+}
+
+function buildDaySelector() {
+  const keys = Object.keys(PROGRAMS);
+  const existing = document.getElementById('hana-day-selector');
+  if (existing) existing.remove();
+  if (keys.length <= 1) return;
+  const sel = document.createElement('div');
+  sel.id = 'hana-day-selector';
+  sel.style.cssText = 'display:flex;gap:8px;padding:0 20px 12px;flex-wrap:wrap;';
+  keys.forEach(day => {
+    const btn = document.createElement('button');
+    btn.textContent = day;
+    btn.style.cssText = 'padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:'
+      + (day === activeDay ? 'var(--accent)' : 'var(--surface2)')
+      + ';color:' + (day === activeDay ? '#0d0d0d' : 'var(--text)')
+      + ';font-size:12px;font-weight:600;cursor:pointer;';
+    btn.onclick = () => {
+      activeDay = day;
+      localStorage.setItem('hana_activeDay', day);
+      PROGRAM = PROGRAMS[day];
+      loggedExercises = {};
+      buildDaySelector();
+      buildWorkoutSection();
+      buildExerciseList();
+    };
+    sel.appendChild(btn);
+  });
+  const ws = document.getElementById('workout-section');
+  if (ws) ws.parentNode.insertBefore(sel, ws);
 }
 
 let logs = JSON.parse(localStorage.getItem('hana_logs') || '[]');
@@ -669,8 +730,8 @@ function buildWorkoutSection() {
     <div class="session-card">
       <div class="session-card-header">
         <div>
-          <div class="session-name">Full Body A</div>
-          <div class="session-meta">7 vaj · ~55 min</div>
+          <div class="session-name">Dan ${activeDay}</div>
+          <div class="session-meta">${PROGRAM.length} vaj</div>
         </div>
         <button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button>
       </div>

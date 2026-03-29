@@ -502,30 +502,29 @@ let activeDay = localStorage.getItem('niko_activeDay') || 'A';
 let PROGRAM = PROGRAMS[activeDay];
 
 // Parse pipe-format multi-day program text
-function parseProgramText(text) {
-  const lines = text.trim().split('\n');
+// ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
+function parseProgramText(rawText) {
+  if (!rawText || !rawText.trim()) return {};
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const days = {};
-  let currentDay = 'A';
-  days[currentDay] = [];
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-    if (trimmed.startsWith('##')) {
-      currentDay = trimmed.replace('##', '').trim();
+  let currentDay = null;
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (!line) return;
+    if (line.startsWith('##')) {
+      currentDay = line.replace(/^##\s*/, '').trim();
       if (!days[currentDay]) days[currentDay] = [];
     } else {
-      const parts = trimmed.split('|').map(p => p.trim());
-      if (parts[0]) {
-        days[currentDay].push({
-          name: parts[0],
-          sets: parseInt(parts[1]) || 3,
-          reps: parts[2] || '—',
-          tip: parts[3] || ''
-        });
-      }
+      if (!currentDay) { currentDay = 'A'; days[currentDay] = []; }
+      const parts = line.split('|').map(p => p.trim());
+      if (!parts[0]) return;
+      days[currentDay].push({
+        name: parts[0], sets: parseInt(parts[1]) || 3,
+        reps: parts[2] || '—', tip: parts[3] || '', note: parts[4] || ''
+      });
     }
   });
-  // Remove empty days
   Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
   return days;
 }
