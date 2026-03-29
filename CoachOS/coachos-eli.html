@@ -216,6 +216,14 @@ input[type=range]{width:100%;}
 
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .section,.checkin-card{animation:slideUp .3s ease forwards;}
+
+/* DAY TABS */
+.day-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.day-tab{flex:1;padding:10px 6px;border-radius:12px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:var(--muted);}
+.day-tab.active{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent);}
+.day-tab.cardio-tab.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
+.day-tab.mobility-tab.active{background:rgba(68,136,255,0.1);border-color:#4488ff;color:#88aaff;}
+.day-tab-icon{font-size:16px;display:block;margin-bottom:3px;}
 </style>
 </head>
 <body>
@@ -284,7 +292,7 @@ input[type=range]{width:100%;}
     <div class="section">
       <div class="coach-msg">
         <div class="coach-msg-from">📋 Sporočilo trenerja</div>
-        <div class="coach-msg-text">Danes Full Body A. Fokus na tehniko — ne hiti med vajami. Pri RDL-ju spusti ročki samo do raztega hamstringov, ne do tal. 💪</div>
+        <div class="coach-msg-text" id="coach-message-text">Danes Full Body A. Fokus na tehniko — ne hiti med vajami. Pri RDL-ju spusti ročki samo do raztega hamstringov, ne do tal. 💪</div>
       </div>
     </div>
 
@@ -522,7 +530,6 @@ async function loadProgramFromSheets() {
         PROGRAMS = parsed;
         if (!PROGRAMS[activeDay]) activeDay = keys[0];
         PROGRAM = PROGRAMS[activeDay];
-        buildDaySelector();
         buildWorkoutSection();
         buildExerciseList();
       }
@@ -544,35 +551,8 @@ async function loadProgramFromSheets() {
   }
 }
 
-function buildDaySelector() {
-  const keys = Object.keys(PROGRAMS);
-  const existing = document.getElementById('eli-day-selector');
-  if (existing) existing.remove();
-  if (keys.length <= 1) return;
-  const sel = document.createElement('div');
-  sel.id = 'eli-day-selector';
-  sel.style.cssText = 'display:flex;gap:8px;padding:0 20px 12px;flex-wrap:wrap;';
-  keys.forEach(day => {
-    const btn = document.createElement('button');
-    btn.textContent = day;
-    btn.style.cssText = 'padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:'
-      + (day === activeDay ? 'var(--accent)' : 'var(--surface2)')
-      + ';color:' + (day === activeDay ? '#0d0d0d' : 'var(--text)')
-      + ';font-size:12px;font-weight:600;cursor:pointer;';
-    btn.onclick = () => {
-      activeDay = day;
-      localStorage.setItem('eli_activeDay', day);
-      PROGRAM = PROGRAMS[day];
-      loggedExercises = {};
-      buildDaySelector();
-      buildWorkoutSection();
-      buildExerciseList();
-    };
-    sel.appendChild(btn);
-  });
-  const ws = document.getElementById('workout-section');
-  if (ws) ws.parentNode.insertBefore(sel, ws);
-}
+
+
 
 let logs = JSON.parse(localStorage.getItem('eli_logs') || '[]');
 let checkins = JSON.parse(localStorage.getItem('eli_checkins') || '[]');
@@ -692,64 +672,100 @@ function buildWeek() {
 buildWeek();
 
 // WORKOUT SECTION
+function tabsHTML() {
+  const keys = Object.keys(PROGRAMS);
+  const trainTabs = keys.map(day => {
+    const icons = {'Full Body A':'🏋️','Full Body B':'💪','A':'🦵','B':'💪'};
+    const icon = icons[day] || '🏋️';
+    return `<div class="day-tab ${activeDay===day?'active':''}" onclick="switchDay('${day}')"><span class="day-tab-icon">${icon}</span>${day}</div>`;
+  }).join('');
+  return `<div class="day-tabs">
+    ${trainTabs}
+    <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')"><span class="day-tab-icon">🏃</span>Kardio</div>
+    <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')"><span class="day-tab-icon">💙</span>Mobilnost</div>
+  </div>`;
+}
+
+function switchDay(day) {
+  if (PROGRAMS[day]) {
+    activeDay = day;
+    PROGRAM = PROGRAMS[day];
+    loggedExercises = {};
+    localStorage.setItem('eli_activeDay', day);
+  } else {
+    activeDay = day; // cardio / mobility
+  }
+  buildWorkoutSection();
+}
+
 function buildWorkoutSection() {
   const section = document.getElementById('workout-section');
-  const allLogged = PROGRAM.every((_, i) => loggedExercises[i]);
 
-  if (allLogged) {
-    section.innerHTML = `
-      <div class="rest-card">
-        <div class="rest-emoji">🎉</div>
-        <div class="rest-title">Trening zaključen!</div>
-        <div class="rest-text">Odlično opravljeno, Eli. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
-      </div>
-    `;
+  // MOBILNOST TAB
+  if (activeDay === 'mobility') {
+    section.innerHTML = tabsHTML() + `<div class="session-card" style="border-color:rgba(68,136,255,0.3);">
+      <div class="session-card-header"><div>
+        <div class="session-name" style="color:#88aaff;">💙 Mobilnost</div>
+        <div class="session-meta">Opravi kadarkoli · pred ali po treningu</div>
+      </div></div>
+      ${MOBILITY.length > 0 ? MOBILITY.map((m,i) => `
+        <div class="mobility-row">
+          <div class="mobility-icon">🔵</div>
+          <div class="mobility-info">
+            <div class="mobility-name">${m.name}</div>
+            <div class="mobility-detail">${m.detail}</div>
+            ${m.tip ? `<div class="ex-tip">${m.tip}</div>` : ''}
+          </div>
+          <button class="mobility-done-btn ${mobilityDone[i]?'done':''}" id="mob-${i}" onclick="toggleMobility(this,${i})">${mobilityDone[i]?'✓ Opravljeno':'Opravi'}</button>
+        </div>`).join('')
+      : '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">Trener še ni dodal mobilnostnega protokola.</div>'}
+    </div>`;
     return;
   }
 
-  const cardioLogged = cardioLogs.find(c => c.date === todayStr);
-  const cardioHTML = cardioLogged
-    ? `<div class="cardio-logged-row">
-        <div class="cardio-icon">🏃</div>
-        <div class="cardio-info">
-          <div class="cardio-name">Tek / Hoja</div>
-          <div class="cardio-vals">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div>
-        </div>
-       </div>`
-    : `<div style="padding:12px 18px;border-top:1px solid rgba(42,42,42,0.4);">
-        <button class="cardio-add-btn" onclick="openCardioSheet()">🏃 + Dodaj kardio</button>
-       </div>`;
-
-  const mobilityHTML = MOBILITY.length > 0
-    ? `<div style="border-top:1px solid var(--border);padding:10px 18px 6px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4488ff;margin-bottom:8px;">💙 Mobilnost</div>
-        ${MOBILITY.map((m,i) => `
-          <div class="mobility-row" style="border-top:${i>0?'1px solid rgba(42,42,42,0.4)':'none'};padding-top:${i>0?'13px':'0'};">
-            <div class="mobility-icon">🔵</div>
-            <div class="mobility-info">
-              <div class="mobility-name">${m.name}</div>
-              <div class="mobility-detail">${m.detail}</div>
-            </div>
-            <button class="mobility-done-btn" id="mob-${i}" onclick="toggleMobility(this,${i})">${mobilityDone[i]?'✓ Opravljeno':'Opravi'}</button>
-          </div>
-        `).join('')}
-       </div>`
-    : '';
-
-  section.innerHTML = `
-    <div class="session-card">
-      <div class="session-card-header">
-        <div>
-          <div class="session-name">${activeDay}</div>
-          <div class="session-meta">${PROGRAM.length} vaj</div>
-        </div>
-        <button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button>
+  // KARDIO TAB
+  if (activeDay === 'cardio') {
+    const cardioLogged = cardioLogs.find(c => c.date === todayStr);
+    section.innerHTML = tabsHTML() + `<div class="session-card" style="border-color:rgba(255,107,53,0.3);">
+      <div class="session-card-header"><div>
+        <div class="session-name">🏃 Kardio</div>
+        <div class="session-meta">Zone 2 · 30–45 min · konverzacijski tempo</div>
+      </div></div>
+      <div style="padding:16px 18px;">
+        ${cardioLogged
+          ? `<div class="cardio-logged-row" style="padding:0 0 12px;">
+              <div class="cardio-icon">🏃</div>
+              <div class="cardio-info">
+                <div class="cardio-name">Tek / Hoja</div>
+                <div class="cardio-vals">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div>
+              </div>
+             </div>`
+          : ''}
+        <button class="cardio-add-btn" style="border-color:var(--accent2);margin-top:0;" onclick="openCardioSheet()">🏃 + ${cardioLogged ? 'Posodobi kardio' : 'Zabeleži kardio ↗'}</button>
       </div>
-      <div id="exercise-list"></div>
-      ${mobilityHTML}
-      ${cardioHTML}
-    </div>
-  `;
+    </div>`;
+    return;
+  }
+
+  // TRENING TAB
+  const allLogged = PROGRAM.length > 0 && PROGRAM.every((_, i) => loggedExercises[i]);
+  if (allLogged) {
+    section.innerHTML = tabsHTML() + `<div class="rest-card">
+      <div class="rest-emoji">🎉</div>
+      <div class="rest-title">Trening zaključen!</div>
+      <div class="rest-text">Odlično opravljeno, Eli. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
+    </div>`;
+    return;
+  }
+
+  section.innerHTML = tabsHTML() + `<div class="session-card">
+    <div class="session-card-header"><div>
+      <div class="session-name">${activeDay}</div>
+      <div class="session-meta">${PROGRAM.length} vaj</div>
+    </div><button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button></div>
+    <div id="exercise-list"></div>
+  </div>`;
+
   buildExerciseList();
 }
 
