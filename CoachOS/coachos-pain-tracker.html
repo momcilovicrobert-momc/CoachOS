@@ -188,20 +188,12 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   <div class="model-wrap" id="model-wrap">
 
     <!-- IMAGE — replace src with actual paths when uploaded to GitHub -->
-    <!-- Hana front: Images/Clients/hana-front.png -->
-    <!-- Hana back:  Images/Clients/hana-back.png  -->
-    <!-- Niki front: Images/Clients/niki-front.png  -->
-    <!-- Niki back:  Images/Clients/niki-back.png   -->
+    <!-- Hana front: images/clients/hana-front.png -->
+    <!-- Hana back:  images/clients/hana-back.png  -->
+    <!-- Niki front: images/clients/niki-front.png  -->
+    <!-- Niki back:  images/clients/niki-back.png   -->
 
-    <div class="model-placeholder" id="model-placeholder">
-      <div class="placeholder-icon">◈</div>
-      <div class="placeholder-text">MODEL</div>
-      <div class="placeholder-sub">Naloži slike v<br>Images/Clients/</div>
-    </div>
-
-    <!-- Uncomment when images are on GitHub:
     <img class="model-img" id="model-img" src="Images/Clients/hana-front.png" alt="Model">
-    -->
 
     <div class="dots-layer" id="dots-layer">
       <!-- Zone hit areas — % based on image dimensions -->
@@ -377,6 +369,11 @@ const zoneCenters = {
   }
 };
 
+function updateImage() {
+  const img = document.getElementById('model-img');
+  if (img) img.src = clientImages[currentClient][currentView];
+}
+
 function switchClient(id) {
   currentClient = id;
   currentZone = null;
@@ -384,6 +381,7 @@ function switchClient(id) {
   document.querySelectorAll('.client-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('pain-panel').classList.remove('show');
+  updateImage();
   renderDots();
   renderSummary();
 }
@@ -397,6 +395,7 @@ function switchView(view) {
   document.getElementById('zones-front').style.display = view === 'front' ? '' : 'none';
   document.getElementById('zones-back').style.display  = view === 'back'  ? '' : 'none';
   document.getElementById('pain-panel').classList.remove('show');
+  updateImage();
   renderDots();
 }
 
