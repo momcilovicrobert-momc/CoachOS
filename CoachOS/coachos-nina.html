@@ -13,60 +13,39 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;}
-
-/* HEADER */
 .header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between;}
 .logo-row{display:flex;align-items:center;gap:8px;}
 .logo-mark{width:26px;height:26px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;}
 .logo-mark svg{width:14px;height:14px;}
 .logo-text{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;}
 .logo-text span{color:var(--accent);}
-.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c8f135,#7ab800);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0d0d0d;}
-
-/* GREETING */
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
 .greeting{padding:20px 20px 0;}
 .greeting-sub{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;font-weight:600;margin-bottom:3px;}
 .greeting-name{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;letter-spacing:1px;}
 .greeting-name span{color:var(--accent);}
-
-/* DAILY CHECK-IN */
 .checkin-card{margin:16px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;position:relative;overflow:hidden;}
 .checkin-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(200,241,53,0.06),transparent 70%);pointer-events:none;}
 .checkin-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 .checkin-saved{font-size:10px;color:var(--accent);font-weight:500;letter-spacing:0;text-transform:none;display:none;}
-
 .checkin-row{margin-bottom:14px;}
 .checkin-label{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;}
-
-/* SLEEP SLIDER */
 .sleep-row{display:flex;align-items:center;gap:10px;}
-.sleep-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);min-width:48px;line-height:1;}
-.sleep-unit{font-size:12px;color:var(--muted);margin-top:6px;}
 .sleep-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;}
 .sleep-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 3px rgba(200,241,53,0.2);}
-
-/* EMOJI ENERGY */
 .emoji-row{display:flex;gap:8px;}
 .emoji-btn{flex:1;padding:10px 4px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;font-size:20px;}
-.emoji-btn:hover{border-color:var(--muted2);}
 .emoji-btn.selected{background:rgba(200,241,53,0.1);border-color:var(--accent);transform:scale(1.08);}
 .emoji-label{font-size:9px;color:var(--muted);margin-top:3px;display:block;}
-
-/* NOTE INPUT */
 .checkin-note{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;resize:none;min-height:60px;transition:border .15s;}
 .checkin-note:focus{outline:none;border-color:rgba(200,241,53,0.4);}
 .checkin-note::placeholder{color:var(--muted2);}
 .checkin-save-btn{width:100%;margin-top:10px;padding:10px;background:rgba(200,241,53,0.1);border:1px solid rgba(200,241,53,0.25);border-radius:10px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
 .checkin-save-btn:hover{background:rgba(200,241,53,0.18);}
-
-/* CONTENT */
 .content{padding:0 20px 100px;}
 .section{margin-top:20px;}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
-.section-action{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer;}
-
-/* WEEK STRIP */
 .week-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
 .week-strip::-webkit-scrollbar{display:none;}
 .day-chip{flex-shrink:0;width:52px;padding:10px 6px;border-radius:14px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;}
@@ -77,27 +56,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .day-name{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:0.5px;}
 .day-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1.1;margin:1px 0;}
 .day-type{font-size:9px;color:var(--muted);}
-
-/* COACH MESSAGE */
 .coach-msg{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:0 14px 14px 0;padding:14px 16px;}
 .coach-msg-from{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px;}
 .coach-msg-text{font-size:13.5px;line-height:1.6;color:#ddd;}
-
-/* SESSION CARD */
 .session-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
 .session-card-header{padding:16px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .session-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.5px;line-height:1;}
 .session-meta{font-size:12px;color:var(--muted);margin-top:3px;}
 .start-btn{background:var(--accent);color:#0d0d0d;border:none;border-radius:12px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.start-btn:active{transform:scale(0.97);}
-
-/* REST DAY CARD */
 .rest-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;}
 .rest-emoji{font-size:36px;margin-bottom:10px;}
 .rest-title{font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:6px;}
 .rest-text{font-size:13px;color:var(--muted);line-height:1.5;}
-
-/* EXERCISE ROW */
 .exercise-row{padding:13px 18px;border-bottom:1px solid rgba(42,42,42,0.6);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s;}
 .exercise-row:last-child{border-bottom:none;}
 .exercise-row:active{background:rgba(255,255,255,0.03);}
@@ -108,11 +78,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ex-prescription{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;}
 .ex-tip{font-size:11px;color:var(--accent2);margin-top:2px;font-style:italic;}
 .ex-chevron{color:var(--muted2);font-size:16px;flex-shrink:0;}
-.ex-logged{text-align:right;flex-shrink:0;}
-.ex-logged-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);}
-.ex-logged-rpe{font-size:10px;color:var(--muted);margin-top:2px;}
-
-/* PROGRESS PAGE */
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;}
 .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
 .stat-main{flex:1;}
@@ -121,10 +86,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .stat-unit{font-size:13px;font-weight:400;color:var(--muted);margin-left:2px;}
 .stat-change{font-size:12px;font-weight:500;}
 .up{color:var(--accent);}
-.down{color:var(--red);}
 .flat{color:var(--muted);}
-
-/* BODY STATS PAGE */
 .body-log-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
 .body-log-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
 .input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
@@ -134,7 +96,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .body-input:focus{outline:none;border-color:var(--accent);}
 .body-input::placeholder{color:var(--muted2);}
 .body-save-btn{width:100%;padding:12px;background:var(--accent);color:#0d0d0d;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
-
 .history-entry{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(42,42,42,0.5);}
 .history-entry:last-child{border-bottom:none;}
 .history-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
@@ -142,25 +103,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .history-val{text-align:right;}
 .history-val-num{font-family:'JetBrains Mono',monospace;font-weight:500;}
 .history-val-label{font-size:10px;color:var(--muted);}
-
-/* DAY TABS */
 .day-tabs{display:flex;gap:8px;margin-bottom:14px;}
 .day-tab{flex:1;padding:10px 6px;border-radius:12px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;color:var(--muted);}
 .day-tab.active{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent);}
 .day-tab.cardio-tab.active{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);}
 .day-tab.mobility-tab.active{background:rgba(68,136,255,0.1);border-color:#4488ff;color:#88aaff;}
 .day-tab-icon{font-size:16px;display:block;margin-bottom:3px;}
-
-/* CARDIO BUTTON */
 .cardio-add-btn{width:100%;margin-top:10px;padding:13px;background:transparent;border:1px dashed rgba(255,107,53,0.4);border-radius:12px;color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .cardio-add-btn:hover{background:rgba(255,107,53,0.06);border-color:var(--accent2);}
-.cardio-logged-row{padding:13px 18px;display:flex;align-items:center;gap:12px;border-top:1px solid rgba(42,42,42,0.6);}
-.cardio-icon{width:26px;height:26px;border-radius:50%;background:rgba(255,107,53,0.12);border:1px solid rgba(255,107,53,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
-.cardio-info{flex:1;}
-.cardio-name{font-size:14px;font-weight:500;}
-.cardio-vals{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;}
-
-/* MOBILITY ROW */
 .mobility-row{padding:13px 18px;border-top:1px solid rgba(42,42,42,0.6);display:flex;align-items:center;gap:12px;}
 .mobility-icon{width:26px;height:26px;border-radius:50%;background:rgba(68,136,255,0.1);border:1px solid rgba(68,136,255,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
 .mobility-info{flex:1;}
@@ -168,25 +118,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mobility-detail{font-size:11px;color:var(--muted);margin-top:2px;}
 .mobility-done-btn{padding:6px 12px;border-radius:8px;background:rgba(68,136,255,0.1);border:1px solid rgba(68,136,255,0.2);color:#88aaff;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
 .mobility-done-btn.done{background:rgba(68,136,255,0.2);color:#aabbff;}
-
-/* CARDIO SHEET */
 .cardio-sheet-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:14px;}
 .cardio-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
 .cardio-input-group{display:flex;flex-direction:column;gap:5px;}
 .cardio-input-label{font-size:11px;color:var(--muted);}
 .difficulty-row{display:flex;gap:5px;margin-bottom:16px;}
 .diff-btn{flex:1;padding:9px 3px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;color:var(--muted);transition:all .15s;}
-.diff-btn:hover{border-color:var(--muted2);}
 .diff-btn.selected{background:rgba(255,107,53,0.1);border-color:var(--accent2);color:var(--accent2);font-weight:700;}
-
-/* LOG SHEET */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:199;}
 .log-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#1a1a1a;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px 40px;z-index:200;box-shadow:0 -20px 60px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto;}
 .sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
 .sheet-ex-title{font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:3px;}
 .sheet-prescription{font-size:12px;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
 .sheet-tip{font-size:12px;color:var(--accent2);font-style:italic;margin-bottom:16px;}
-
 .sets-grid{display:grid;grid-template-columns:28px 1fr 1fr 36px;gap:7px;align-items:center;margin-bottom:12px;}
 .sets-grid-header{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center;}
 .set-num{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-align:center;}
@@ -197,31 +141,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .set-done.checked{background:rgba(200,241,53,0.12);border-color:var(--accent);color:var(--accent);}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 input[type=range]{width:100%;}
-
 .add-set-btn{width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:12px;padding:8px;cursor:pointer;margin-bottom:14px;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .add-set-btn:hover{border-color:var(--muted2);color:var(--text);}
-
 .rpe-section-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 .rpe-pills{display:flex;gap:6px;margin-bottom:16px;}
 .rpe-pill{flex:1;padding:10px 4px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-align:center;font-size:13px;cursor:pointer;color:var(--muted);transition:all .15s;user-select:none;}
-.rpe-pill:hover{border-color:var(--muted2);}
 .rpe-pill.selected{background:rgba(200,241,53,0.1);border-color:var(--accent);color:var(--accent);font-weight:600;}
-
 .log-btn{width:100%;padding:14px;background:var(--accent);color:#0d0d0d;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;}
 .log-btn:active{transform:scale(0.98);}
-
-/* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:10px 0 18px;z-index:100;}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
 .nav-btn-icon{font-size:18px;opacity:0.4;transition:opacity .15s;}
 .nav-btn-label{font-size:10px;color:var(--muted);font-weight:500;transition:color .15s;}
 .nav-btn.active .nav-btn-icon{opacity:1;}
 .nav-btn.active .nav-btn-label{color:var(--accent);}
-
-/* TOAST */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--accent);color:#0d0d0d;padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;z-index:999;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .section,.checkin-card{animation:slideUp .3s ease forwards;}
 </style>
@@ -241,25 +176,23 @@ input[type=range]{width:100%;}
   <div class="avatar">NI</div>
 </div>
 
-<div class="greeting" style="padding:20px 20px 0;">
+<div class="greeting">
   <div class="greeting-sub" id="greeting-date">—</div>
   <div class="greeting-name">Hej, <span>Nina.</span></div>
 </div>
 
-<!-- DAILY CHECK-IN — always visible -->
 <div class="checkin-card">
   <div class="checkin-title">
     Kako si danes?
     <span class="checkin-saved" id="checkin-saved">✓ Shranjeno</span>
   </div>
-
   <div class="checkin-row">
     <div class="checkin-label">😴 Spanec — <span id="sleep-display">7</span> ur</div>
     <div class="sleep-row">
-      <input type="range" class="sleep-slider" id="sleep-slider" min="3" max="12" step="0.5" value="7" oninput="document.getElementById('sleep-display').textContent=this.value">
+      <input type="range" class="sleep-slider" id="sleep-slider" min="3" max="12" step="0.5" value="7"
+        oninput="document.getElementById('sleep-display').textContent=this.value">
     </div>
   </div>
-
   <div class="checkin-row">
     <div class="checkin-label">Energija & počutje</div>
     <div class="emoji-row">
@@ -269,49 +202,34 @@ input[type=range]{width:100%;}
       <div class="emoji-btn" onclick="selectEnergy(this,'🔥','Odlično')">🔥<span class="emoji-label">Odlično</span></div>
     </div>
   </div>
-
   <div class="checkin-row" style="margin-bottom:0;">
     <div class="checkin-label">Opomba (neobvezno)</div>
     <textarea class="checkin-note" id="checkin-note" placeholder="Npr. bolijo me mišice od ponedeljka, malo pod pritiskom v službi..."></textarea>
   </div>
-
   <button class="checkin-save-btn" onclick="saveCheckin()">Shrani ↗</button>
 </div>
 
-<!-- CONTENT PAGES -->
 <div class="content">
-
-  <!-- PAGE: DANES -->
   <div id="page-today">
-
     <div class="section">
       <div class="section-header"><div class="section-title">Ta teden</div></div>
       <div class="week-strip" id="week-strip"></div>
     </div>
-
     <div class="section">
       <div class="coach-msg">
         <div class="coach-msg-from">📋 Sporočilo trenerja</div>
-        <div class="coach-msg-text">Danes Full Body A. Fokus na tehniko — ne hiti med vajami. Pri RDL-ju spusti ročki samo do raztega hamstringov, ne do tal. 💪</div>
+        <div class="coach-msg-text" id="coach-message-text">Danes Full Body A. Fokus na tehniko — ne hiti med vajami. Pri RDL-ju spusti ročki samo do raztega hamstringov, ne do tal. 💪</div>
       </div>
     </div>
-
-    <div class="section" id="workout-section">
-      <!-- filled by JS -->
-    </div>
-
-    <!-- STANDALONE CARDIO BUTTON — always visible -->
+    <div class="section" id="workout-section"></div>
     <div class="section" id="cardio-standalone-section">
       <div id="cardio-standalone-btn"></div>
     </div>
-
   </div>
 
-  <!-- PAGE: NAPREDEK -->
   <div id="page-progress" style="display:none;">
     <div class="section">
       <div class="section-header"><div class="section-title">Moj napredek</div></div>
-
       <div class="stat-card">
         <div class="stat-icon" style="background:rgba(200,241,53,0.1);">🏋️</div>
         <div class="stat-main">
@@ -320,7 +238,6 @@ input[type=range]{width:100%;}
           <div class="stat-change up" id="prog-sub">Začniva skupaj!</div>
         </div>
       </div>
-
       <div class="stat-card">
         <div class="stat-icon" style="background:rgba(255,107,53,0.1);">🔥</div>
         <div class="stat-main">
@@ -329,7 +246,6 @@ input[type=range]{width:100%;}
           <div class="stat-change flat">opravljenih</div>
         </div>
       </div>
-
       <div class="stat-card">
         <div class="stat-icon" style="background:rgba(68,136,255,0.1);">😴</div>
         <div class="stat-main">
@@ -338,767 +254,8 @@ input[type=range]{width:100%;}
           <div class="stat-change flat" id="prog-sleep-sub">—</div>
         </div>
       </div>
-
       <div id="prog-log-list"></div>
     </div>
   </div>
 
-  <!-- PAGE: TELO -->
-  <div id="page-body" style="display:none;">
-    <div class="section">
-      <div class="section-header"><div class="section-title">Telesne mere</div></div>
-
-      <!-- DAILY WEIGHT -->
-      <div class="body-log-card">
-        <div class="body-log-title">⚖️ Telesna teža — danes</div>
-        <div style="display:flex;gap:10px;align-items:flex-end;">
-          <div class="input-group" style="flex:1;">
-            <div class="input-label">Teža (kg)</div>
-            <input class="body-input" type="number" id="daily-weight" placeholder="65.0" step="0.1">
-          </div>
-          <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Vsak dan, zjutraj, na tešče</div>
-        </div>
-        <button class="body-save-btn" onclick="saveDailyWeight()">Shrani težo</button>
-      </div>
-
-      <!-- WEEKLY MEASUREMENTS -->
-      <div class="body-log-card">
-        <div class="body-log-title">📏 Telesne mere — tedensko</div>
-        <div class="input-row">
-          <div class="input-group">
-            <div class="input-label">Pas (cm)</div>
-            <input class="body-input" type="number" id="meas-waist" placeholder="70">
-          </div>
-          <div class="input-group">
-            <div class="input-label">Boki (cm)</div>
-            <input class="body-input" type="number" id="meas-hips" placeholder="95">
-          </div>
-          <div class="input-group">
-            <div class="input-label">Prsi (cm)</div>
-            <input class="body-input" type="number" id="meas-chest" placeholder="88">
-          </div>
-          <div class="input-group">
-            <div class="input-label">Stegna (cm)</div>
-            <input class="body-input" type="number" id="meas-thigh" placeholder="55">
-          </div>
-        </div>
-        <button class="body-save-btn" onclick="saveMeasurements()">Shrani mere</button>
-      </div>
-
-      <!-- WEIGHT HISTORY -->
-      <div class="body-log-card" id="weight-history-card" style="display:none;">
-        <div class="body-log-title">📈 Zgodovina teže</div>
-        <div id="weight-history"></div>
-      </div>
-
-    </div>
-  </div>
-
-</div><!-- end content -->
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <div class="nav-btn active" onclick="switchPage('today',this)">
-    <div class="nav-btn-icon">🏠</div>
-    <div class="nav-btn-label" style="color:var(--accent);">Danes</div>
-  </div>
-  <div class="nav-btn" onclick="switchPage('progress',this)">
-    <div class="nav-btn-icon">📈</div>
-    <div class="nav-btn-label">Napredek</div>
-  </div>
-  <div class="nav-btn" onclick="switchPage('body',this)">
-    <div class="nav-btn-icon">⚖️</div>
-    <div class="nav-btn-label">Telo</div>
-  </div>
-</div>
-
-<!-- LOG SHEET -->
-<div class="overlay" id="overlay" style="display:none;" onclick="closeSheet()"></div>
-<div class="log-sheet" id="log-sheet" style="display:none;">
-  <div class="sheet-handle"></div>
-  <div class="sheet-ex-title" id="sheet-title">—</div>
-  <div class="sheet-prescription" id="sheet-prescription">—</div>
-  <div class="sheet-tip" id="sheet-tip"></div>
-  <div id="sets-grid-wrapper">
-    <div class="sets-grid" id="sets-grid">
-      <div class="sets-grid-header"></div>
-      <div class="sets-grid-header">Teža (kg)</div>
-      <div class="sets-grid-header">Pon.</div>
-      <div class="sets-grid-header">✓</div>
-    </div>
-  </div>
-  <button class="add-set-btn" onclick="addSetRow()">+ Dodaj serijo</button>
-  <div class="rpe-section-label">Kako težko je bilo? (RPE)</div>
-  <div class="rpe-pills">
-    <div class="rpe-pill" onclick="selectRPE(this)">6</div>
-    <div class="rpe-pill selected" onclick="selectRPE(this)">7</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">8</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">9</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">10</div>
-  </div>
-  <button class="log-btn" onclick="saveExercise()">Shrani vajo ✓</button>
-</div>
-
-<!-- CARDIO SHEET -->
-<div class="overlay" id="cardio-overlay" style="display:none;" onclick="closeCardioSheet()"></div>
-<div class="log-sheet" id="cardio-sheet" style="display:none;">
-  <div class="sheet-handle"></div>
-  <div class="sheet-ex-title">🏃 Tek / Hoja</div>
-  <div class="sheet-prescription" style="margin-bottom:0;">Zabeleži kardio na koncu treninga</div>
-
-  <div class="cardio-inputs" style="margin-top:14px;">
-    <div class="cardio-input-group">
-      <div class="cardio-input-label">Čas (min)</div>
-      <input class="set-input" type="number" id="cardio-time" placeholder="30">
-    </div>
-    <div class="cardio-input-group">
-      <div class="cardio-input-label">Razdalja (km)</div>
-      <input class="set-input" type="number" id="cardio-dist" placeholder="3.5" step="0.1">
-    </div>
-  </div>
-
-  <div class="cardio-sheet-label">Težavnost (1–10)</div>
-  <div class="difficulty-row" id="diff-row">
-    <div class="diff-btn" onclick="selectDiff(this)">1</div>
-    <div class="diff-btn" onclick="selectDiff(this)">2</div>
-    <div class="diff-btn" onclick="selectDiff(this)">3</div>
-    <div class="diff-btn" onclick="selectDiff(this)">4</div>
-    <div class="diff-btn selected" onclick="selectDiff(this)">5</div>
-    <div class="diff-btn" onclick="selectDiff(this)">6</div>
-    <div class="diff-btn" onclick="selectDiff(this)">7</div>
-    <div class="diff-btn" onclick="selectDiff(this)">8</div>
-    <div class="diff-btn" onclick="selectDiff(this)">9</div>
-    <div class="diff-btn" onclick="selectDiff(this)">10</div>
-  </div>
-
-  <button class="log-btn" style="background:var(--accent2);" onclick="saveCardio()">Shrani kardio ✓</button>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
-const CLIENT = 'Nina';
-
-let PROGRAM_A = [
-  { name:'Heels Elevated Goblet Squat', sets:3, reps:'10', tip:'3s spust, premor spodaj. Prva serija dotik droga za samozavest.' },
-  { name:'DB Romanian Deadlift', sets:3, reps:'12', tip:'Spust samo do raztega, ne do tal. Počasen ekscentrik.' },
-  { name:'Hip Thrust', sets:3, reps:'15', tip:'Stisni zadnjico na vrhu, kontroliran spust.' },
-  { name:'Dead Hang', sets:3, reps:'20-30s', tip:'Lopatice dol in skupaj. Dekompresija hrbtenice.' },
-  { name:'Dead Bug', sets:3, reps:'6 / stran', tip:'Brez loka v križu. Ustavi če forma odpove.' }
-];
-
-let PROGRAM_B = [
-  { name:'Single Arm DB Row', sets:3, reps:'12', tip:'Brez momenta, nasprotna roka na kolenu.' },
-  { name:'Band Pull-down', sets:3, reps:'12', tip:'Kontroliran spust, čuti late.' },
-  { name:'DB Floor Press', sets:3, reps:'12', tip:'Premor spodaj, poln obseg.' },
-  { name:'DB Lateral Raise', sets:3, reps:'15', tip:'Rahlo naprej, vodi s komolcem.' },
-  { name:'Band Face Pull', sets:3, reps:'20', tip:'Komolci visoko, zunanja rotacija.' },
-  { name:'Push-up (elevated)', sets:3, reps:'submaks.', tip:'3 reps od odpovedi.' },
-  { name:'Pallof Press', sets:3, reps:'10 / stran', tip:'Počasen in kontroliran.' }
-];
-
-let PROGRAM = PROGRAM_A; // default
-let activeDay = 'A'; // 'A', 'B', or 'cardio'
-
-// Parse pipe-format program text into PROGRAM array
-function parseProgramText(text) {
-  const lines = text.trim().split('\n').filter(l => l.trim() && !l.startsWith('##'));
-  return lines.map(line => {
-    const parts = line.split('|').map(p => p.trim());
-    return {
-      name: parts[0] || '',
-      sets: parseInt(parts[1]) || 3,
-      reps: parts[2] || '—',
-      tip: parts[3] || null
-    };
-  }).filter(e => e.name);
-}
-
-// Parse multi-day format: ## Day A\n...exercises\n## Day B\n...
-function parseMultiDayProgram(text) {
-  const result = { A: null, B: null };
-  const sections = text.split(/^##\s*/m);
-  for (const section of sections) {
-    const lines = section.trim().split('\n');
-    const header = lines[0].trim().toLowerCase();
-    const exercises = parseProgramText(lines.slice(1).join('\n'));
-    if (exercises.length === 0) continue;
-    // Match "day a", "a -", "lower", "spodnji" but NOT just any word with 'a'
-    if (/\bday\s*a\b/.test(header) || /\ba\s*[-—]/.test(header) || header.includes('lower') || header.includes('spodnji')) {
-      result.A = exercises;
-    } else if (/\bday\s*b\b/.test(header) || /\bb\s*[-—]/.test(header) || header.includes('upper') || header.includes('zgornji')) {
-      result.B = exercises;
-    }
-  }
-  return result;
-}
-
-// Load program from Sheets
-async function loadProgramFromSheets() {
-  try {
-    const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
-    const data = await res.json();
-    if (data && data.program && data.program.trim()) {
-      const text = data.program;
-      if (text.includes('##')) {
-        // Multi-day format
-        const multi = parseMultiDayProgram(text);
-        if (multi.A && multi.A.length > 0) PROGRAM_A = multi.A;
-        if (multi.B && multi.B.length > 0) PROGRAM_B = multi.B;
-      } else {
-        // Single day — put in active day
-        const parsed = parseProgramText(text);
-        if (parsed.length > 0) {
-          PROGRAM_A = parsed;
-        }
-      }
-      PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
-      loggedExercises = {};
-      buildWorkoutSection();
-    }
-    // Load mobility from Sheets
-    if (data && data.mobility && data.mobility.trim()) {
-      const mobLines = data.mobility.trim().split('\n').filter(l => l.trim());
-      MOBILITY = mobLines.map(line => {
-        const parts = line.split('|').map(p => p.trim());
-        return { name: parts[0] || '', detail: parts[1] || '', tip: parts[2] || '' };
-      }).filter(m => m.name);
-      buildWorkoutSection();
-    }
-  } catch(e) {
-    console.log('Program load failed, using default');
-  }
-}
-
-let logs = JSON.parse(localStorage.getItem('nina_logs') || '[]');
-let checkins = JSON.parse(localStorage.getItem('nina_checkins') || '[]');
-let weights = JSON.parse(localStorage.getItem('nina_weights') || '[]');
-let measurements = JSON.parse(localStorage.getItem('nina_measurements') || '[]');
-let cardioLogs = JSON.parse(localStorage.getItem('nina_cardio') || '[]');
-let loggedExercises = {};
-let currentExIndex = null;
-let currentSetCount = 0;
-let selectedEnergy = '💪';
-let mobilityDone = {};
-
-// Mobility loaded from Sheets — coach sets per client from dashboard
-let MOBILITY = [];
-
-// DATE
-const dayNames = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob'];
-const monthNames = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
-const now = new Date();
-const todayStr = now.toISOString().split('T')[0];
-document.getElementById('greeting-date').textContent =
-  dayNames[now.getDay()] + ', ' + now.getDate() + '. ' + monthNames[now.getMonth()] + ' ' + now.getFullYear();
-
-// Check if already checked in today
-const todayCheckin = checkins.find(c => c.date === todayStr);
-if (todayCheckin) {
-  document.getElementById('sleep-slider').value = todayCheckin.sleep;
-  document.getElementById('sleep-display').textContent = todayCheckin.sleep;
-  document.getElementById('checkin-note').value = todayCheckin.note || '';
-  document.getElementById('checkin-saved').style.display = 'inline';
-  selectedEnergy = todayCheckin.energy;
-  document.querySelectorAll('.emoji-btn').forEach(b => {
-    b.classList.toggle('selected', b.textContent.startsWith(todayCheckin.energy));
-  });
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ENERGY SELECT
-function selectEnergy(el, emoji, label) {
-  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedEnergy = emoji;
-}
-
-// SAVE CHECKIN
-async function saveCheckin() {
-  const entry = {
-    action: 'logWorkout',
-    client: CLIENT + '_checkin',
-    session: 'Dnevni check-in',
-    exercise: 'Check-in',
-    sets: '',
-    reps: '',
-    weight: document.getElementById('sleep-slider').value,
-    rpe: selectedEnergy,
-    notes: document.getElementById('checkin-note').value,
-    date: todayStr
-  };
-
-  const local = {
-    date: todayStr,
-    sleep: document.getElementById('sleep-slider').value,
-    energy: selectedEnergy,
-    note: document.getElementById('checkin-note').value
-  };
-
-  // Update or add
-  const idx = checkins.findIndex(c => c.date === todayStr);
-  if (idx >= 0) checkins[idx] = local; else checkins.unshift(local);
-  localStorage.setItem('nina_checkins', JSON.stringify(checkins));
-
-  try { await fetch(API, { method:'POST', body: JSON.stringify(entry) }); } catch(e) {}
-
-  document.getElementById('checkin-saved').style.display = 'inline';
-  showToast('✓ Check-in shranjen!');
-}
-
-// WEEK STRIP
-function buildWeek() {
-  const strip = document.getElementById('week-strip');
-  const today = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (today === 0 ? 6 : today - 1));
-  strip.innerHTML = '';
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dStr = d.toISOString().split('T')[0];
-    const isToday = dStr === todayStr;
-    const isPast = d < now && !isToday;
-    const hasWorkout = logs.some(l => l.date === dStr);
-    const hasCheckin = checkins.some(c => c.date === dStr);
-    const chip = document.createElement('div');
-    chip.className = 'day-chip' + (isToday ? ' today' : isPast ? ' done' : '') + (hasCheckin && !isToday ? ' checked-in' : '');
-    chip.innerHTML = `
-      <div class="day-name">${dayNames[d.getDay()]}</div>
-      <div class="day-num">${d.getDate()}</div>
-      <div class="day-type">${isToday ? 'Danes' : hasWorkout ? '✓' : '—'}</div>
-    `;
-    strip.appendChild(chip);
-  }
-}
-buildWeek();
-loadProgramFromSheets();
-
-// TABS HTML helper
-function tabsHTML() {
-  return `
-    <div class="day-tabs">
-      <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')">
-        <span class="day-tab-icon">🦵</span>Day A
-      </div>
-      <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')">
-        <span class="day-tab-icon">💪</span>Day B
-      </div>
-      <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')">
-        <span class="day-tab-icon">🏃</span>Kardio
-      </div>
-      <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')">
-        <span class="day-tab-icon">💙</span>Mobilnost
-      </div>
-    </div>`;
-}
-
-// DAY TAB SWITCH
-function switchDay(day) {
-  activeDay = day;
-  if (day === 'A') { PROGRAM = PROGRAM_A; loggedExercises = {}; }
-  else if (day === 'B') { PROGRAM = PROGRAM_B; loggedExercises = {}; }
-  buildWorkoutSection();
-  buildCardioStandalone();
-}
-
-// STANDALONE CARDIO BUTTON
-function buildCardioStandalone() {
-  const el = document.getElementById('cardio-standalone-btn');
-  if (!el) return;
-  const cardioLogged = cardioLogs.find(c => c.date === todayStr);
-  if (cardioLogged) {
-    el.innerHTML = `
-      <div class="session-card" style="border-color:rgba(255,107,53,0.3);">
-        <div class="session-card-header" style="border-bottom:none;">
-          <div>
-            <div class="session-name" style="font-size:18px;">🏃 Kardio</div>
-            <div class="session-meta">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div>
-          </div>
-          <button class="start-btn" style="background:rgba(255,107,53,0.15);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);" onclick="openCardioSheet()">+ Posodobi</button>
-        </div>
-      </div>`;
-  } else {
-    el.innerHTML = `<button class="cardio-add-btn" onclick="openCardioSheet()">🏃 + Zabeleži kardio (kadarkoli)</button>`;
-  }
-}
-
-// WORKOUT SECTION
-function buildWorkoutSection() {
-  const section = document.getElementById('workout-section');
-
-  if (activeDay === 'mobility') {
-    const noMobility = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">Trener še ni dodal mobilnostnega protokola.</div>`;
-    section.innerHTML = tabsHTML() + `
-      <div class="session-card" style="border-color:rgba(68,136,255,0.3);">
-        <div class="session-card-header">
-          <div>
-            <div class="session-name" style="color:#88aaff;">💙 Mobilnost</div>
-            <div class="session-meta">Opravi kadarkoli · pred ali po treningu</div>
-          </div>
-        </div>
-        ${MOBILITY.length > 0 ? MOBILITY.map((m,i) => `
-          <div class="mobility-row" style="border-top:${i>0?'1px solid rgba(42,42,42,0.4)':'1px solid var(--border)'};padding-top:13px;">
-            <div class="mobility-icon">🔵</div>
-            <div class="mobility-info">
-              <div class="mobility-name">${m.name}</div>
-              <div class="mobility-detail">${m.detail}</div>
-              ${m.tip ? `<div class="ex-tip">${m.tip}</div>` : ''}
-            </div>
-            <button class="mobility-done-btn" id="mob-${i}" onclick="toggleMobility(this,${i})">${mobilityDone[i]?'✓ Opravljeno':'Opravi'}</button>
-          </div>
-        `).join('') : noMobility}
-      </div>`;
-    return;
-  }
-
-  if (activeDay === 'cardio') {
-    section.innerHTML = tabsHTML() + `
-      <div class="session-card" style="border-color:rgba(255,107,53,0.3);">
-        <div class="session-card-header">
-          <div>
-            <div class="session-name">🏃 Kardio dan</div>
-            <div class="session-meta">Zone 2 · 30–45 min · konverzacijski tempo</div>
-          </div>
-        </div>
-        <div style="padding:16px 18px;">
-          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">Danes je kardio dan. Cilj: ohranjaj tempo, pri katerem lahko govoriš v stavkih. Polar bo beležil zone — fokus na zoni 2.</div>
-          <button class="cardio-add-btn" style="border-color:var(--accent2);" onclick="openCardioSheet()">🏃 + Zabeleži kardio ↗</button>
-        </div>
-      </div>`;
-    return;
-  }
-
-  const allLogged = PROGRAM.every((_, i) => loggedExercises[i]);
-
-  if (allLogged) {
-    section.innerHTML = tabsHTML() + `
-      <div class="rest-card">
-        <div class="rest-emoji">🎉</div>
-        <div class="rest-title">Trening zaključen!</div>
-        <div class="rest-text">Odlično opravljeno, Nina. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
-      </div>`;
-    return;
-  }
-
-  const dayLabel = activeDay === 'A' ? 'Day A — Lower + Core' : 'Day B — Upper + Core';
-  const dayMeta = activeDay === 'A' ? '5 vaj · ~50 min' : '7 vaj · ~55 min';
-
-  section.innerHTML = tabsHTML() + `
-    <div class="session-card">
-      <div class="session-card-header">
-        <div>
-          <div class="session-name">${dayLabel}</div>
-          <div class="session-meta">${dayMeta}</div>
-        </div>
-        <button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button>
-      </div>
-      <div id="exercise-list"></div>
-    </div>
-  `;
-  buildExerciseList();
-}
-
-function buildExerciseList() {
-  const list = document.getElementById('exercise-list');
-  if (!list) return;
-  list.innerHTML = PROGRAM.map((ex, i) => {
-    const logged = loggedExercises[i];
-    return `
-      <div class="exercise-row" onclick="openSheet(${i})">
-        <div class="ex-num ${logged ? 'logged' : ''}">${logged ? '✓' : i+1}</div>
-        <div class="ex-info">
-          <div class="ex-name">${ex.name}</div>
-          <div class="ex-prescription">${ex.sets} × ${ex.reps}</div>
-          ${ex.tip ? `<div class="ex-tip">${ex.tip}</div>` : ''}
-        </div>
-        ${logged
-          ? `<div class="ex-logged"><div class="ex-logged-val">${logged.weight}kg</div><div class="ex-logged-rpe">RPE ${logged.rpe}</div></div>`
-          : '<div class="ex-chevron">›</div>'}
-      </div>
-    `;
-  }).join('');
-}
-
-buildWorkoutSection();
-
-// SHEET
-function openSheet(idx) {
-  currentExIndex = idx;
-  const ex = PROGRAM[idx];
-  document.getElementById('sheet-title').textContent = ex.name;
-  document.getElementById('sheet-prescription').textContent = `Cilj: ${ex.sets} × ${ex.reps}`;
-  const tipEl = document.getElementById('sheet-tip');
-  tipEl.textContent = ex.tip || '';
-  tipEl.style.display = ex.tip ? 'block' : 'none';
-
-  currentSetCount = ex.sets;
-  rebuildSetRows(ex.sets, ex.reps);
-
-  document.getElementById('overlay').style.display = 'block';
-  document.getElementById('log-sheet').style.display = 'block';
-  document.getElementById('log-sheet').scrollTop = 0;
-}
-
-function rebuildSetRows(count, targetReps) {
-  const grid = document.getElementById('sets-grid');
-  // keep headers (first 4 children)
-  while (grid.children.length > 4) grid.removeChild(grid.lastChild);
-
-  const defaultReps = String(targetReps).split('–')[0].replace(/[^0-9]/g,'') || '10';
-  for (let s = 1; s <= count; s++) {
-    const num = document.createElement('div');
-    num.className = 'set-num';
-    num.textContent = 'S' + s;
-    const weight = document.createElement('input');
-    weight.className = 'set-input';
-    weight.type = 'number';
-    weight.placeholder = 'kg';
-    weight.id = 'w-' + s;
-    const reps = document.createElement('input');
-    reps.className = 'set-input';
-    reps.type = 'number';
-    reps.placeholder = defaultReps;
-    reps.id = 'r-' + s;
-    const done = document.createElement('div');
-    done.className = 'set-done';
-    done.textContent = '✓';
-    done.onclick = function() { this.classList.toggle('checked'); };
-    grid.appendChild(num); grid.appendChild(weight);
-    grid.appendChild(reps); grid.appendChild(done);
-  }
-}
-
-function addSetRow() {
-  currentSetCount++;
-  const ex = PROGRAM[currentExIndex];
-  const defaultReps = String(ex.reps).split('–')[0].replace(/[^0-9]/g,'') || '10';
-  const grid = document.getElementById('sets-grid');
-  const s = currentSetCount;
-  const num = document.createElement('div');
-  num.className = 'set-num'; num.textContent = 'S' + s;
-  const weight = document.createElement('input');
-  weight.className = 'set-input'; weight.type = 'number'; weight.placeholder = 'kg'; weight.id = 'w-' + s;
-  const reps = document.createElement('input');
-  reps.className = 'set-input'; reps.type = 'number'; reps.placeholder = defaultReps; reps.id = 'r-' + s;
-  const done = document.createElement('div');
-  done.className = 'set-done'; done.textContent = '✓';
-  done.onclick = function() { this.classList.toggle('checked'); };
-  grid.appendChild(num); grid.appendChild(weight);
-  grid.appendChild(reps); grid.appendChild(done);
-}
-
-function closeSheet() {
-  document.getElementById('overlay').style.display = 'none';
-  document.getElementById('log-sheet').style.display = 'none';
-}
-
-function selectRPE(el) {
-  document.querySelectorAll('.rpe-pill').forEach(p => p.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-async function saveExercise() {
-  const ex = PROGRAM[currentExIndex];
-  const rpe = document.querySelector('.rpe-pill.selected')?.textContent || '7';
-  const w1 = document.getElementById('w-1')?.value || '—';
-  const r1 = document.getElementById('r-1')?.value || '—';
-
-  // Collect all sets
-  let setsData = [];
-  for (let s = 1; s <= currentSetCount; s++) {
-    const w = document.getElementById('w-' + s)?.value;
-    const r = document.getElementById('r-' + s)?.value;
-    if (w || r) setsData.push(`S${s}: ${w||'—'}kg×${r||'—'}`);
-  }
-
-  const entry = {
-    action: 'logWorkout',
-    client: CLIENT,
-    session: 'Day ' + activeDay,
-    exercise: ex.name,
-    sets: currentSetCount,
-    reps: r1,
-    weight: w1,
-    rpe: rpe,
-    notes: setsData.join(' | '),
-    date: todayStr
-  };
-
-  loggedExercises[currentExIndex] = { weight: w1, rpe };
-  logs.unshift(entry);
-  localStorage.setItem('nina_logs', JSON.stringify(logs));
-
-  try { await fetch(API, { method:'POST', body: JSON.stringify(entry) }); } catch(e) {}
-
-  closeSheet();
-  buildWorkoutSection();
-  showToast('✓ ' + ex.name + ' shranjeno!');
-}
-
-// SAVE DAILY WEIGHT
-async function saveDailyWeight() {
-  const val = document.getElementById('daily-weight').value;
-  if (!val) { showToast('Vnesi težo!'); return; }
-  const entry = { date: todayStr, weight: val };
-  const idx = weights.findIndex(w => w.date === todayStr);
-  if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
-  localStorage.setItem('nina_weights', JSON.stringify(weights));
-  try {
-    await fetch(API, { method:'POST', body: JSON.stringify({
-      action:'logWorkout', client: CLIENT+'_teza', session:'Teža', exercise:'Telesna teža',
-      sets:'', reps:'', weight: val, rpe:'', notes:'', date: todayStr
-    })});
-  } catch(e) {}
-  showToast('✓ Teža shranjena!');
-  renderWeightHistory();
-}
-
-// SAVE MEASUREMENTS
-async function saveMeasurements() {
-  const entry = {
-    date: todayStr,
-    waist: document.getElementById('meas-waist').value,
-    hips: document.getElementById('meas-hips').value,
-    chest: document.getElementById('meas-chest').value,
-    thigh: document.getElementById('meas-thigh').value
-  };
-  measurements.unshift(entry);
-  localStorage.setItem('nina_measurements', JSON.stringify(measurements));
-  try {
-    await fetch(API, { method:'POST', body: JSON.stringify({
-      action:'logWorkout', client: CLIENT+'_mere', session:'Mere', exercise:'Telesne mere',
-      sets: entry.waist, reps: entry.hips, weight: entry.chest, rpe: entry.thigh, notes:'', date: todayStr
-    })});
-  } catch(e) {}
-  showToast('✓ Mere shranjene!');
-}
-
-function renderWeightHistory() {
-  if (!weights.length) return;
-  const card = document.getElementById('weight-history-card');
-  const list = document.getElementById('weight-history');
-  card.style.display = 'block';
-  list.innerHTML = weights.slice(0,14).map((w, i) => {
-    const prev = weights[i+1];
-    const diff = prev ? (parseFloat(w.weight) - parseFloat(prev.weight)).toFixed(1) : null;
-    const diffStr = diff !== null ? (diff > 0 ? `<span class="up">+${diff}</span>` : diff < 0 ? `<span class="down">${diff}</span>` : `<span class="flat">±0</span>`) : '';
-    return `
-      <div class="history-entry">
-        <div class="history-date">${w.date}</div>
-        <div class="history-vals">
-          <div class="history-val">
-            <div class="history-val-num">${w.weight} kg ${diffStr}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-// PROGRESS
-function updateProgress() {
-  const uniqueDays = new Set(logs.filter(l=>l.session==='Day A'||l.session==='Day B').map(l=>l.date)).size;
-  document.getElementById('prog-sessions').textContent = uniqueDays;
-  if (uniqueDays > 0) document.getElementById('prog-sub').textContent = 'treningov opravljenih 💪';
-  const totalSets = logs.reduce((a,l) => a + (parseInt(l.sets)||0), 0);
-  document.getElementById('prog-sets').textContent = totalSets;
-
-  // Sleep avg
-  const last7 = checkins.slice(0,7);
-  if (last7.length) {
-    const avg = (last7.reduce((a,c) => a + parseFloat(c.sleep||0), 0) / last7.length).toFixed(1);
-    document.getElementById('prog-sleep').innerHTML = avg + '<span class="stat-unit">ur</span>';
-    document.getElementById('prog-sleep-sub').textContent = 'povprečje zadnjih ' + last7.length + ' dni';
-  }
-
-  const list = document.getElementById('prog-log-list');
-  list.innerHTML = logs.slice(0,8).map(l => `
-    <div style="padding:10px 0;border-bottom:1px solid rgba(42,42,42,0.5);display:flex;gap:12px;align-items:center;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:70px;">${l.date}</div>
-      <div>
-        <div style="font-size:13px;font-weight:500;">${l.exercise}</div>
-        <div style="font-size:11px;color:var(--muted);">${l.weight}kg · ${l.sets}×${l.reps} · RPE ${l.rpe}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// PAGE SWITCH
-function switchPage(name, btn) {
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.remove('active');
-    b.querySelector('.nav-btn-label').style.color = '';
-  });
-  btn.classList.add('active');
-  btn.querySelector('.nav-btn-label').style.color = 'var(--accent)';
-  ['today','progress','body'].forEach(p => {
-    document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
-  });
-  if (name === 'progress') updateProgress();
-  if (name === 'body') renderWeightHistory();
-}
-
-// CARDIO
-function openCardioSheet() {
-  document.getElementById('cardio-overlay').style.display = 'block';
-  document.getElementById('cardio-sheet').style.display = 'block';
-  document.getElementById('cardio-sheet').scrollTop = 0;
-}
-
-function closeCardioSheet() {
-  document.getElementById('cardio-overlay').style.display = 'none';
-  document.getElementById('cardio-sheet').style.display = 'none';
-}
-
-function selectDiff(el) {
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-async function saveCardio() {
-  const time = document.getElementById('cardio-time').value;
-  const dist = document.getElementById('cardio-dist').value;
-  const diff = document.querySelector('.diff-btn.selected')?.textContent || '5';
-  if (!time) { showToast('Vnesi čas!'); return; }
-
-  const entry = { date: todayStr, time, dist: dist || '—', diff };
-  cardioLogs.unshift(entry);
-  localStorage.setItem('nina_cardio', JSON.stringify(cardioLogs));
-
-  try {
-    await fetch(API, { method:'POST', body: JSON.stringify({
-      action:'logWorkout', client: CLIENT, session:'Kardio',
-      exercise:'Tek / Hoja', sets: diff, reps: dist || '—',
-      weight: '—', rpe: diff, notes: time + ' min', date: todayStr
-    })});
-  } catch(e) {}
-
-  closeCardioSheet();
-  buildWorkoutSection();
-  buildCardioStandalone();
-  showToast('✓ Kardio shranjen!');
-}
-
-// MOBILITY
-function toggleMobility(btn, idx) {
-  mobilityDone[idx] = !mobilityDone[idx];
-  btn.textContent = mobilityDone[idx] ? '✓ Opravljeno' : 'Opravi';
-  btn.classList.toggle('done', mobilityDone[idx]);
-  if (mobilityDone[idx]) showToast('✓ ' + MOBILITY[idx].name + ' opravljeno!');
-}
-
-// INIT
-renderWeightHistory();
-updateProgress();
-buildCardioStandalone();
-</script>
-</body>
-</html>
+  <
