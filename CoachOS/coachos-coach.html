@@ -281,7 +281,7 @@ textarea.form-input { resize:vertical; min-height:80px; }
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
-const BASE_URL = 'https://momcilovicrobert-momc.github.io/CoachOS/';
+const BASE_URL = 'https://momcilovicrobert-momc.github.io/CoachOS/CoachOS/';
 
 // ============================================================
 // STRANKE — EN VIR RESNICE (localStorage)
@@ -290,4 +290,372 @@ const DEFAULT_CLIENTS = {
   'Eli':  { avatar:'EL', avatarBg:'linear-gradient(135deg,#c8f135,#7ab800)', avatarColor:'#0d0d0d', meta:'Izkušena · Vrača se po premoru', goals:'Hujšanje, toniranje, moč', injuries:'Brez', level:'Izkušena', file:'coachos-eli.html' },
   'Hana': { avatar:'HA', avatarBg:'linear-gradient(135deg,#35c8f1,#0087ab)', avatarColor:'#0d0d0d', meta:'Začetnica · Teden 1', goals:'Stabilizacija, moč', injuries:'Displazija kolkov', level:'Začetnica', file:'coachos-hana.html' },
   'Niko': { avatar:'NI', avatarBg:'linear-gradient(135deg,#f1a035,#ab6200)', avatarColor:'#0d0d0d', meta:'Vmesni · 17 let · Boks + Gym', goals:'Mišična masa', injuries:'Brez', level:'Vmesni', file:'coachos-niko.html' },
-  'Nina': { avatar:'NI', avatarBg:'linear-gradient(135deg,#a78bfa,#7c3aed)', avatarColor:'#fff', meta:'Izkušena · Vrača se po premoru', goals:'Hu
+  'Nina': { avatar:'NI', avatarBg:'linear-gradient(135deg,#a78bfa,#7c3aed)', avatarColor:'#fff', meta:'Izkušena · Vrača se po premoru', goals:'Hujšanje, mišična masa', injuries:'Brez', level:'Izkušena', file:'coachos-nina.html' }
+};
+
+function loadAllClients() {
+  const saved = localStorage.getItem('coachos_extra_clients');
+  const extra = saved ? JSON.parse(saved) : {};
+  return { ...DEFAULT_CLIENTS, ...extra };
+}
+
+function saveExtraClient(name, data) {
+  const saved = localStorage.getItem('coachos_extra_clients');
+  const extra = saved ? JSON.parse(saved) : {};
+  extra[name] = data;
+  localStorage.setItem('coachos_extra_clients', JSON.stringify(extra));
+}
+
+let CLIENTS = loadAllClients();
+let currentClient = localStorage.getItem('coachos_last_client') || 'Eli';
+let notes = [];
+let logs = [];
+
+// ============================================================
+// SIDEBAR — ZGRADI STRANKE
+// ============================================================
+function buildClientsList() {
+  const list = document.getElementById('clients-list');
+  list.innerHTML = Object.keys(CLIENTS).map(name => {
+    const c = CLIENTS[name];
+    return `<div class="client-pill ${name === currentClient ? 'selected':''}" id="pill-${name}" onclick="switchClient('${name}')">
+      <div class="c-avatar" style="background:${c.avatarBg};color:${c.avatarColor||'#0d0d0d'};">${c.avatar}</div>
+      <div><div class="c-name">${name}</div><div class="c-status">Teden 1</div></div>
+      <div class="status-dot" style="background:var(--accent);"></div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// SWITCH CLIENT
+// ============================================================
+function switchClient(name) {
+  currentClient = name;
+  localStorage.setItem('coachos_last_client', name);
+  CLIENTS = loadAllClients();
+  const c = CLIENTS[name];
+  if (!c) return;
+
+  // Sidebar highlight
+  document.querySelectorAll('.client-pill').forEach(p => p.classList.remove('selected'));
+  const pill = document.getElementById('pill-' + name);
+  if (pill) pill.classList.add('selected');
+
+  // Header
+  document.getElementById('topbar-name').textContent = name;
+  const avatar = document.getElementById('ch-avatar');
+  avatar.textContent = c.avatar;
+  avatar.style.background = c.avatarBg;
+  avatar.style.color = c.avatarColor || '#0d0d0d';
+  document.getElementById('ch-name').innerHTML = name + ' <span style="font-size:13px;font-weight:400;color:var(--muted)">· ' + c.meta + '</span>';
+  document.getElementById('ch-tags').innerHTML = `<span class="tag tag-goal">🎯 ${c.goals}</span><span class="tag tag-info">📋 ${c.injuries}</span>`;
+
+  // Link za stranko
+  if (c.file) {
+    const link = BASE_URL + c.file;
+    document.getElementById('client-link-bar').innerHTML = `
+      <div class="client-link">
+        <span>${link}</span>
+        <button class="client-link-copy" onclick="copyLink('${link}')">Kopiraj link ↗</button>
+      </div>`;
+  } else {
+    document.getElementById('client-link-bar').innerHTML = '';
+  }
+
+  // Reset state
+  notes = JSON.parse(localStorage.getItem('coachos_notes_' + name) || '[]');
+  logs = JSON.parse(localStorage.getItem('coachos_logs_' + name) || '[]');
+  document.getElementById('stat-sessions').textContent = logs.length;
+
+  // Reset tabs
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.getElementById('tab-program').style.display = 'block';
+  document.getElementById('tab-log').style.display = 'none';
+  document.getElementById('tab-notes').style.display = 'none';
+  document.getElementById('tab-ai').style.display = 'none';
+
+  // Program — SAMO iz localStorage, brez Sheet klica ob menjavi
+  const programTitle = document.getElementById('program-title');
+  if (programTitle) programTitle.textContent = name + ' — Program';
+  const saved = localStorage.getItem('coachos_program_' + name);
+  if (saved && saved.trim()) {
+    renderProgram(saved);
+  } else {
+    document.getElementById('day-tabs').innerHTML = '';
+    document.getElementById('program-tbody').innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;font-size:13px;">Klikni "Uredi program" da dodaš program za ${name}.</td></tr>`;
+    // Poskusi naložiti iz Sheets SAMO če lokalno ni nič
+    loadProgramFromSheets(name);
+  }
+}
+
+function copyLink(link) {
+  navigator.clipboard.writeText(link).then(() => showToast('✓ Link kopiran!'));
+}
+
+// ============================================================
+// PROGRAM — PARSE & RENDER
+// ============================================================
+function parseProgram(text) {
+  const lines = text.trim().split('\n');
+  const days = {};
+  let currentDay = 'Program';
+  days[currentDay] = [];
+  lines.forEach(line => {
+    const t = line.trim();
+    if (!t) return;
+    if (t.startsWith('##')) { currentDay = t.replace('##','').trim(); if (!days[currentDay]) days[currentDay] = []; }
+    else days[currentDay].push(t);
+  });
+  Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
+  return days;
+}
+
+function renderProgram(text) {
+  const days = parseProgram(text);
+  const dayNames = Object.keys(days);
+  const dayTabsEl = document.getElementById('day-tabs');
+  const tbody = document.getElementById('program-tbody');
+  dayTabsEl.innerHTML = '';
+  if (dayNames.length > 1) {
+    dayTabsEl.style.display = 'flex';
+    dayNames.forEach((day, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (idx === 0 ? 'btn-primary' : 'btn-ghost');
+      btn.style.cssText = 'font-size:12px;padding:5px 12px;';
+      btn.textContent = day;
+      btn.onclick = () => {
+        dayTabsEl.querySelectorAll('button').forEach(b => { b.className='btn btn-ghost'; b.style.cssText='font-size:12px;padding:5px 12px;'; });
+        btn.className = 'btn btn-primary';
+        btn.style.cssText = 'font-size:12px;padding:5px 12px;';
+        renderDayExercises(days[day], tbody);
+      };
+      dayTabsEl.appendChild(btn);
+    });
+    renderDayExercises(days[dayNames[0]], tbody);
+  } else {
+    dayTabsEl.style.display = 'none';
+    renderDayExercises(days[dayNames[0]] || [], tbody);
+  }
+}
+
+function renderDayExercises(exercises, tbody) {
+  if (!exercises || !exercises.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;font-size:13px;">Klikni "Uredi program" da dodaš vaje.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = exercises.map((line, i) => {
+    const parts = line.split('|').map(p => p.trim());
+    return `<tr>
+      <td style="color:var(--muted);font-size:12px;">${i+1}</td>
+      <td><div style="font-weight:500;">${parts[0]||''}</div></td>
+      <td><span class="sets-badge">${parts[1]||'—'} × ${parts[2]||'—'}</span></td>
+      <td><div class="ex-note">${parts[3]||'—'}</div></td>
+      <td><div class="ex-method">${parts[4]||'—'}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// Naloži program iz Sheets SAMO če lokalno ni nič
+async function loadProgramFromSheets(clientName) {
+  try {
+    const res = await fetch(API + '?action=getProgram&client=' + encodeURIComponent(clientName));
+    const data = await res.json();
+    if (data && data.program && data.program.trim() && currentClient === clientName) {
+      localStorage.setItem('coachos_program_' + clientName, data.program);
+      renderProgram(data.program);
+    }
+  } catch(e) { /* Tiha napaka */ }
+}
+
+// ============================================================
+// SHRANI PROGRAM
+// ============================================================
+async function saveProgram() {
+  const text = document.getElementById('program-text').value.trim();
+  if (!text) return;
+  // SAMO localStorage — konec podvajanja
+  localStorage.setItem('coachos_program_' + currentClient, text);
+  renderProgram(text);
+  closeModal('modal-program');
+  showToast('✓ Program shranjen za ' + currentClient + '!');
+  // Shrani v Sheets v ozadju
+  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['program','log','notes','ai'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === name ? 'block' : 'none';
+  });
+  if (name === 'log') fetchLogsFromSheet();
+  if (name === 'notes') renderNotes();
+}
+
+// ============================================================
+// MODALI
+// ============================================================
+function openLogWorkout() { document.getElementById('log-date').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-log').classList.add('open'); }
+function openAddNote() { document.getElementById('modal-note').classList.add('open'); }
+function openNewClient() { document.getElementById('modal-client').classList.add('open'); }
+function openEditProgram() {
+  document.getElementById('modal-program-title').textContent = 'Uredi program — ' + currentClient;
+  document.getElementById('program-text').value = localStorage.getItem('coachos_program_' + currentClient) || '';
+  document.getElementById('modal-program').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+
+// ============================================================
+// LOG WORKOUT
+// ============================================================
+async function submitLog() {
+  const entry = {
+    action: 'logWorkout', client: currentClient,
+    session: document.getElementById('log-session').value || 'Trening',
+    exercise: document.getElementById('log-exercise').value,
+    sets: document.getElementById('log-sets').value,
+    reps: document.getElementById('log-reps').value,
+    weight: document.getElementById('log-weight').value,
+    rpe: document.getElementById('log-rpe').value,
+    notes: document.getElementById('log-notes').value,
+    date: document.getElementById('log-date').value
+  };
+  if (!entry.exercise) { alert('Vnesi ime vaje.'); return; }
+  logs.unshift(entry);
+  localStorage.setItem('coachos_logs_' + currentClient, JSON.stringify(logs));
+  document.getElementById('stat-sessions').textContent = logs.length;
+  try { await fetch(API, { method:'POST', body: JSON.stringify(entry) }); showToast('✓ Shranjeno v Sheet!'); }
+  catch(e) { showToast('✓ Shranjeno lokalno!'); }
+  closeModal('modal-log');
+  renderLogs();
+  ['log-session','log-exercise','log-sets','log-reps','log-weight','log-rpe','log-notes'].forEach(id => { document.getElementById(id).value=''; });
+}
+
+async function fetchLogsFromSheet() {
+  const container = document.getElementById('log-entries');
+  container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">⏳ Nalagam treninge...</div>';
+  try {
+    const res = await fetch(`${API}?action=getLogs&client=${currentClient}`);
+    const data = await res.json();
+    if (data && data.logs && data.logs.length) {
+      logs = data.logs;
+      localStorage.setItem('coachos_logs_' + currentClient, JSON.stringify(logs));
+    } else {
+      logs = JSON.parse(localStorage.getItem('coachos_logs_' + currentClient) || '[]');
+    }
+  } catch(e) {
+    logs = JSON.parse(localStorage.getItem('coachos_logs_' + currentClient) || '[]');
+  }
+  renderLogs();
+}
+
+function renderLogs() {
+  const container = document.getElementById('log-entries');
+  if (!logs.length) { container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">Še ni zabeleženih treningov.</div>'; return; }
+  container.innerHTML = logs.map(l => `
+    <div class="log-entry">
+      <div class="log-date">${l.date||'—'}</div>
+      <div><div class="log-title">${l.session} — ${l.exercise}</div>
+      <div class="log-details"><span>🏋️ ${l.weight||'—'}kg</span><span>${l.sets||'—'} × ${l.reps||'—'}</span>${l.rpe?'<span>RPE '+l.rpe+'</span>':''}</div></div>
+    </div>`).join('');
+}
+
+// ============================================================
+// OPOMBE
+// ============================================================
+function submitNote() {
+  const text = document.getElementById('note-text').value.trim();
+  if (!text) return;
+  notes.unshift({ text, date: new Date().toLocaleDateString('sl-SI') });
+  localStorage.setItem('coachos_notes_' + currentClient, JSON.stringify(notes));
+  document.getElementById('note-text').value = '';
+  closeModal('modal-note');
+  renderNotes();
+  showToast('✓ Opomba shranjena!');
+}
+
+function renderNotes() {
+  const container = document.getElementById('notes-container');
+  if (!notes.length) { container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">Še ni opomb.</div>'; return; }
+  container.innerHTML = notes.map(n => `<div class="note-box">${n.text}<div class="note-meta">${n.date} · Ti</div></div>`).join('');
+}
+
+// ============================================================
+// NOVA STRANKA
+// ============================================================
+function submitNewClient() {
+  const name = document.getElementById('new-client-name').value.trim();
+  if (!name) return;
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const colors = ['linear-gradient(135deg,#4488ff,#2255cc)','linear-gradient(135deg,#ff6b35,#cc3300)','linear-gradient(135deg,#a78bfa,#6d3fcf)'];
+  const bg = colors[Math.floor(Math.random()*colors.length)];
+  const clientData = {
+    avatar: initials, avatarBg: bg, avatarColor: '#fff',
+    meta: document.getElementById('new-client-level').value + ' · Teden 1',
+    goals: document.getElementById('new-client-goals').value || 'Ni določenih',
+    injuries: document.getElementById('new-client-injuries').value || 'Brez',
+    level: document.getElementById('new-client-level').value,
+    file: 'coachos-' + name.toLowerCase().replace(/\s+/g,'-') + '.html'
+  };
+  saveExtraClient(name, clientData);
+  CLIENTS = loadAllClients();
+  closeModal('modal-client');
+  ['new-client-name','new-client-goals','new-client-injuries','new-client-meds'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  buildClientsList();
+  switchClient(name);
+  showToast('✓ Stranka ' + name + ' ustvarjena!');
+  // Shrani profil v Sheets
+  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProfile', client:name, profile:{ ime:name, cilji:clientData.goals, nivo:clientData.level, poskodbe:clientData.injuries }}) }).catch(()=>{});
+}
+
+// ============================================================
+// AI ANALIZA
+// ============================================================
+async function generateAI() {
+  switchTab('ai', document.querySelectorAll('.tab')[3]);
+  document.getElementById('ai-title').textContent = 'AI ANALIZA — ' + currentClient.toUpperCase();
+  const aiOutput = document.getElementById('ai-output');
+  aiOutput.innerHTML = '<div class="ai-loading"><span class="ai-dot">●</span><span class="ai-dot">●</span><span class="ai-dot">●</span> Analiziram...</div>';
+  const c = CLIENTS[currentClient] || {};
+  const logSummary = logs.length > 0 ? logs.slice(0,10).map(l=>`${l.date}: ${l.exercise} ${l.weight}kg ${l.sets}×${l.reps} RPE${l.rpe}`).join('\n') : 'Ni treningov.';
+  const notesSummary = notes.length > 0 ? notes.slice(0,5).map(n=>n.text).join('\n') : 'Brez opomb.';
+  const savedProgram = localStorage.getItem('coachos_program_' + currentClient) || '';
+  const prompt = `Si izkušen osebni trener. Analiziraj stranko ${currentClient} in podaj kratko analizo v slovenščini (max 5 stavkov).
+
+Profil: ${c.level||'—'}, Cilji: ${c.goals||'—'}, Omejitve: ${c.injuries||'—'}
+Program:\n${savedProgram||'Ni programa.'}
+Treningi:\n${logSummary}
+Opombe:\n${notesSummary}
+
+Podaj: 1) Oceno napredka 2) Priporočilo za naslednji trening 3) Morebitno opozorilo.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+    });
+    const data = await res.json();
+    aiOutput.innerHTML = (data.content&&data.content[0]?data.content[0].text:'Napaka.').replace(/\n/g,'<br>');
+  } catch(e) { aiOutput.innerHTML = 'Napaka pri AI analizi.'; }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildClientsList();
+switchClient(currentClient);
+</script>
+</body>
+</html>
