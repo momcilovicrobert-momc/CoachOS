@@ -172,7 +172,6 @@ input[type=range]{width:100%;}
 .zh-ex-row{padding:8px 0;border-top:1px solid var(--border);}
 .zh-ex-name{font-size:13px;font-weight:600;}
 .zh-ex-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -303,6 +302,43 @@ input[type=range]{width:100%;}
       </div>
     </div>
   </div>
+
+  <!-- PAGE: ZGODOVINA -->
+  <div id="page-zgodovina" style="display:none;">
+    <div class="section">
+      <div class="section-header"><div class="section-title">Zgodovina treningov</div></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-total">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Treningov</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-sets">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Serij skupaj</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-pr">—</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Zadnji trening</div>
+        </div>
+      </div>
+
+      <div class="body-log-card" style="margin-bottom:12px;">
+        <div class="body-log-title">📈 Napredek vaje</div>
+        <select style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;margin-bottom:12px;appearance:none;-webkit-appearance:none;" id="zg-exercise-select" onchange="renderZgodovinaChart()">
+          <option value="">Izberi vajo…</option>
+        </select>
+        <div id="zg-chart-wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:4px;">
+          <canvas id="zg-chart" height="160"></canvas>
+          <div id="zg-pr-display" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
+        </div>
+      </div>
+
+      <div id="zg-loading" style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">Nalagam zgodovino…</div>
+      <div id="zg-list"></div>
+    </div>
+  </div>
+
 </div>
 
 <div class="bottom-nav">
@@ -455,6 +491,8 @@ function switchPage(page, el) {
   el.classList.add('active');
   el.querySelector('.nav-btn-label').style.color = 'var(--accent)';
   if (page === 'progress') updateProgress();
+  if (page === 'body') renderWeightHistory();
+  if (page === 'zgodovina') initZgodovina();
 }
 
 // ============================================================
@@ -883,163 +921,145 @@ renderWeightHistory();
 loadProgramFromSheets();
 
 // ============================================================
-// ZGODOVINA TAB
+// ZGODOVINA TAB — fetch Sheets + localStorage merge
 // ============================================================
-let zhChart = null;
+let zgChart = null;
+let zgAllLogs = [];
+let zgLoaded = false;
 
-function initZgodovina() {
-  const logs = JSON.parse(localStorage.getItem('hana_logs') || '[]');
-  renderZgodovinaStats(logs);
-  renderZgodovinaDropdown(logs);
-  renderZgodovinaList(logs);
-}
+async function initZgodovina() {
+  if (zgLoaded) { renderZgodovinaStats(); renderZgodovinaList(); return; }
+  document.getElementById('zg-loading').style.display = 'block';
+  document.getElementById('zg-list').innerHTML = '';
 
-function renderZgodovinaStats(logs) {
-  const sessions = [...new Set(logs.map(l => l.date))].length;
-  const totalSets = logs.reduce((s, l) => s + (parseInt(l.sets) || 0), 0);
-  // Count PRs: for each exercise, check if latest entry is max weight
-  const byEx = {};
-  logs.forEach(l => {
-    const w = parseFloat(l.weight) || 0;
-    if (!byEx[l.exercise] || w > byEx[l.exercise].max) {
-      byEx[l.exercise] = { max: w, date: l.date };
+  let combined = [...logs];
+
+  try {
+    const res = await fetch(API + '?action=getWorkoutHistory&client=' + CLIENT);
+    const data = await res.json();
+    if (data && Array.isArray(data.logs)) {
+      data.logs.forEach(entry => {
+        const key = entry.date + '|' + entry.exercise;
+        const exists = combined.some(l => l.date + '|' + l.exercise === key);
+        if (!exists) combined.push(entry);
+      });
     }
-  });
-  // PR = exercise where last entry matches max
-  const prCount = Object.values(byEx).filter(v => v.max > 0).length;
-  document.getElementById('zh-total-sessions').textContent = sessions;
-  document.getElementById('zh-total-exercises').textContent = totalSets;
-  document.getElementById('zh-pr-count').textContent = prCount;
-}
-
-function renderZgodovinaDropdown(logs) {
-  const select = document.getElementById('zh-exercise-select');
-  // Build exercise list from program (all days) + any logged exercises not in program
-  const programExercises = [];
-  if (typeof PROGRAM_A !== 'undefined') PROGRAM_A.forEach(e => programExercises.push(e.name));
-  if (typeof PROGRAM_B !== 'undefined') PROGRAM_B.forEach(e => programExercises.push(e.name));
-  if (typeof PROGRAM !== 'undefined') PROGRAM.forEach(e => programExercises.push(e.name));
-  // Also add any logged exercises (covers historic data)
-  logs.forEach(l => { if (l.exercise && !programExercises.includes(l.exercise)) programExercises.push(l.exercise); });
-  const exercises = [...new Set(programExercises)].filter(Boolean).sort();
-  exercises.forEach(ex => {
-    const opt = document.createElement('option');
-    opt.value = ex;
-    opt.textContent = ex;
-    select.appendChild(opt);
-  });
-  select.addEventListener('change', () => {
-    const ex = select.value;
-    if (ex) renderZgodovinaChart(logs, ex);
-    else {
-      if (zhChart) { zhChart.destroy(); zhChart = null; }
-      document.getElementById('zh-pr-badge').style.display = 'none';
-      document.getElementById('zh-chart-empty').style.display = 'flex';
-    }
-  });
-}
-
-function renderZgodovinaChart(logs, exercise) {
-  const entries = logs
-    .filter(l => l.exercise === exercise)
-    .map(l => {
-      // weight may be "10/12.5/15" (multi-set) or plain "10"
-      const parts = String(l.weight || '').split('/').map(v => parseFloat(v)).filter(v => !isNaN(v));
-      const maxW = parts.length ? Math.max(...parts) : 0;
-      return { date: l.date, weight: maxW };
-    })
-    .filter(e => e.weight > 0)
-    .sort((a, b) => a.date.localeCompare(b.date));
-
-  const empty = document.getElementById('zh-chart-empty');
-  const badge = document.getElementById('zh-pr-badge');
-
-  if (!entries.length) {
-    empty.style.display = 'flex';
-    badge.style.display = 'none';
-    if (zhChart) { zhChart.destroy(); zhChart = null; }
-    return;
+  } catch(e) {
+    console.log('Sheets history fetch failed, using localStorage only');
   }
-  empty.style.display = 'none';
 
-  // PR badge
-  const maxW = Math.max(...entries.map(e => e.weight));
-  badge.style.display = 'block';
-  document.getElementById('zh-pr-value').textContent = maxW + ' kg';
+  combined.sort((a,b) => b.date.localeCompare(a.date));
+  zgAllLogs = combined;
+  zgLoaded = true;
 
-  const labels = entries.map(e => e.date.slice(5)); // MM-DD
-  const data = entries.map(e => e.weight);
-
-  if (zhChart) zhChart.destroy();
-  const ctx = document.getElementById('zh-chart').getContext('2d');
-  zhChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: '#c8f135',
-        backgroundColor: 'rgba(200,241,53,0.08)',
-        borderWidth: 2,
-        pointBackgroundColor: '#c8f135',
-        pointRadius: 4,
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1a1a1a' } },
-        y: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
-      }
-    }
-  });
+  populateZgExerciseDropdown();
+  renderZgodovinaStats();
+  renderZgodovinaList();
+  document.getElementById('zg-loading').style.display = 'none';
 }
 
-function renderZgodovinaList(logs) {
-  const container = document.getElementById('zh-log-list');
-  if (!logs.length) return;
+function populateZgExerciseDropdown() {
+  const sel = document.getElementById('zg-exercise-select');
+  const fromA = PROGRAM_A.map(e => e.name);
+  const fromB = PROGRAM_B.map(e => e.name);
+  const fromLogs = zgAllLogs.map(l => l.exercise).filter(e => e && !e.includes('Check-in') && !e.includes('Telesna') && !e.includes('Tek'));
+  const allExercises = [...new Set([...fromA, ...fromB, ...fromLogs])].filter(Boolean).sort();
+  sel.innerHTML = '<option value="">Izberi vajo…</option>' +
+    allExercises.map(e => `<option value="${e}">${e}</option>`).join('');
+}
 
-  // Group by date
+function renderZgodovinaStats() {
+  const trainDays = new Set(zgAllLogs.filter(l => l.session && !l.session.includes('Kardio') && !l.session.includes('Mere') && !l.session.includes('Teža') && !l.session.includes('check')).map(l => l.date));
+  document.getElementById('zg-total').textContent = trainDays.size;
+  const totalSets = zgAllLogs.reduce((a,l) => a + (parseInt(l.sets)||0), 0);
+  document.getElementById('zg-sets').textContent = totalSets;
+  const last = zgAllLogs.find(l => l.date);
+  document.getElementById('zg-pr').textContent = last ? last.date.slice(5).replace('-','/') : '—';
+}
+
+function renderZgodovinaList() {
   const byDate = {};
-  logs.forEach(l => {
+  zgAllLogs.forEach(l => {
+    if (!l.date) return;
     if (!byDate[l.date]) byDate[l.date] = [];
     byDate[l.date].push(l);
   });
-
-  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
-  container.innerHTML = dates.map((date, i) => {
-    const entries = byDate[date];
-    const session = entries[0]?.session || '';
-    const isOpen = i === 0 ? 'open' : '';
-    const rows = entries.map(e => `
-      <div class="zh-ex-row">
-        <div class="zh-ex-name">${e.exercise}</div>
-        <div class="zh-ex-stats">${e.weight ? e.weight + ' kg · ' : ''}${e.sets} ser · ${e.reps} pon${e.rpe ? ' · RPE ' + e.rpe : ''}</div>
-      </div>
-    `).join('');
+  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+  const container = document.getElementById('zg-list');
+  container.innerHTML = dates.slice(0, 30).map((date, idx) => {
+    const entries = byDate[date].filter(l => !l.session?.includes('check') && !l.exercise?.includes('Telesna'));
+    if (!entries.length) return '';
+    const session = entries[0].session || 'Trening';
     return `
-      <div class="zh-day-card ${isOpen}" onclick="toggleZhCard(this)">
-        <div class="zh-day-header">
+      <div class="zh-day-card ${idx===0?'open':''}">
+        <div class="zh-day-header" onclick="this.parentElement.classList.toggle('open')">
           <div>
+            <div class="zh-day-title">${session}</div>
             <div class="zh-day-date">${date}</div>
-            <div class="zh-day-title">${session || 'Trening'} · ${entries.length} vaj</div>
           </div>
           <div class="zh-day-chevron">▾</div>
         </div>
-        <div class="zh-day-body">${rows}</div>
+        <div class="zh-day-body">
+          ${entries.map(l => `
+            <div class="zh-ex-row">
+              <div class="zh-ex-name">${l.exercise||'—'}</div>
+              <div class="zh-ex-stats">${l.sets||'—'}×${l.reps||'—'} · ${l.weight||'—'}kg · RPE ${l.rpe||'—'}</div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   }).join('');
 }
 
-function toggleZhCard(card) {
-  card.classList.toggle('open');
-}
+function renderZgodovinaChart() {
+  const sel = document.getElementById('zg-exercise-select');
+  const exercise = sel.value;
+  const wrap = document.getElementById('zg-chart-wrap');
+  if (!exercise) { wrap.style.display = 'none'; return; }
 
+  const entries = zgAllLogs
+    .filter(l => l.exercise === exercise && l.weight && l.weight !== '—')
+    .map(l => {
+      const parts = String(l.weight).split('/').map(v => parseFloat(v)).filter(v => !isNaN(v));
+      const maxW = parts.length ? Math.max(...parts) : parseFloat(l.weight) || 0;
+      return { date: l.date, weight: maxW };
+    })
+    .filter(l => l.weight > 0)
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  if (!entries.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  const maxEntry = entries.reduce((max, e) => e.weight > max.weight ? e : max, entries[0]);
+  document.getElementById('zg-pr-display').innerHTML =
+    `🏆 PR: <strong>${maxEntry.weight} kg</strong> · ${maxEntry.date}`;
+
+  const ctx = document.getElementById('zg-chart').getContext('2d');
+  if (zgChart) zgChart.destroy();
+  zgChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: entries.map(e => e.date.slice(5)),
+      datasets: [{
+        data: entries.map(e => e.weight),
+        borderColor: '#c8f135',
+        backgroundColor: 'rgba(200,241,53,0.08)',
+        pointBackgroundColor: '#c8f135',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } }
+      }
+    }
+  });
+}
 </script>
 </body>
 </html>
