@@ -3,71 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CoachOS — Hana</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
-
+<title>CoachOS — Hana — Telo</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ═══════════════════════════════════════════
-     RESET & BASE
-  ═══════════════════════════════════════════ */
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --lime: #c8f135;
-    --lime-glow: rgba(200, 241, 53, 0.6);
-    --lime-dim: rgba(200, 241, 53, 0.15);
-    --dark: #050a00;
-    --text: #e8f5d0;
-    --sub: rgba(232, 245, 208, 0.55);
+    --lime:      #c8f135;
+    --lime-glow: rgba(200,241,53,0.65);
   }
 
   html, body {
     width: 100%; height: 100%;
-    overflow: hidden;
     background: #000;
+    overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
-    color: var(--text);
+    color: #fff;
   }
 
-  /* ═══════════════════════════════════════════
-     FULL-SCREEN BACKGROUND LAYERS
-  ═══════════════════════════════════════════ */
-  #bg-cave {
-    position: fixed;
-    inset: 0;
-    background-image: url('obsidian_cave.jpg');
-    background-size: cover;
-    background-position: center top;
-    z-index: 0;
-  }
-
-  #bg-hex {
-    position: fixed;
-    inset: 0;
-    background-image: url('honeycomb_grid.png');
-    background-size: 420px auto;
-    background-repeat: repeat;
-    opacity: 0.18;
-    z-index: 1;
-  }
-
-  /* dark vignette so top/bottom text stays readable */
-  #bg-vignette {
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%),
-      linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 18%, transparent 70%, rgba(0,0,0,0.70) 100%);
-    z-index: 2;
-  }
-
-  /* ═══════════════════════════════════════════
-     MAIN SCROLL CONTAINER
-  ═══════════════════════════════════════════ */
-  #app {
-    position: relative;
-    z-index: 10;
+  #page {
     width: 100%;
     height: 100dvh;
     overflow-y: auto;
@@ -78,364 +33,285 @@
     align-items: center;
   }
 
-  /* ═══════════════════════════════════════════
-     HEADER
-  ═══════════════════════════════════════════ */
-  #header {
+  /* ── Header ── */
+  #hdr {
     width: 100%;
     text-align: center;
-    padding: 18px 20px 0;
-    flex-shrink: 0;
+    padding-top: 20px;
   }
 
-  #header .brand {
+  #hdr .brand {
     font-family: 'Orbitron', monospace;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 400;
-    letter-spacing: 0.32em;
-    color: var(--sub);
+    letter-spacing: 0.28em;
+    color: rgba(255,255,255,0.55);
     text-transform: uppercase;
   }
 
-  #header .title {
+  #hdr .name {
     font-family: 'Orbitron', monospace;
-    font-size: 1.65rem;
+    font-size: clamp(1.4rem, 6vw, 1.9rem);
     font-weight: 900;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: #fff;
     text-transform: uppercase;
-    line-height: 1.15;
+    line-height: 1.2;
     margin-top: 4px;
-    text-shadow:
-      0 0 18px rgba(200,241,53,0.25),
-      0 2px 4px rgba(0,0,0,0.8);
   }
 
-  #header .title span {
-    color: var(--lime);
-  }
-
-  /* ═══════════════════════════════════════════
-     AVATAR SECTION
-  ═══════════════════════════════════════════ */
-  #avatar-wrap {
+  /* ── Avatar ── */
+  #avatar-section {
     width: 100%;
-    max-width: 420px;
-    position: relative;
+    max-width: 480px;
     flex-shrink: 0;
-    margin-top: -4px;
   }
 
-  #avatar-img {
+  #avatar-front,
+  #avatar-back {
     width: 100%;
     display: block;
-    /* The image itself contains the neon glow — no extra filter needed */
-    filter: drop-shadow(0 0 22px rgba(200,241,53,0.35));
   }
 
-  /* ═══════════════════════════════════════════
-     STATS PANEL — floats below avatar feet
-  ═══════════════════════════════════════════ */
-  #stats-panel {
+  #avatar-back { display: none; }
+
+  /* ── Stats ── */
+  #stats {
     width: 100%;
-    max-width: 420px;
-    padding: 0 22px 28px;
+    max-width: 480px;
+    padding: 0 28px 36px;
     flex-shrink: 0;
   }
 
-  /* Weight row */
-  .weight-row {
+  .w-row {
     display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 3px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
   }
 
-  .weight-icon {
-    font-size: 1rem;
+  .w-icon {
+    font-size: 1.05rem;
     color: var(--lime);
-    filter: drop-shadow(0 0 6px var(--lime));
+    filter: drop-shadow(0 0 5px var(--lime));
+    line-height: 1;
   }
 
-  .weight-label {
+  .w-text {
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.18rem;
+    font-size: 1.22rem;
     font-weight: 600;
-    color: var(--text);
+    color: #fff;
     letter-spacing: 0.04em;
   }
 
-  .coach-message {
+  /* Coach message — hidden until set by dashboard */
+  #coach-msg {
     font-family: 'Orbitron', monospace;
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 400;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--lime);
-    text-shadow:
-      0 0 8px var(--lime),
-      0 0 16px rgba(200,241,53,0.5);
+    text-shadow: 0 0 6px var(--lime), 0 0 14px rgba(200,241,53,0.45);
+    margin-top: -10px;
     margin-bottom: 16px;
     padding-left: 2px;
+    display: none;
   }
 
-  /* ── Measurement grid ── */
-  .meas-grid {
+  #coach-msg.visible { display: block; }
+
+  .meas {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px 20px;
-    margin-bottom: 14px;
+    row-gap: 2px;
+    column-gap: 16px;
+    margin-bottom: 12px;
   }
 
   .meas-item {
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.08rem;
+    font-size: 1.15rem;
     font-weight: 400;
-    color: var(--text);
-    letter-spacing: 0.03em;
+    color: #fff;
   }
 
-  .meas-item .key {
-    color: var(--sub);
-  }
-
-  /* ── Heart rate row ── */
   .hr-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .hr-icon {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     color: var(--lime);
-    filter: drop-shadow(0 0 6px var(--lime));
-    animation: pulse 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px var(--lime));
+    animation: hbeat 1.3s ease-in-out infinite;
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.6; transform: scale(0.88); }
+  @keyframes hbeat {
+    0%,100% { transform: scale(1);     opacity: 1; }
+    50%      { transform: scale(0.82); opacity: 0.55; }
   }
 
-  .hr-label {
+  .hr-text {
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 600;
-    color: var(--text);
+    color: #fff;
   }
 
-  /* ── Toggle row ── */
-  .toggle-row {
+  .tog-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 18px;
   }
 
-  .toggle-label {
+  .tog-lbl {
     font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
-    color: var(--sub);
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.38);
+    transition: color 0.2s, text-shadow 0.2s;
   }
 
-  .toggle-label.active {
+  .tog-lbl.on {
     color: var(--lime);
     text-shadow: 0 0 8px var(--lime);
   }
 
-  /* custom toggle switch */
-  .switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 26px;
-  }
+  .sw { position: relative; display: inline-block; width: 54px; height: 28px; }
+  .sw input { display: none; }
 
-  .switch input { display: none; }
-
-  .slider {
-    position: absolute;
-    inset: 0;
+  .track {
+    position: absolute; inset: 0;
     background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(200,241,53,0.25);
-    border-radius: 26px;
+    border: 1px solid rgba(200,241,53,0.22);
+    border-radius: 28px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background 0.3s, border-color 0.3s;
   }
 
-  .slider::before {
+  .track::before {
     content: '';
     position: absolute;
-    width: 20px; height: 20px;
+    width: 22px; height: 22px;
     left: 3px; top: 3px;
     background: #555;
     border-radius: 50%;
     transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
   }
 
-  .switch input:checked + .slider {
-    background: rgba(200,241,53,0.12);
+  .sw input:checked + .track {
+    background: rgba(200,241,53,0.1);
     border-color: var(--lime);
   }
 
-  .switch input:checked + .slider::before {
+  .sw input:checked + .track::before {
     transform: translateX(26px);
     background: var(--lime);
-    box-shadow: 0 0 10px var(--lime), 0 0 20px rgba(200,241,53,0.5);
-  }
-
-  /* ═══════════════════════════════════════════
-     BACK-VIEW avatar (hidden by default)
-  ═══════════════════════════════════════════ */
-  #avatar-back {
-    display: none;
-    width: 100%;
-  }
-
-  /* ═══════════════════════════════════════════
-     DIVIDER LINE
-  ═══════════════════════════════════════════ */
-  .hud-line {
-    width: calc(100% - 44px);
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--lime-glow), transparent);
-    margin: 8px 22px 14px;
-    flex-shrink: 0;
+    box-shadow: 0 0 10px var(--lime), 0 0 22px rgba(200,241,53,0.5);
   }
 
 </style>
 </head>
 <body>
+<div id="page">
 
-<!-- ── Background layers ── -->
-<div id="bg-cave"></div>
-<div id="bg-hex"></div>
-<div id="bg-vignette"></div>
-
-<!-- ── App shell ── -->
-<div id="app">
-
-  <!-- Header -->
-  <div id="header">
+  <div id="hdr">
     <div class="brand">CoachOS</div>
-    <div class="title">HANA <span>—</span> TELO</div>
+    <div class="name">HANA — TELO</div>
   </div>
 
-  <!-- Avatar -->
-  <div id="avatar-wrap">
-    <img id="avatar-front" src="hana_avatar_front.png" alt="Hana Front" id="avatar-img">
-    <img id="avatar-back"  src="hana_avatar_back.png"  alt="Hana Back">
+  <div id="avatar-section">
+    <img id="avatar-front" src="hana-cave.jpg" alt="Hana Front">
+    <img id="avatar-back"  src="hana-back.png"  alt="Hana Back">
   </div>
 
-  <!-- Divider -->
-  <div class="hud-line"></div>
+  <div id="stats">
 
-  <!-- Stats panel -->
-  <div id="stats-panel">
-
-    <!-- Weight + coach message -->
-    <div class="weight-row">
-      <span class="weight-icon">⚖</span>
-      <span class="weight-label" id="weight-display">Telesna Teža: <span id="val-weight">65.0</span>kg</span>
-    </div>
-    <div class="coach-message" id="coach-msg-display">Vsak dan, zjutraj, na tešče</div>
-
-    <!-- Measurements -->
-    <div class="meas-grid">
-      <div class="meas-item"><span class="key">Pas: </span><span id="val-pas">70</span>cm</div>
-      <div class="meas-item"><span class="key">Boki: </span><span id="val-boki">95</span>cm</div>
-      <div class="meas-item"><span class="key">Prsi: </span><span id="val-prsi">88</span>cm</div>
-      <div class="meas-item"><span class="key">Stegna: </span><span id="val-stegna">55</span>cm</div>
+    <div class="w-row">
+      <span class="w-icon">⚖</span>
+      <span class="w-text">Telesna Teža: <span id="val-weight">65.0</span>kg</span>
     </div>
 
-    <!-- Heart rate -->
+    <div id="coach-msg"></div>
+
+    <div class="meas">
+      <div class="meas-item">Pas: <span id="val-pas">70</span>cm</div>
+      <div class="meas-item">Boki: <span id="val-boki">95</span>cm</div>
+      <div class="meas-item">Prsi: <span id="val-prsi">88</span>cm</div>
+      <div class="meas-item">Stegna: <span id="val-stegna">55</span>cm</div>
+    </div>
+
     <div class="hr-row">
       <span class="hr-icon">💚</span>
-      <span class="hr-label">Heart Rate: <span id="val-hr">125</span> BPM</span>
+      <span class="hr-text">Heart Rate: <span id="val-hr">125</span> BPM</span>
     </div>
 
-    <!-- Toggle -->
-    <div class="toggle-row">
-      <span class="toggle-label active" id="lbl-front">FRONT</span>
-      <label class="switch">
+    <div class="tog-row">
+      <span class="tog-lbl on" id="lbl-front">FRONT</span>
+      <label class="sw">
         <input type="checkbox" id="view-toggle">
-        <span class="slider"></span>
+        <span class="track"></span>
       </label>
-      <span class="toggle-label" id="lbl-back">BACK</span>
+      <span class="tog-lbl" id="lbl-back">BACK</span>
     </div>
 
-  </div><!-- /stats-panel -->
-
-</div><!-- /app -->
+  </div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════
-//  CONFIG — edit these to connect to Sheets
-// ═══════════════════════════════════════════
-const SHEETS_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // replace with your deployed GAS URL
+const SHEETS_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
 
-// ── Dynamic coach message (set by coach dashboard) ──
-let coachMessage = 'Vsak dan, zjutraj, na tešče'; // fallback default
-
-// ═══════════════════════════════════════════
-//  FRONT / BACK TOGGLE
-// ═══════════════════════════════════════════
-const toggle   = document.getElementById('view-toggle');
-const frontImg = document.getElementById('avatar-front');
-const backImg  = document.getElementById('avatar-back');
+// Front / Back toggle
+const tog      = document.getElementById('view-toggle');
+const imgFront = document.getElementById('avatar-front');
+const imgBack  = document.getElementById('avatar-back');
 const lblFront = document.getElementById('lbl-front');
 const lblBack  = document.getElementById('lbl-back');
 
-toggle.addEventListener('change', () => {
-  if (toggle.checked) {
-    frontImg.style.display = 'none';
-    backImg.style.display  = 'block';
-    lblFront.classList.remove('active');
-    lblBack.classList.add('active');
-  } else {
-    frontImg.style.display = 'block';
-    backImg.style.display  = 'none';
-    lblFront.classList.add('active');
-    lblBack.classList.remove('active');
-  }
+tog.addEventListener('change', () => {
+  const back = tog.checked;
+  imgFront.style.display = back ? 'none'  : 'block';
+  imgBack.style.display  = back ? 'block' : 'none';
+  lblFront.classList.toggle('on', !back);
+  lblBack.classList.toggle('on',   back);
 });
 
-// ═══════════════════════════════════════════
-//  LOAD DATA FROM GOOGLE SHEETS
-// ═══════════════════════════════════════════
-async function loadData() {
-  if (!SHEETS_URL || SHEETS_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    applyCoachMessage('Vsak dan, zjutraj, na tešče');
-    return;
+// Coach message — only appears when set by coach dashboard
+function setCoachMessage(msg) {
+  const el = document.getElementById('coach-msg');
+  if (msg && msg.trim()) {
+    el.textContent = msg;
+    el.classList.add('visible');
+  } else {
+    el.classList.remove('visible');
   }
+}
 
+// Load from Sheets
+async function loadData() {
+  if (!SHEETS_URL || SHEETS_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
   try {
     const res  = await fetch(`${SHEETS_URL}?client=hana&sheet=telo`);
     const data = await res.json();
-
     if (data.weight)       document.getElementById('val-weight').textContent = data.weight;
     if (data.pas)          document.getElementById('val-pas').textContent    = data.pas;
     if (data.boki)         document.getElementById('val-boki').textContent   = data.boki;
     if (data.prsi)         document.getElementById('val-prsi').textContent   = data.prsi;
     if (data.stegna)       document.getElementById('val-stegna').textContent = data.stegna;
     if (data.hr)           document.getElementById('val-hr').textContent     = data.hr;
-    if (data.coachMessage) applyCoachMessage(data.coachMessage);
-
-  } catch (err) {
-    console.warn('CoachOS: Sheets load failed —', err);
+    if (data.coachMessage) setCoachMessage(data.coachMessage);
+  } catch(e) {
+    console.warn('CoachOS Sheets load failed:', e);
   }
 }
 
-function applyCoachMessage(msg) {
-  coachMessage = msg;
-  document.getElementById('coach-msg-display').textContent = msg;
-}
-
-// ── Init ──
 loadData();
 </script>
 </body>
