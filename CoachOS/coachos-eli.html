@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoachOS — Eli</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c; --border:#2a2a2a;
@@ -226,20 +227,27 @@ input[type=range]{width:100%;}
 .day-tab-icon{font-size:16px;display:block;margin-bottom:3px;}
 
 /* ZGODOVINA */
-.zh-day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
-.zh-day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
-.zh-day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
-.zh-day-title{font-size:14px;font-weight:700;margin-top:2px;}
-.zh-day-chevron{color:var(--muted);font-size:14px;transition:transform .2s;}
-.zh-day-card.open .zh-day-chevron{transform:rotate(180deg);}
-.zh-day-body{display:none;padding:0 16px 14px;}
-.zh-day-card.open .zh-day-body{display:block;}
-.zh-ex-row{padding:8px 0;border-top:1px solid var(--border);}
-.zh-ex-name{font-size:13px;font-weight:600;}
-.zh-ex-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
-
+.zgodovina-stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.zgodovina-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;}
+.zgodovina-stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;}
+.zgodovina-stat-label{font-size:10px;color:var(--muted);margin-top:3px;}
+.zgodovina-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;margin-bottom:12px;appearance:none;-webkit-appearance:none;}
+.zgodovinaChart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
+.pr-badge{display:inline-block;background:rgba(200,241,53,0.12);border:1px solid rgba(200,241,53,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;color:var(--accent);margin-left:8px;vertical-align:middle;}
+.history-accordion{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.history-accordion-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.history-accordion-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.history-accordion-session{font-size:13px;font-weight:600;}
+.history-accordion-chevron{color:var(--muted2);font-size:16px;transition:transform .2s;}
+.history-accordion.open .history-accordion-chevron{transform:rotate(90deg);}
+.history-accordion-body{display:none;border-top:1px solid var(--border);}
+.history-accordion.open .history-accordion-body{display:block;}
+.history-ex-row{padding:10px 16px;border-bottom:1px solid rgba(42,42,42,0.5);display:flex;justify-content:space-between;align-items:center;}
+.history-ex-row:last-child{border-bottom:none;}
+.history-ex-name{font-size:13px;font-weight:500;}
+.history-ex-vals{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+.zgodovina-loading{text-align:center;padding:32px 0;color:var(--muted);font-size:13px;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -404,54 +412,42 @@ input[type=range]{width:100%;}
     </div>
   </div>
 
-
   <!-- PAGE: ZGODOVINA -->
   <div id="page-zgodovina" style="display:none;">
     <div class="section">
       <div class="section-header"><div class="section-title">Zgodovina treningov</div></div>
 
-      <!-- STATS ROW -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-total-sessions">0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">TRENINGOV</div>
+      <div class="zgodovina-stat-row">
+        <div class="zgodovina-stat">
+          <div class="zgodovina-stat-val" id="zg-total">0</div>
+          <div class="zgodovina-stat-label">Treningov</div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-total-exercises">0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">SERIJ</div>
+        <div class="zgodovina-stat">
+          <div class="zgodovinastat-val" id="zg-sets" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;">0</div>
+          <div class="zgodovina-stat-label">Serij skupaj</div>
         </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-pr-count">0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">PR REKORDI</div>
+        <div class="zgodovina-stat">
+          <div class="zgodovinastat-val" id="zg-pr" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;">—</div>
+          <div class="zgodovina-stat-label">Zadnji trening</div>
         </div>
       </div>
 
-      <!-- NAPREDEK VAJE -->
-      <div class="body-log-card" style="margin-bottom:14px;">
-        <div class="body-log-title">📊 Napredek vaje</div>
-        <select id="zh-exercise-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;margin-bottom:12px;appearance:none;-webkit-appearance:none;">
-          <option value="">— Izberi vajo —</option>
+      <div class="body-log-card" style="margin-bottom:12px;">
+        <div class="body-log-title">📈 Napredek vaje</div>
+        <select class="zgodovina-select" id="zg-exercise-select" onchange="renderZgodovinaChart()">
+          <option value="">Izberi vajo…</option>
         </select>
-        <div id="zh-pr-badge" style="display:none;background:rgba(200,241,53,0.1);border:1px solid var(--accent);border-radius:10px;padding:8px 12px;margin-bottom:12px;text-align:center;">
-          <span style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;">🏆 OSEBNI REKORD</span>
-          <span id="zh-pr-value" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);margin-left:8px;"></span>
-        </div>
-        <div style="position:relative;height:160px;" id="zh-chart-container">
-          <canvas id="zh-chart"></canvas>
-          <div id="zh-chart-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;">Ni podatkov za izbrano vajo</div>
+        <div class="zgodovinaChart-wrap" id="zg-chart-wrap" style="display:none;">
+          <canvas id="zg-chart" height="160"></canvas>
+          <div id="zg-pr-display" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
         </div>
       </div>
 
-      <!-- TRENINGI PO DATUMIH -->
-      <div class="body-log-card">
-        <div class="body-log-title">📋 Zgodovina treningov</div>
-        <div id="zh-log-list">
-          <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">Ni zabeleženih treningov</div>
-        </div>
-      </div>
-
+      <div id="zg-loading" class="zgodovina-loading">Nalagam zgodovino…</div>
+      <div id="zg-list"></div>
     </div>
   </div>
+
 </div><!-- end content -->
 
 <!-- BOTTOM NAV -->
@@ -1123,6 +1119,151 @@ function toggleMobility(btn, idx) {
   btn.textContent = mobilityDone[idx] ? '✓ Opravljeno' : 'Opravi';
   btn.classList.toggle('done', mobilityDone[idx]);
   if (mobilityDone[idx]) showToast('✓ ' + MOBILITY[idx].name + ' opravljeno!');
+}
+
+// ========================
+// ZGODOVINA — fetch + render
+// ========================
+let zgChart = null;
+let zgAllLogs = [];
+let zgLoaded = false;
+
+async function initZgodovina() {
+  if (zgLoaded) { renderZgodovinaStats(); renderZgodovinaList(); return; }
+  document.getElementById('zg-loading').style.display = 'block';
+  document.getElementById('zg-list').innerHTML = '';
+
+  // 1. localStorage logs
+  let combined = [...logs];
+
+  // 2. Fetch iz Sheets
+  try {
+    const res = await fetch(API + '?action=getWorkoutHistory&client=' + CLIENT);
+    const data = await res.json();
+    if (data && Array.isArray(data.logs)) {
+      data.logs.forEach(entry => {
+        // deduplikacija po date+exercise
+        const key = entry.date + '|' + entry.exercise;
+        const exists = combined.some(l => l.date + '|' + l.exercise === key);
+        if (!exists) combined.push(entry);
+      });
+    }
+  } catch(e) {
+    console.log('Sheets history fetch failed, using localStorage only');
+  }
+
+  // Sortiraj po datumu desc
+  combined.sort((a,b) => b.date.localeCompare(a.date));
+  zgAllLogs = combined;
+  zgLoaded = true;
+
+  // Polni dropdown z vajami iz programa + iz logov
+  populateZgExerciseDropdown();
+  renderZgodovinaStats();
+  renderZgodovinaList();
+  document.getElementById('zg-loading').style.display = 'none';
+}
+
+function populateZgExerciseDropdown() {
+  const sel = document.getElementById('zg-exercise-select');
+  const fromProgram = Object.values(PROGRAMS).flat().map(e => e.name);
+  const fromLogs = zgAllLogs.map(l => l.exercise).filter(e => e && !e.includes('Check-in') && !e.includes('Telesna') && !e.includes('Tek'));
+  const allExercises = [...new Set([...fromProgram, ...fromLogs])].sort();
+  sel.innerHTML = '<option value="">Izberi vajo…</option>' +
+    allExercises.map(e => `<option value="${e}">${e}</option>`).join('');
+}
+
+function renderZgodovinaStats() {
+  const trainDays = new Set(zgAllLogs.filter(l => l.session && !l.session.includes('Kardio') && !l.session.includes('Mere') && !l.session.includes('Teža') && !l.session.includes('check')).map(l => l.date));
+  document.getElementById('zg-total').textContent = trainDays.size;
+  const totalSets = zgAllLogs.reduce((a,l) => a + (parseInt(l.sets)||0), 0);
+  document.getElementById('zg-sets').textContent = totalSets;
+  const last = zgAllLogs.find(l => l.date);
+  document.getElementById('zg-pr').textContent = last ? last.date.slice(5).replace('-','/') : '—';
+}
+
+function renderZgodovinaList() {
+  // Grupiranje po datumu
+  const byDate = {};
+  zgAllLogs.forEach(l => {
+    if (!l.date) return;
+    if (!byDate[l.date]) byDate[l.date] = [];
+    byDate[l.date].push(l);
+  });
+
+  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+  const container = document.getElementById('zg-list');
+
+  container.innerHTML = dates.slice(0, 30).map((date, idx) => {
+    const entries = byDate[date].filter(l => !l.session?.includes('check') && !l.exercise?.includes('Telesna'));
+    if (!entries.length) return '';
+    const session = entries[0].session || 'Trening';
+    return `
+      <div class="history-accordion ${idx===0?'open':''}">
+        <div class="history-accordion-header" onclick="this.parentElement.classList.toggle('open')">
+          <div>
+            <div class="history-accordion-session">${session}</div>
+            <div class="history-accordion-date">${date}</div>
+          </div>
+          <div class="history-accordion-chevron">›</div>
+        </div>
+        <div class="history-accordion-body">
+          ${entries.map(l => `
+            <div class="history-ex-row">
+              <div class="history-ex-name">${l.exercise||'—'}</div>
+              <div class="history-ex-vals">${l.sets||'—'}×${l.reps||'—'} · ${l.weight||'—'}kg · RPE ${l.rpe||'—'}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderZgodovinaChart() {
+  const sel = document.getElementById('zg-exercise-select');
+  const exercise = sel.value;
+  const wrap = document.getElementById('zg-chart-wrap');
+  if (!exercise) { wrap.style.display = 'none'; return; }
+
+  const entries = zgAllLogs
+    .filter(l => l.exercise === exercise && l.weight && l.weight !== '—')
+    .map(l => ({ date: l.date, weight: parseFloat(l.weight) || 0 }))
+    .filter(l => l.weight > 0)
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  if (!entries.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  const maxEntry = entries.reduce((max, e) => e.weight > max.weight ? e : max, entries[0]);
+  document.getElementById('zg-pr-display').innerHTML =
+    `🏆 PR: <strong>${maxEntry.weight} kg</strong> <span class="pr-badge">PR</span> · ${maxEntry.date}`;
+
+  const ctx = document.getElementById('zg-chart').getContext('2d');
+  if (zgChart) zgChart.destroy();
+  zgChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: entries.map(e => e.date.slice(5)),
+      datasets: [{
+        label: exercise,
+        data: entries.map(e => e.weight),
+        borderColor: '#c8f135',
+        backgroundColor: 'rgba(200,241,53,0.08)',
+        pointBackgroundColor: '#c8f135',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } }
+      }
+    }
+  });
 }
 
 // INIT
