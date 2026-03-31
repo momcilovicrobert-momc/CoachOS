@@ -11,6 +11,7 @@
 
   :root {
     --lime:      #c8f135;
+    --lime-dim:  rgba(200,241,53,0.55);
     --lime-glow: rgba(200,241,53,0.65);
   }
 
@@ -22,7 +23,38 @@
     color: #fff;
   }
 
+  /* ── Background layers ── */
+  #bg-cave {
+    position: fixed;
+    inset: 0;
+    background-image: url('images/obsidian_cave.jpg');
+    background-size: cover;
+    background-position: center top;
+    z-index: 0;
+  }
+
+  #bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image: url('images/honeycomb_grid.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.28;
+    z-index: 1;
+  }
+
+  /* Dark vignette to deepen the cave feel */
+  #bg-vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(0,0,0,0.72) 100%);
+    z-index: 2;
+  }
+
+  /* ── Scroll page ── */
   #page {
+    position: relative;
+    z-index: 10;
     width: 100%;
     height: 100dvh;
     overflow-y: auto;
@@ -37,15 +69,16 @@
   #hdr {
     width: 100%;
     text-align: center;
-    padding-top: 20px;
+    padding-top: 22px;
+    padding-bottom: 0;
   }
 
   #hdr .brand {
     font-family: 'Orbitron', monospace;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 400;
-    letter-spacing: 0.28em;
-    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.32em;
+    color: rgba(255,255,255,0.50);
     text-transform: uppercase;
   }
 
@@ -58,6 +91,7 @@
     text-transform: uppercase;
     line-height: 1.2;
     margin-top: 4px;
+    text-shadow: 0 0 18px rgba(200,241,53,0.18);
   }
 
   /* ── Avatar ── */
@@ -65,29 +99,33 @@
     width: 100%;
     max-width: 480px;
     flex-shrink: 0;
+    /* NO background, no box — pure image floating on cave */
   }
 
   #avatar-front,
   #avatar-back {
     width: 100%;
     display: block;
+    /* subtle bottom glow to ground the figure */
+    filter: drop-shadow(0 24px 48px rgba(200,241,53,0.22));
   }
 
   #avatar-back { display: none; }
 
-  /* ── Stats ── */
+  /* ── Stats — floating directly on cave, NO boxes ── */
   #stats {
     width: 100%;
     max-width: 480px;
-    padding: 0 28px 36px;
+    padding: 0 28px 44px;
     flex-shrink: 0;
   }
 
+  /* Weight row */
   .w-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 2px;
   }
 
   .w-icon {
@@ -103,25 +141,36 @@
     font-weight: 600;
     color: #fff;
     letter-spacing: 0.04em;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
   }
 
-  /* Coach message — hidden until set by dashboard */
+  /* Coach message — neon lime glow, small, under weight */
   #coach-msg {
     font-family: 'Orbitron', monospace;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 400;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--lime);
-    text-shadow: 0 0 6px var(--lime), 0 0 14px rgba(200,241,53,0.45);
-    margin-top: -10px;
-    margin-bottom: 16px;
+    text-shadow:
+      0 0 6px var(--lime),
+      0 0 14px rgba(200,241,53,0.55),
+      0 0 28px rgba(200,241,53,0.25);
+    margin-top: 2px;
+    margin-bottom: 14px;
     padding-left: 2px;
     display: none;
+    min-height: 1em;
   }
 
+  /* Default placeholder text visible until Sheets overrides */
   #coach-msg.visible { display: block; }
+  #coach-msg.placeholder {
+    display: block;
+    opacity: 0.6;
+  }
 
+  /* Measurements grid — text floats directly */
   .meas {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -135,8 +184,10 @@
     font-size: 1.15rem;
     font-weight: 400;
     color: #fff;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.9);
   }
 
+  /* Heart rate */
   .hr-row {
     display: flex;
     align-items: center;
@@ -147,7 +198,7 @@
   .hr-icon {
     font-size: 1.15rem;
     color: var(--lime);
-    filter: drop-shadow(0 0 5px var(--lime));
+    filter: drop-shadow(0 0 6px var(--lime));
     animation: hbeat 1.3s ease-in-out infinite;
   }
 
@@ -161,8 +212,10 @@
     font-size: 1.15rem;
     font-weight: 600;
     color: #fff;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.9);
   }
 
+  /* Front / Back toggle */
   .tog-row {
     display: flex;
     align-items: center;
@@ -175,21 +228,22 @@
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.18em;
-    color: rgba(255,255,255,0.38);
+    color: rgba(255,255,255,0.30);
     transition: color 0.2s, text-shadow 0.2s;
   }
 
   .tog-lbl.on {
     color: var(--lime);
-    text-shadow: 0 0 8px var(--lime);
+    text-shadow: 0 0 8px var(--lime), 0 0 18px rgba(200,241,53,0.4);
   }
 
+  /* Switch */
   .sw { position: relative; display: inline-block; width: 54px; height: 28px; }
   .sw input { display: none; }
 
   .track {
     position: absolute; inset: 0;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.07);
     border: 1px solid rgba(200,241,53,0.22);
     border-radius: 28px;
     cursor: pointer;
@@ -207,7 +261,7 @@
   }
 
   .sw input:checked + .track {
-    background: rgba(200,241,53,0.1);
+    background: rgba(200,241,53,0.08);
     border-color: var(--lime);
   }
 
@@ -220,6 +274,12 @@
 </style>
 </head>
 <body>
+
+<!-- Cave background layers -->
+<div id="bg-cave"></div>
+<div id="bg-grid"></div>
+<div id="bg-vignette"></div>
+
 <div id="page">
 
   <div id="hdr">
@@ -239,7 +299,8 @@
       <span class="w-text">Telesna Teža: <span id="val-weight">65.0</span>kg</span>
     </div>
 
-    <div id="coach-msg"></div>
+    <!-- Coach message: neon lime, shown when set by dashboard -->
+    <div id="coach-msg" class="placeholder">Vsak dan, zjutraj, na tešče</div>
 
     <div class="meas">
       <div class="meas-item">Pas: <span id="val-pas">70</span>cm</div>
@@ -283,14 +344,13 @@ tog.addEventListener('change', () => {
   lblBack.classList.toggle('on',   back);
 });
 
-// Coach message — only appears when set by coach dashboard
+// Coach message
 function setCoachMessage(msg) {
   const el = document.getElementById('coach-msg');
   if (msg && msg.trim()) {
     el.textContent = msg;
+    el.classList.remove('placeholder');
     el.classList.add('visible');
-  } else {
-    el.classList.remove('visible');
   }
 }
 
