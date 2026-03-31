@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoachOS — Eli</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c; --border:#2a2a2a;
@@ -226,42 +225,21 @@ input[type=range]{width:100%;}
 .day-tab.mobility-tab.active{background:rgba(68,136,255,0.1);border-color:#4488ff;color:#88aaff;}
 .day-tab-icon{font-size:16px;display:block;margin-bottom:3px;}
 
-/* ── ZGODOVINA ── */
-.history-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;}
-.training-day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
-.training-day-header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s;}
-.training-day-header:active{background:rgba(255,255,255,0.03);}
-.training-day-meta{display:flex;flex-direction:column;gap:2px;}
-.training-day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
-.training-day-label{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;line-height:1.1;}
-.training-day-stats{display:flex;gap:8px;align-items:center;}
-.training-day-badge{background:rgba(200,241,53,0.1);border:1px solid rgba(200,241,53,0.2);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.8px;padding:3px 8px;border-radius:20px;}
-.training-day-chevron{color:var(--muted);font-size:16px;transition:transform .2s;}
-.training-day-chevron.open{transform:rotate(90deg);}
-.training-day-exercises{display:none;border-top:1px solid var(--border);}
-.training-day-exercises.open{display:block;}
-.training-ex-row{padding:10px 16px;border-bottom:1px solid rgba(42,42,42,0.5);display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.training-ex-row:last-child{border-bottom:none;}
-.training-ex-name{font-size:13px;font-weight:500;flex:1;}
-.training-ex-data{text-align:right;flex-shrink:0;}
-.training-ex-sets{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);}
-.training-ex-rpe{font-size:10px;color:var(--muted);margin-top:1px;}
-.progress-select-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
-.progress-select-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.exercise-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;appearance:none;-webkit-appearance:none;cursor:pointer;}
-.exercise-select:focus{outline:none;border-color:rgba(200,241,53,0.4);}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
-.chart-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
-.chart-wrap{position:relative;width:100%;height:160px;}
-canvas#progress-chart{width:100%!important;height:160px!important;}
-.chart-empty{display:flex;align-items:center;justify-content:center;height:120px;font-size:13px;color:var(--muted);text-align:center;line-height:1.5;}
-.pr-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:10px;padding:8px 14px;margin-top:10px;}
-.pr-badge-label{font-size:11px;color:var(--muted);}
-.pr-badge-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);line-height:1;}
-.pr-badge-unit{font-size:11px;color:var(--muted);}
-.empty-history{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7;}
-.empty-history-icon{font-size:36px;margin-bottom:10px;}
+/* ZGODOVINA */
+.zh-day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.zh-day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
+.zh-day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.zh-day-title{font-size:14px;font-weight:700;margin-top:2px;}
+.zh-day-chevron{color:var(--muted);font-size:14px;transition:transform .2s;}
+.zh-day-card.open .zh-day-chevron{transform:rotate(180deg);}
+.zh-day-body{display:none;padding:0 16px 14px;}
+.zh-day-card.open .zh-day-body{display:block;}
+.zh-ex-row{padding:8px 0;border-top:1px solid var(--border);}
+.zh-ex-name{font-size:13px;font-weight:600;}
+.zh-ex-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
+
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -428,27 +406,50 @@ canvas#progress-chart{width:100%!important;height:160px!important;}
 
 
   <!-- PAGE: ZGODOVINA -->
-  <div id="page-history" style="display:none;">
+  <div id="page-zgodovina" style="display:none;">
     <div class="section">
-      <div class="history-section-title">📅 Treningi</div>
-      <div id="history-log-list"></div>
-      <div class="history-section-title">📈 Napredek vaje</div>
-      <div class="progress-select-card">
-        <div class="progress-select-label">Izberi vajo</div>
-        <select class="exercise-select" id="exercise-picker" onchange="renderProgressChart()">
-          <option value="">— izberi vajo —</option>
-        </select>
-      </div>
-      <div class="chart-card" id="chart-card" style="display:none;">
-        <div class="chart-title" id="chart-title">Napredek</div>
-        <div class="chart-wrap">
-          <canvas id="progress-chart"></canvas>
+      <div class="section-header"><div class="section-title">Zgodovina treningov</div></div>
+
+      <!-- STATS ROW -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-total-sessions">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">TRENINGOV</div>
         </div>
-        <div id="pr-container"></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-total-exercises">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">SERIJ</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);" id="zh-pr-count">0</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">PR REKORDI</div>
+        </div>
       </div>
-      <div class="chart-empty" id="chart-empty" style="display:none;">
-        Ni dovolj podatkov za graf.<br>Začni beležiti trening! 💪
+
+      <!-- NAPREDEK VAJE -->
+      <div class="body-log-card" style="margin-bottom:14px;">
+        <div class="body-log-title">📊 Napredek vaje</div>
+        <select id="zh-exercise-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;margin-bottom:12px;appearance:none;-webkit-appearance:none;">
+          <option value="">— Izberi vajo —</option>
+        </select>
+        <div id="zh-pr-badge" style="display:none;background:rgba(200,241,53,0.1);border:1px solid var(--accent);border-radius:10px;padding:8px 12px;margin-bottom:12px;text-align:center;">
+          <span style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:1px;">🏆 OSEBNI REKORD</span>
+          <span id="zh-pr-value" style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);margin-left:8px;"></span>
+        </div>
+        <div style="position:relative;height:160px;" id="zh-chart-container">
+          <canvas id="zh-chart"></canvas>
+          <div id="zh-chart-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;">Ni podatkov za izbrano vajo</div>
+        </div>
       </div>
+
+      <!-- TRENINGI PO DATUMIH -->
+      <div class="body-log-card">
+        <div class="body-log-title">📋 Zgodovina treningov</div>
+        <div id="zh-log-list">
+          <div style="text-align:center;color:var(--muted);font-size:13px;padding:20px 0;">Ni zabeleženih treningov</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div><!-- end content -->
@@ -467,12 +468,9 @@ canvas#progress-chart{width:100%!important;height:160px!important;}
     <div class="nav-btn-icon">⚖️</div>
     <div class="nav-btn-label">Telo</div>
   </div>
-  <div class="nav-btn" onclick="switchPage('history',this)">
+  <div class="nav-btn" onclick="switchPage('zgodovina',this)">
     <div class="nav-btn-icon">📋</div>
     <div class="nav-btn-label">Zgodovina</div>
-  </div>
-</div>
-    <div class="nav-btn-label">Telo</div>
   </div>
 </div>
 
@@ -1071,12 +1069,12 @@ function switchPage(name, btn) {
   });
   btn.classList.add('active');
   btn.querySelector('.nav-btn-label').style.color = 'var(--accent)';
-  ['today','progress','body','history'].forEach(p => {
+  ['today','progress','body','zgodovina'].forEach(p => {
     document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
   });
   if (name === 'progress') updateProgress();
   if (name === 'body') renderWeightHistory();
-  if (name === 'history') buildHistoryPage();
+  if (name === 'zgodovina') initZgodovina();
 }
 
 // CARDIO

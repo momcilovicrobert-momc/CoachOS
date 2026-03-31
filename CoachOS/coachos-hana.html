@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoachOS — Hana</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c; --border:#2a2a2a;
@@ -161,42 +160,21 @@ input[type=range]{width:100%;}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .section,.checkin-card{animation:slideUp .3s ease forwards;}
 
-/* ── ZGODOVINA ── */
-.history-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;}
-.training-day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
-.training-day-header{padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s;}
-.training-day-header:active{background:rgba(255,255,255,0.03);}
-.training-day-meta{display:flex;flex-direction:column;gap:2px;}
-.training-day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
-.training-day-label{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.5px;line-height:1.1;}
-.training-day-stats{display:flex;gap:8px;align-items:center;}
-.training-day-badge{background:rgba(200,241,53,0.1);border:1px solid rgba(200,241,53,0.2);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.8px;padding:3px 8px;border-radius:20px;}
-.training-day-chevron{color:var(--muted);font-size:16px;transition:transform .2s;}
-.training-day-chevron.open{transform:rotate(90deg);}
-.training-day-exercises{display:none;border-top:1px solid var(--border);}
-.training-day-exercises.open{display:block;}
-.training-ex-row{padding:10px 16px;border-bottom:1px solid rgba(42,42,42,0.5);display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.training-ex-row:last-child{border-bottom:none;}
-.training-ex-name{font-size:13px;font-weight:500;flex:1;}
-.training-ex-data{text-align:right;flex-shrink:0;}
-.training-ex-sets{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);}
-.training-ex-rpe{font-size:10px;color:var(--muted);margin-top:1px;}
-.progress-select-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
-.progress-select-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.exercise-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;appearance:none;-webkit-appearance:none;cursor:pointer;}
-.exercise-select:focus{outline:none;border-color:rgba(200,241,53,0.4);}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px;}
-.chart-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
-.chart-wrap{position:relative;width:100%;height:160px;}
-canvas#progress-chart{width:100%!important;height:160px!important;}
-.chart-empty{display:flex;align-items:center;justify-content:center;height:120px;font-size:13px;color:var(--muted);text-align:center;line-height:1.5;}
-.pr-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(200,241,53,0.08);border:1px solid rgba(200,241,53,0.2);border-radius:10px;padding:8px 14px;margin-top:10px;}
-.pr-badge-label{font-size:11px;color:var(--muted);}
-.pr-badge-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);line-height:1;}
-.pr-badge-unit{font-size:11px;color:var(--muted);}
-.empty-history{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7;}
-.empty-history-icon{font-size:36px;margin-bottom:10px;}
+/* ZGODOVINA */
+.zh-day-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.zh-day-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;}
+.zh-day-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+.zh-day-title{font-size:14px;font-weight:700;margin-top:2px;}
+.zh-day-chevron{color:var(--muted);font-size:14px;transition:transform .2s;}
+.zh-day-card.open .zh-day-chevron{transform:rotate(180deg);}
+.zh-day-body{display:none;padding:0 16px 14px;}
+.zh-day-card.open .zh-day-body{display:block;}
+.zh-ex-row{padding:8px 0;border-top:1px solid var(--border);}
+.zh-ex-name{font-size:13px;font-weight:600;}
+.zh-ex-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
+
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -325,29 +303,6 @@ canvas#progress-chart{width:100%!important;height:160px!important;}
       </div>
     </div>
   </div>
-
-  <!-- PAGE: ZGODOVINA -->
-  <div id="page-history" style="display:none;">
-    <div class="section">
-      <div class="history-section-title">📅 Treningi</div>
-      <div id="history-log-list"></div>
-      <div class="history-section-title">📈 Napredek vaje</div>
-      <div class="progress-select-card">
-        <div class="progress-select-label">Izberi vajo</div>
-        <select class="exercise-select" id="exercise-picker" onchange="renderProgressChart()">
-          <option value="">— izberi vajo —</option>
-        </select>
-      </div>
-      <div class="chart-card" id="chart-card" style="display:none;">
-        <div class="chart-title" id="chart-title">Napredek</div>
-        <div class="chart-wrap"><canvas id="progress-chart"></canvas></div>
-        <div id="pr-container"></div>
-      </div>
-      <div class="chart-empty" id="chart-empty" style="display:none;">
-        Ni dovolj podatkov za graf.<br>Začni beležiti trening! 💪
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="bottom-nav">
@@ -363,7 +318,7 @@ canvas#progress-chart{width:100%!important;height:160px!important;}
     <div class="nav-btn-icon">⚖️</div>
     <div class="nav-btn-label">Telo</div>
   </div>
-  <div class="nav-btn" onclick="switchPage('history',this)">
+  <div class="nav-btn" onclick="switchPage('zgodovina',this)">
     <div class="nav-btn-icon">📋</div>
     <div class="nav-btn-label">Zgodovina</div>
   </div>
@@ -490,7 +445,7 @@ function selectEnergy(el, emoji) {
 }
 
 function switchPage(page, el) {
-  ['today','progress','body','history'].forEach(p => {
+  ['today','progress','body','zgodovina'].forEach(p => {
     document.getElementById('page-'+p).style.display = p === page ? 'block' : 'none';
   });
   document.querySelectorAll('.nav-btn').forEach(b => {
@@ -500,7 +455,6 @@ function switchPage(page, el) {
   el.classList.add('active');
   el.querySelector('.nav-btn-label').style.color = 'var(--accent)';
   if (page === 'progress') updateProgress();
-  if (page === 'history') buildHistoryPage();
 }
 
 // ============================================================
@@ -920,83 +874,6 @@ function toggleMobility(btn, idx) {
 }
 
 // ============================================================
-
-// ============================================================
-// ZGODOVINA
-// ============================================================
-let progressChartInstance = null;
-
-function buildHistoryPage() {
-  buildHistoryLog();
-  populateExercisePicker();
-  renderProgressChart();
-}
-
-function buildHistoryLog() {
-  const container = document.getElementById('history-log-list');
-  if (!logs.length) {
-    container.innerHTML = `<div class="empty-history"><div class="empty-history-icon">🏋️</div>Še ni zabeleženih treningov.<br>Ko začneš beležiti, bo zgodovina vidna tukaj.</div>`;
-    return;
-  }
-  const byDate = {};
-  logs.forEach(l => { if (!byDate[l.date]) byDate[l.date]=[]; byDate[l.date].push(l); });
-  const sortedDates = Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
-  container.innerHTML = sortedDates.map((date,idx) => {
-    const entries = byDate[date];
-    const sessions = [...new Set(entries.map(e=>e.session))].join(' · ');
-    const d = new Date(date+'T12:00:00');
-    const dayStr = dayNames[d.getDay()];
-    const dateStr = d.getDate()+'. '+monthNames[d.getMonth()];
-    const exRows = entries.map(e => {
-      const weights = e.weight ? e.weight.split('/').filter(w=>w&&w!=='—') : [];
-      const repsArr = e.reps ? e.reps.split('/').filter(r=>r&&r!=='—') : [];
-      const setsStr = e.sets ? e.sets+'×'+(repsArr[0]||e.reps) : '';
-      const weightStr = weights.length ? '@ '+weights.join('/')+' kg' : '';
-      return `<div class="training-ex-row"><div class="training-ex-name">${e.exercise}</div><div class="training-ex-data"><div class="training-ex-sets">${setsStr} ${weightStr}</div><div class="training-ex-rpe">RPE ${e.rpe}</div></div></div>`;
-    }).join('');
-    return `<div class="training-day-card"><div class="training-day-header" onclick="toggleDayCard(this)"><div class="training-day-meta"><div class="training-day-date">${dayStr}, ${dateStr}</div><div class="training-day-label">${sessions}</div></div><div class="training-day-stats"><div class="training-day-badge">${entries.length} vaj</div><div class="training-day-chevron ${idx===0?'open':''}">›</div></div></div><div class="training-day-exercises ${idx===0?'open':''}">${exRows}</div></div>`;
-  }).join('');
-}
-
-function toggleDayCard(header) {
-  header.querySelector('.training-day-chevron').classList.toggle('open');
-  header.nextElementSibling.classList.toggle('open');
-}
-
-function populateExercisePicker() {
-  const picker = document.getElementById('exercise-picker');
-  const unique = [...new Set(logs.map(l=>l.exercise))].sort();
-  picker.innerHTML = '<option value="">— izberi vajo —</option>' + unique.map(e=>`<option value="${e}">${e}</option>`).join('');
-}
-
-function renderProgressChart() {
-  const picker = document.getElementById('exercise-picker');
-  const selected = picker.value;
-  const chartCard = document.getElementById('chart-card');
-  const chartEmpty = document.getElementById('chart-empty');
-  if (!selected) { chartCard.style.display='none'; chartEmpty.style.display='none'; return; }
-  const byDate = {};
-  logs.filter(l=>l.exercise===selected).forEach(l => {
-    const weights = (l.weight||'').split('/').map(w=>parseFloat(w)).filter(w=>!isNaN(w));
-    const maxW = weights.length ? Math.max(...weights) : null;
-    if (maxW && (!byDate[l.date]||byDate[l.date]<maxW)) byDate[l.date]=maxW;
-  });
-  const sortedDates = Object.keys(byDate).sort();
-  const dataPoints = sortedDates.map(d=>byDate[d]);
-  if (dataPoints.length < 2) { chartCard.style.display='none'; chartEmpty.style.display='flex'; return; }
-  chartCard.style.display='block'; chartEmpty.style.display='none';
-  document.getElementById('chart-title').textContent = selected;
-  const pr = Math.max(...dataPoints);
-  document.getElementById('pr-container').innerHTML = `<div class="pr-badge"><span class="pr-badge-label">🏆 Rekord</span><span class="pr-badge-val">${pr}</span><span class="pr-badge-unit">kg</span></div>`;
-  const labels = sortedDates.map(d=>{const dt=new Date(d+'T12:00:00');return dt.getDate()+'.'+(dt.getMonth()+1)+'.';});
-  if (progressChartInstance) { progressChartInstance.destroy(); progressChartInstance=null; }
-  progressChartInstance = new Chart(document.getElementById('progress-chart').getContext('2d'), {
-    type:'line',
-    data:{labels,datasets:[{data:dataPoints,borderColor:'#c8f135',backgroundColor:'rgba(200,241,53,0.08)',borderWidth:2,pointBackgroundColor:'#c8f135',pointBorderColor:'#0d0d0d',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,tension:0.35,fill:true}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1c1c1c',borderColor:'#2a2a2a',borderWidth:1,titleColor:'#666',bodyColor:'#c8f135',bodyFont:{family:'JetBrains Mono',size:13,weight:'600'},callbacks:{label:ctx=>ctx.parsed.y+' kg'}}},scales:{x:{grid:{color:'rgba(42,42,42,0.6)'},ticks:{color:'#666',font:{family:'JetBrains Mono',size:10}}},y:{grid:{color:'rgba(42,42,42,0.6)'},ticks:{color:'#666',font:{family:'JetBrains Mono',size:10},callback:v=>v+' kg'}}}}
-  });
-}
-
 // INIT
 // ============================================================
 buildWeek();
@@ -1004,6 +881,153 @@ buildWorkoutSection();
 buildCardioStandalone();
 renderWeightHistory();
 loadProgramFromSheets();
+
+// ============================================================
+// ZGODOVINA TAB
+// ============================================================
+let zhChart = null;
+
+function initZgodovina() {
+  const logs = JSON.parse(localStorage.getItem('hana_logs') || '[]');
+  renderZgodovinaStats(logs);
+  renderZgodovinaDropdown(logs);
+  renderZgodovinaList(logs);
+}
+
+function renderZgodovinaStats(logs) {
+  const sessions = [...new Set(logs.map(l => l.date))].length;
+  const totalSets = logs.reduce((s, l) => s + (parseInt(l.sets) || 0), 0);
+  // Count PRs: for each exercise, check if latest entry is max weight
+  const byEx = {};
+  logs.forEach(l => {
+    const w = parseFloat(l.weight) || 0;
+    if (!byEx[l.exercise] || w > byEx[l.exercise].max) {
+      byEx[l.exercise] = { max: w, date: l.date };
+    }
+  });
+  // PR = exercise where last entry matches max
+  const prCount = Object.values(byEx).filter(v => v.max > 0).length;
+  document.getElementById('zh-total-sessions').textContent = sessions;
+  document.getElementById('zh-total-exercises').textContent = totalSets;
+  document.getElementById('zh-pr-count').textContent = prCount;
+}
+
+function renderZgodovinaDropdown(logs) {
+  const select = document.getElementById('zh-exercise-select');
+  const exercises = [...new Set(logs.map(l => l.exercise))].filter(Boolean).sort();
+  exercises.forEach(ex => {
+    const opt = document.createElement('option');
+    opt.value = ex;
+    opt.textContent = ex;
+    select.appendChild(opt);
+  });
+  select.addEventListener('change', () => {
+    const ex = select.value;
+    if (ex) renderZgodovinaChart(logs, ex);
+    else {
+      if (zhChart) { zhChart.destroy(); zhChart = null; }
+      document.getElementById('zh-pr-badge').style.display = 'none';
+      document.getElementById('zh-chart-empty').style.display = 'flex';
+    }
+  });
+}
+
+function renderZgodovinaChart(logs, exercise) {
+  const entries = logs
+    .filter(l => l.exercise === exercise)
+    .map(l => ({ date: l.date, weight: parseFloat(l.weight) || 0 }))
+    .filter(e => e.weight > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const empty = document.getElementById('zh-chart-empty');
+  const badge = document.getElementById('zh-pr-badge');
+
+  if (!entries.length) {
+    empty.style.display = 'flex';
+    badge.style.display = 'none';
+    if (zhChart) { zhChart.destroy(); zhChart = null; }
+    return;
+  }
+  empty.style.display = 'none';
+
+  // PR badge
+  const maxW = Math.max(...entries.map(e => e.weight));
+  badge.style.display = 'block';
+  document.getElementById('zh-pr-value').textContent = maxW + ' kg';
+
+  const labels = entries.map(e => e.date.slice(5)); // MM-DD
+  const data = entries.map(e => e.weight);
+
+  if (zhChart) zhChart.destroy();
+  const ctx = document.getElementById('zh-chart').getContext('2d');
+  zhChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#c8f135',
+        backgroundColor: 'rgba(200,241,53,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#c8f135',
+        pointRadius: 4,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1a1a1a' } },
+        y: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
+}
+
+function renderZgodovinaList(logs) {
+  const container = document.getElementById('zh-log-list');
+  if (!logs.length) return;
+
+  // Group by date
+  const byDate = {};
+  logs.forEach(l => {
+    if (!byDate[l.date]) byDate[l.date] = [];
+    byDate[l.date].push(l);
+  });
+
+  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+  container.innerHTML = dates.map((date, i) => {
+    const entries = byDate[date];
+    const session = entries[0]?.session || '';
+    const isOpen = i === 0 ? 'open' : '';
+    const rows = entries.map(e => `
+      <div class="zh-ex-row">
+        <div class="zh-ex-name">${e.exercise}</div>
+        <div class="zh-ex-stats">${e.weight ? e.weight + ' kg · ' : ''}${e.sets}×${e.reps}${e.rpe ? ' · RPE ' + e.rpe : ''}</div>
+      </div>
+    `).join('');
+    return `
+      <div class="zh-day-card ${isOpen}" onclick="toggleZhCard(this)">
+        <div class="zh-day-header">
+          <div>
+            <div class="zh-day-date">${date}</div>
+            <div class="zh-day-title">${session || 'Trening'} · ${entries.length} vaj</div>
+          </div>
+          <div class="zh-day-chevron">▾</div>
+        </div>
+        <div class="zh-day-body">${rows}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleZhCard(card) {
+  card.classList.toggle('open');
+}
+
 </script>
 </body>
 </html>
