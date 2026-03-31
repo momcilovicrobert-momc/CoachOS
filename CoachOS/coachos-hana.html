@@ -914,7 +914,14 @@ function renderZgodovinaStats(logs) {
 
 function renderZgodovinaDropdown(logs) {
   const select = document.getElementById('zh-exercise-select');
-  const exercises = [...new Set(logs.map(l => l.exercise))].filter(Boolean).sort();
+  // Build exercise list from program (all days) + any logged exercises not in program
+  const programExercises = [];
+  if (typeof PROGRAM_A !== 'undefined') PROGRAM_A.forEach(e => programExercises.push(e.name));
+  if (typeof PROGRAM_B !== 'undefined') PROGRAM_B.forEach(e => programExercises.push(e.name));
+  if (typeof PROGRAM !== 'undefined') PROGRAM.forEach(e => programExercises.push(e.name));
+  // Also add any logged exercises (covers historic data)
+  logs.forEach(l => { if (l.exercise && !programExercises.includes(l.exercise)) programExercises.push(l.exercise); });
+  const exercises = [...new Set(programExercises)].filter(Boolean).sort();
   exercises.forEach(ex => {
     const opt = document.createElement('option');
     opt.value = ex;
@@ -935,7 +942,12 @@ function renderZgodovinaDropdown(logs) {
 function renderZgodovinaChart(logs, exercise) {
   const entries = logs
     .filter(l => l.exercise === exercise)
-    .map(l => ({ date: l.date, weight: parseFloat(l.weight) || 0 }))
+    .map(l => {
+      // weight may be "10/12.5/15" (multi-set) or plain "10"
+      const parts = String(l.weight || '').split('/').map(v => parseFloat(v)).filter(v => !isNaN(v));
+      const maxW = parts.length ? Math.max(...parts) : 0;
+      return { date: l.date, weight: maxW };
+    })
     .filter(e => e.weight > 0)
     .sort((a, b) => a.date.localeCompare(b.date));
 
@@ -1006,7 +1018,7 @@ function renderZgodovinaList(logs) {
     const rows = entries.map(e => `
       <div class="zh-ex-row">
         <div class="zh-ex-name">${e.exercise}</div>
-        <div class="zh-ex-stats">${e.weight ? e.weight + ' kg · ' : ''}${e.sets}×${e.reps}${e.rpe ? ' · RPE ' + e.rpe : ''}</div>
+        <div class="zh-ex-stats">${e.weight ? e.weight + ' kg · ' : ''}${e.sets} ser · ${e.reps} pon${e.rpe ? ' · RPE ' + e.rpe : ''}</div>
       </div>
     `).join('');
     return `
