@@ -172,33 +172,21 @@ input[type=range]{width:100%;}
 .zh-ex-row{padding:8px 0;border-top:1px solid var(--border);}
 .zh-ex-name{font-size:13px;font-weight:600;}
 .zh-ex-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js">
-function renderZgodovinaBiofeedback() {
-  const container = document.getElementById('zg-checkin-list');
-  if (!container) return;
-  const allCheckins = [...checkins];
-  // Merge Sheets checkins from logs
-  zgAllLogs.filter(l => l.exercise === 'Check-in' || l.session === 'Dnevni check-in').forEach(l => {
-    if (!allCheckins.find(c => c.date === l.date)) {
-      allCheckins.push({ date: l.date, sleep: l.weight, energy: l.rpe, note: l.notes });
-    }
-  });
-  allCheckins.sort((a,b) => b.date.localeCompare(a.date));
-  if (!allCheckins.length) { container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px 0;">Ni check-inov.</div>'; return; }
-  const energyMap = {'😴':'Utrujen','😐':'Normalno','🙂':'Dobro','💪':'Odlično','🔥':'Maksimalno'};
-  container.innerHTML = allCheckins.slice(0,14).map(c => `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(42,42,42,0.5);">
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);">${c.date}</div>
-        <div style="font-size:13px;margin-top:3px;">${c.energy || '—'} · Spanec: ${c.sleep || '—'}/10</div>
-        ${c.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;">"${c.note}"</div>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
 
-</script>
+.date-picker-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:8px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.date-picker-label{font-size:12px;color:var(--muted);font-weight:500;}
+.date-picker-val{font-size:12px;color:var(--text);font-weight:600;}
+.date-picker-change{font-size:11px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.date-picker-input{position:absolute;opacity:0;width:1px;height:1px;}
+.zg-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;padding-top:10px;border-top:1px solid var(--border);}
+.zg-biofeedback-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.zg-bio-date{font-size:11px;color:var(--muted);min-width:70px;}
+.zg-bio-energy{font-size:18px;}
+.zg-bio-details{flex:1;font-size:12px;color:var(--text);}
+.zg-bio-note{font-size:11px;color:var(--muted);margin-top:2px;}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -245,7 +233,15 @@ function renderZgodovinaBiofeedback() {
     <div class="checkin-label">Opomba (neobvezno)</div>
     <textarea class="checkin-note" id="checkin-note" placeholder="Npr. bolijo me mišice od ponedeljka, malo pod pritiskom v službi..."></textarea>
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><span style="font-size:11px;color:var(--muted);">Datum check-ina:</span><span id="checkin-date-label" style="font-size:11px;color:var(--accent);cursor:pointer;" onclick="document.getElementById('checkin-date-input').click()">danes</span></div><input type="date" id="checkin-date-input" style="display:none;" onchange="checkinDateStr=this.value;document.getElementById('checkin-date-label').textContent=this.value===todayStr?'danes':this.value;"><button class="checkin-save-btn" onclick="saveCheckin()">Shrani ↗</button>
+  <div class="date-picker-row">
+    <span class="date-picker-label">📅 Datum check-ina</span>
+    <span>
+      <span class="date-picker-val" id="checkin-date-display"></span>
+      &nbsp;<span class="date-picker-change" onclick="document.getElementById('checkin-date-input').showPicker()">spremeni</span>
+      <input type="date" class="date-picker-input" id="checkin-date-input" onchange="onCheckinDateChange(this.value)">
+    </span>
+  </div>
+  <button class="checkin-save-btn" onclick="saveCheckin()">Shrani ↗</button>
 </div>
 
 <div class="content">
@@ -301,14 +297,21 @@ function renderZgodovinaBiofeedback() {
     <div class="section">
       <div class="section-header"><div class="section-title">Telesne mere</div></div>
       <div class="body-log-card">
-        <div class="body-log-title" style="display:flex;align-items:center;justify-content:space-between;">⚖️ Telesna teža — danes <span id="weight-date-label" style="font-size:10px;color:var(--accent);font-weight:500;letter-spacing:0;text-transform:none;cursor:pointer;" onclick="document.getElementById('weight-date-input').click()">spremi datum</span></div>
-        <input type="date" id="weight-date-input" style="display:none;" onchange="weightDateStr=this.value;document.getElementById('weight-date-label').textContent=this.value===todayStr?'spremi datum':this.value;">
+        <div class="body-log-title">⚖️ Telesna teža — danes</div>
         <div style="display:flex;gap:10px;align-items:flex-end;">
           <div class="input-group" style="flex:1;">
             <div class="input-label">Teža (kg)</div>
             <input class="body-input" type="number" id="daily-weight" placeholder="60.0" step="0.1">
           </div>
           <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Vsak dan, zjutraj, na tešče</div>
+        </div>
+        <div class="date-picker-row" style="margin-top:10px;">
+          <span class="date-picker-label">📅 Datum teže</span>
+          <span>
+            <span class="date-picker-val" id="weight-date-display"></span>
+            &nbsp;<span class="date-picker-change" onclick="document.getElementById('weight-date-input').showPicker()">spremeni</span>
+            <input type="date" class="date-picker-input" id="weight-date-input" onchange="onWeightDateChange(this.value)">
+          </span>
         </div>
         <button class="body-save-btn" onclick="saveDailyWeight()">Shrani težo</button>
       </div>
@@ -360,13 +363,11 @@ function renderZgodovinaBiofeedback() {
         </div>
       </div>
 
+
+      <div class="zg-section-title">💤 Biofeedback & Check-ini</div>
+      <div id="zg-biofeedback-list"><div style="text-align:center;padding:16px 0;color:var(--muted);font-size:13px;">Ni podatkov</div></div>
       <div id="zg-loading" style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">Nalagam zgodovino…</div>
       <div id="zg-list"></div>
-    <!-- BIOFEEDBACK SECTION -->
-    <div id="zg-biofeedback" style="margin-top:20px;">
-      <div class="section-title" style="margin-bottom:10px;">💤 Biofeedback &amp; Check-ini</div>
-      <div id="zg-checkin-list"></div>
-    </div>
     </div>
   </div>
 
@@ -414,7 +415,15 @@ function renderZgodovinaBiofeedback() {
     <div class="rpe-pill" onclick="selectRPE(this)">9</div>
     <div class="rpe-pill" onclick="selectRPE(this)">10</div>
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 4px;"><span style="font-size:11px;color:var(--muted);">Datum:</span><span id="log-date-label" style="font-size:11px;color:var(--accent);cursor:pointer;" onclick="document.getElementById('log-date-input').click()">danes</span></div><input type="date" id="log-date-input" style="display:none;" onchange="logDateStr=this.value;document.getElementById('log-date-label').textContent=this.value===todayStr?'danes':this.value;"><button class="log-btn" onclick="saveExercise()">Shrani vajo ✓</button>
+  <div class="date-picker-row" style="margin-top:10px;">
+    <span class="date-picker-label">📅 Datum treninga</span>
+    <span>
+      <span class="date-picker-val" id="log-date-display"></span>
+      &nbsp;<span class="date-picker-change" onclick="document.getElementById('log-date-input').showPicker()">spremeni</span>
+      <input type="date" class="date-picker-input" id="log-date-input" onchange="onLogDateChange(this.value)">
+    </span>
+  </div>
+  <button class="log-btn" onclick="saveExercise()">Shrani vajo ✓</button>
 </div>
 
 <div class="overlay" id="cardio-overlay" style="display:none;" onclick="closeCardioSheet()"></div>
@@ -439,7 +448,15 @@ function renderZgodovinaBiofeedback() {
     <div class="diff-btn" onclick="selectDiff(this)">9</div>
     <div class="diff-btn" onclick="selectDiff(this)">10</div>
   </div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 4px;"><span style="font-size:11px;color:var(--muted);">Datum:</span><span id="cardio-date-label" style="font-size:11px;color:var(--accent);cursor:pointer;" onclick="document.getElementById('cardio-date-input').click()">danes</span></div><input type="date" id="cardio-date-input" style="display:none;" onchange="cardioDateStr=this.value;document.getElementById('cardio-date-label').textContent=this.value===todayStr?'danes':this.value;"><button class="log-btn" style="background:var(--accent2);" onclick="saveCardio()">Shrani kardio ✓</button>
+  <div class="date-picker-row" style="margin-top:10px;">
+    <span class="date-picker-label">📅 Datum kardio</span>
+    <span>
+      <span class="date-picker-val" id="cardio-date-display"></span>
+      &nbsp;<span class="date-picker-change" onclick="document.getElementById('cardio-date-input').showPicker()">spremeni</span>
+      <input type="date" class="date-picker-input" id="cardio-date-input" onchange="onCardiDateChange(this.value)">
+    </span>
+  </div>
+  <button class="log-btn" style="background:var(--accent2);" onclick="saveCardio()">Shrani kardio ✓</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -479,10 +496,6 @@ const dayNames = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob'];
 const monthNames = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
 const now = new Date();
 const todayStr = now.toISOString().split('T')[0];
-let weightDateStr = todayStr;
-let logDateStr = todayStr;
-let checkinDateStr = todayStr;
-let cardioDateStr = todayStr;
 document.getElementById('greeting-date').textContent =
   dayNames[now.getDay()] + ', ' + now.getDate() + '. ' + monthNames[now.getMonth()] + ' ' + now.getFullYear();
 
@@ -1096,6 +1109,87 @@ function renderZgodovinaChart() {
     }
   });
 }
+
+// ============================================================
+// DATE PICKER STATE
+// ============================================================
+let logDateStr = todayStr;
+let checkinDateStr = todayStr;
+let cardioDateStr = todayStr;
+let weightDateStr = todayStr;
+
+function formatDateSL(str) {
+  if (!str) return '—';
+  const [y,m,d] = str.split('-');
+  return d + '. ' + m + '. ' + y;
+}
+
+function initDatePickers() {
+  const ld = document.getElementById('log-date-display');
+  const li = document.getElementById('log-date-input');
+  const cd = document.getElementById('checkin-date-display');
+  document.getElementById('weight-date-display').textContent = 'danes';
+  const ci = document.getElementById('checkin-date-input');
+  const kd = document.getElementById('cardio-date-display');
+  const ki = document.getElementById('cardio-date-input');
+  if (ld) ld.textContent = formatDateSL(todayStr);
+  if (li) { li.value = todayStr; li.max = todayStr; }
+  if (cd) cd.textContent = formatDateSL(todayStr);
+  if (ci) { ci.value = todayStr; ci.max = todayStr; }
+  if (kd) kd.textContent = formatDateSL(todayStr);
+  if (ki) { ki.value = todayStr; ki.max = todayStr; }
+}
+
+function onLogDateChange(val) {
+  logDateStr = val;
+  const el = document.getElementById('log-date-display');
+  if (el) el.textContent = formatDateSL(val);
+}
+function onCheckinDateChange(val) {
+  checkinDateStr = val;
+  const el = document.getElementById('checkin-date-display');
+  if (el) el.textContent = formatDateSL(val);
+}
+function onCardiDateChange(val) {
+  cardioDateStr = val;
+  const el = document.getElementById('cardio-date-display');
+  if (el) el.textContent = formatDateSL(val);
+}
+function onWeightDateChange(val) {
+  weightDateStr = val;
+  const el = document.getElementById('weight-date-display');
+  if (el) el.textContent = formatDateSL(val);
+}
+
+function renderZgodovinaBiofeedback() {
+  const container = document.getElementById('zg-biofeedback-list');
+  if (!container) return;
+  const allCheckins = [...checkins];
+  // also include check-in entries from Sheets logs
+  zgAllLogs.forEach(l => {
+    if (l.session && l.session.toLowerCase().includes('check')) {
+      const exists = allCheckins.some(c => c.date === l.date);
+      if (!exists) allCheckins.push({ date: l.date, sleep: l.weight, energy: l.rpe, note: l.notes || '' });
+    }
+  });
+  allCheckins.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  if (!allCheckins.length) {
+    container.innerHTML = '<div style="text-align:center;padding:16px 0;color:var(--muted);font-size:13px;">Ni check-inov</div>';
+    return;
+  }
+  container.innerHTML = allCheckins.slice(0,20).map(c => `
+    <div class="zg-biofeedback-row">
+      <div class="zg-bio-date">${c.date||'—'}</div>
+      <div class="zg-bio-energy">${c.energy||'—'}</div>
+      <div class="zg-bio-details">
+        😴 ${c.sleep||'—'} ur spanec
+        ${c.note ? `<div class="zg-bio-note">${c.note}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+initDatePickers();
 </script>
 </body>
 </html>
