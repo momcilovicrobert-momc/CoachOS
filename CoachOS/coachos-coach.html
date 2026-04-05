@@ -473,24 +473,13 @@ async function loadProgramFromSheets(clientName) {
 async function saveProgram() {
   const text = document.getElementById('program-text').value.trim();
   if (!text) return;
-  const isNina = currentClient === 'Nina';
-  if (isNina) {
-    // Nina: shrani v pravi type localStorage
-    localStorage.setItem('coachos_program_nina_' + currentProgramType, text);
-    if (currentProgramType === 'gym') {
-      localStorage.setItem('coachos_program_Nina', text); // Za prikaz v dashboardu
-      renderProgram(text);
-    }
-    closeModal('modal-program');
-    showToast('✓ Nina — ' + (currentProgramType === 'gym' ? 'Gym' : 'Doma') + ' program shranjen!');
-    fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:'nina', type:currentProgramType, program:text }) }).catch(()=>{});
-  } else {
-    localStorage.setItem('coachos_program_' + currentClient, text);
-    renderProgram(text);
-    closeModal('modal-program');
-    showToast('✓ Program shranjen za ' + currentClient + '!');
-    fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
-  }
+  // SAMO localStorage — konec podvajanja
+  localStorage.setItem('coachos_program_' + currentClient, text);
+  renderProgram(text);
+  closeModal('modal-program');
+  showToast('✓ Program shranjen za ' + currentClient + '!');
+  // Shrani v Sheets v ozadju
+  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
 }
 
 // ============================================================
@@ -512,51 +501,10 @@ function switchTab(name, el) {
 function openLogWorkout() { document.getElementById('log-date').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-log').classList.add('open'); }
 function openAddNote() { document.getElementById('modal-note').classList.add('open'); }
 function openNewClient() { document.getElementById('modal-client').classList.add('open'); }
-let currentProgramType = 'gym'; // Za Nino: 'gym' ali 'home'
-
 function openEditProgram() {
   document.getElementById('modal-program-title').textContent = 'Uredi program — ' + currentClient;
-  const isNina = currentClient === 'Nina';
-  document.getElementById('nina-program-switcher').style.display = isNina ? 'block' : 'none';
-  if (isNina) {
-    currentProgramType = 'gym';
-    updateProgramSwitcherUI();
-    loadProgramTextForType('gym');
-  } else {
-    document.getElementById('program-text').value = localStorage.getItem('coachos_program_' + currentClient) || '';
-  }
+  document.getElementById('program-text').value = localStorage.getItem('coachos_program_' + currentClient) || '';
   document.getElementById('modal-program').classList.add('open');
-}
-
-function switchProgramType(type) {
-  currentProgramType = type;
-  updateProgramSwitcherUI();
-  loadProgramTextForType(type);
-}
-
-function updateProgramSwitcherUI() {
-  const gymBtn = document.getElementById('prog-btn-gym');
-  const homeBtn = document.getElementById('prog-btn-home');
-  if (currentProgramType === 'gym') {
-    gymBtn.style.background = 'var(--accent)'; gymBtn.style.color = '#0d0d0d';
-    homeBtn.style.background = 'transparent'; homeBtn.style.color = 'var(--muted)';
-  } else {
-    homeBtn.style.background = 'rgba(68,136,255,0.15)'; homeBtn.style.color = '#88aaff';
-    gymBtn.style.background = 'transparent'; gymBtn.style.color = 'var(--muted)';
-  }
-}
-
-async function loadProgramTextForType(type) {
-  const key = 'coachos_program_nina_' + type;
-  const cached = localStorage.getItem(key);
-  if (cached) { document.getElementById('program-text').value = cached; return; }
-  try {
-    const res = await fetch(API + '?action=getProgram&client=nina&type=' + type);
-    const data = await res.json();
-    const text = (data && data.program) ? data.program : '';
-    localStorage.setItem(key, text);
-    document.getElementById('program-text').value = text;
-  } catch(e) { document.getElementById('program-text').value = ''; }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(o => {
