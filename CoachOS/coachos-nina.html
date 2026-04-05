@@ -160,7 +160,6 @@ input[type=range]{width:100%;}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .section,.checkin-card{animation:slideUp .3s ease forwards;}
 
-
 /* GYM / HOME SWITCHER */
 .mode-switcher{display:flex;gap:0;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;}
 .mode-btn{flex:1;padding:10px 8px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
@@ -241,976 +240,400 @@ input[type=range]{width:100%;}
     <div class="section">
       <div class="coach-msg">
         <div class="coach-msg-from">📋 Sporočilo trenerja</div>
-        <div class="coach-msg-text" id="coach-message-text">Danes Full Body A. Fokus na tehniko — ne hiti med vajami. Pri RDL-ju spusti ročki samo do raztega hamstringov, ne do tal. 💪</div>
+        <div class="coach-msg-text" id="coach-message-text">Danes Full Body A. Fokus na tehniko pri počepu! 🚀</div>
       </div>
     </div>
-    <div class="section" id="workout-section"></div>
-    <div class="section" id="cardio-standalone-section">
-      <div id="cardio-standalone-btn"></div>
+    <div class="section" id="daily-content">
+      <div class="section-header">
+        <div class="section-title" id="daily-title">Danes: Trening</div>
+      </div>
+
+      <div class="mode-switcher" id="mode-switcher" style="display:none;">
+        <button class="mode-btn active" id="gymBtn" onclick="setMode('gym')">🏢 Gym</button>
+        <button class="mode-btn home-btn" id="homeBtn" onclick="toggleHomeWorkout()">🏠 Home</button>
+      </div>
+
+      <div id="workout-container"></div>
     </div>
   </div>
 
-  <div id="page-progress" style="display:none;">
+  <div id="page-history" style="display:none;">
     <div class="section">
-      <div class="section-header"><div class="section-title">Moj napredek</div></div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(200,241,53,0.1);">🏋️</div>
+      <div class="section-title">Analiza napredka</div>
+      <div class="stat-card" style="margin-top:10px;">
+        <div class="stat-icon" style="background:rgba(200,241,53,0.1);color:var(--accent);">⚖️</div>
         <div class="stat-main">
-          <div class="stat-label">Opravljeni treningi</div>
-          <div class="stat-value" id="prog-sessions">0</div>
-          <div class="stat-change up" id="prog-sub">Začniva skupaj!</div>
+          <div class="stat-label">Telesna teža</div>
+          <div class="stat-value" id="current-weight">--<span class="stat-unit">kg</span></div>
         </div>
+        <div class="stat-change flat" id="weight-trend">--</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(255,107,53,0.1);">🔥</div>
-        <div class="stat-main">
-          <div class="stat-label">Skupaj serij</div>
-          <div class="stat-value" id="prog-sets">0</div>
-          <div class="stat-change flat">opravljenih</div>
-        </div>
+      <div style="height:180px;margin-top:10px;margin-bottom:20px;">
+        <canvas id="weightChart"></canvas>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(68,136,255,0.1);">😴</div>
-        <div class="stat-main">
-          <div class="stat-label">Povprečen spanec (7 dni)</div>
-          <div class="stat-value" id="prog-sleep">—<span class="stat-unit">ur</span></div>
-          <div class="stat-change flat" id="prog-sleep-sub">—</div>
-        </div>
-      </div>
-      <div id="prog-log-list"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Zadnji treningi</div>
+      <div id="history-list" style="margin-top:10px;"></div>
     </div>
   </div>
 
-  <div id="page-body" style="display:none;">
+  <div id="page-profile" style="display:none;">
     <div class="section">
-      <div class="section-header"><div class="section-title">Telesne mere</div></div>
       <div class="body-log-card">
-        <div class="body-log-title">⚖️ Telesna teža — danes</div>
-        <div style="display:flex;gap:10px;align-items:flex-end;">
-          <div class="input-group" style="flex:1;">
-            <div class="input-label">Teža (kg)</div>
-            <input class="body-input" type="number" id="daily-weight" placeholder="65.0" step="0.1">
-          </div>
-          <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Vsak dan, zjutraj, na tešče</div>
-        </div>
-        <button class="body-save-btn" onclick="saveDailyWeight()">Shrani težo</button>
-      </div>
-      <div class="body-log-card">
-        <div class="body-log-title">📏 Telesne mere — tedensko</div>
+        <div class="body-log-title">Vpis meritev</div>
         <div class="input-row">
-          <div class="input-group"><div class="input-label">Pas (cm)</div><input class="body-input" type="number" id="meas-waist" placeholder="70"></div>
-          <div class="input-group"><div class="input-label">Boki (cm)</div><input class="body-input" type="number" id="meas-hips" placeholder="95"></div>
-          <div class="input-group"><div class="input-label">Prsi (cm)</div><input class="body-input" type="number" id="meas-chest" placeholder="88"></div>
-          <div class="input-group"><div class="input-label">Stegna (cm)</div><input class="body-input" type="number" id="meas-thigh" placeholder="55"></div>
+          <div class="input-group">
+            <span class="input-label">Teža (kg)</span>
+            <input type="number" id="log-weight" step="0.1" class="body-input" placeholder="00.0">
+          </div>
+          <div class="input-group">
+            <span class="input-label">Pas (cm)</span>
+            <input type="number" id="log-waist" step="0.1" class="body-input" placeholder="00">
+          </div>
         </div>
-        <button class="body-save-btn" onclick="saveMeasurements()">Shrani mere</button>
-      </div>
-      <div class="body-log-card" id="weight-history-card" style="display:none;">
-        <div class="body-log-title">📈 Zgodovina teže</div>
-        <div id="weight-history"></div>
+        <button class="body-save-btn" onclick="saveBodyLog()">Shrani meritve ↗</button>
       </div>
     </div>
   </div>
-
-  <!-- PAGE: ZGODOVINA -->
-  <div id="page-zgodovina" style="display:none;">
-    <div class="section">
-      <div class="section-header"><div class="section-title">Zgodovina treningov</div></div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-total">0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Treningov</div>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-sets">0</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Serij skupaj</div>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;" id="zg-pr">—</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;">Zadnji trening</div>
-        </div>
-      </div>
-
-      <div class="body-log-card" style="margin-bottom:12px;">
-        <div class="body-log-title">📈 Napredek vaje</div>
-        <select style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;margin-bottom:12px;appearance:none;-webkit-appearance:none;" id="zg-exercise-select" onchange="renderZgodovinaChart()">
-          <option value="">Izberi vajo…</option>
-        </select>
-        <div id="zg-chart-wrap" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:4px;">
-          <canvas id="zg-chart" height="160"></canvas>
-          <div id="zg-pr-display" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
-        </div>
-      </div>
-
-      <div id="zg-loading" style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">Nalagam zgodovino…</div>
-      <div id="zg-list"></div>
-    </div>
-  </div>
-
 </div>
 
-<div class="bottom-nav">
-  <div class="nav-btn active" onclick="switchPage('today',this)">
-    <div class="nav-btn-icon">🏠</div>
-    <div class="nav-btn-label" style="color:var(--accent);">Danes</div>
+<nav class="bottom-nav">
+  <div class="nav-btn active" onclick="showPage('today', this)">
+    <div class="nav-btn-icon">⚡</div>
+    <div class="nav-btn-label">Danes</div>
   </div>
-  <div class="nav-btn" onclick="switchPage('progress',this)">
+  <div class="nav-btn" onclick="showPage('history', this)">
     <div class="nav-btn-icon">📈</div>
-    <div class="nav-btn-label">Napredek</div>
+    <div class="nav-btn-label">Analiza</div>
   </div>
-  <div class="nav-btn" onclick="switchPage('body',this)">
-    <div class="nav-btn-icon">⚖️</div>
-    <div class="nav-btn-label">Telo</div>
+  <div class="nav-btn" onclick="showPage('profile', this)">
+    <div class="nav-btn-icon">⚙️</div>
+    <div class="nav-btn-label">Profil</div>
   </div>
-  <div class="nav-btn" onclick="switchPage('zgodovina',this)">
-    <div class="nav-btn-icon">📋</div>
-    <div class="nav-btn-label">Zgodovina</div>
-  </div>
-</div>
+</nav>
 
-<div class="overlay" id="overlay" style="display:none;" onclick="closeSheet()"></div>
+<div class="toast" id="toast">Shranjeno!</div>
+
+<div class="overlay" id="overlay" style="display:none;" onclick="closeLogSheet()"></div>
 <div class="log-sheet" id="log-sheet" style="display:none;">
   <div class="sheet-handle"></div>
-  <div class="sheet-ex-title" id="sheet-title">—</div>
-  <div class="sheet-prescription" id="sheet-prescription">—</div>
-  <div class="sheet-tip" id="sheet-tip"></div>
-  <div id="sets-grid-wrapper">
-    <div class="sets-grid" id="sets-grid">
-      <div class="sets-grid-header"></div>
-      <div class="sets-grid-header">Teža (kg)</div>
-      <div class="sets-grid-header">Pon.</div>
-      <div class="sets-grid-header">✓</div>
-    </div>
-  </div>
-  <button class="add-set-btn" onclick="addSetRow()">+ Dodaj serijo</button>
-  <div class="rpe-section-label">Kako težko je bilo? (RPE)</div>
-  <div class="rpe-pills">
-    <div class="rpe-pill" onclick="selectRPE(this)">6</div>
-    <div class="rpe-pill selected" onclick="selectRPE(this)">7</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">8</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">9</div>
-    <div class="rpe-pill" onclick="selectRPE(this)">10</div>
-  </div>
-  <button class="log-btn" onclick="saveExercise()">Shrani vajo ✓</button>
+  <div id="sheet-content"></div>
 </div>
-
-<div class="overlay" id="cardio-overlay" style="display:none;" onclick="closeCardioSheet()"></div>
-<div class="log-sheet" id="cardio-sheet" style="display:none;">
-  <div class="sheet-handle"></div>
-  <div class="sheet-ex-title">🏃 Tek / Hoja</div>
-  <div class="sheet-prescription" style="margin-bottom:0;">Zabeleži kardio</div>
-  <div class="cardio-inputs" style="margin-top:14px;">
-    <div class="cardio-input-group"><div class="cardio-input-label">Čas (min)</div><input class="set-input" type="number" id="cardio-time" placeholder="30"></div>
-    <div class="cardio-input-group"><div class="cardio-input-label">Razdalja (km)</div><input class="set-input" type="number" id="cardio-dist" placeholder="3.5" step="0.1"></div>
-  </div>
-  <div class="cardio-sheet-label">Težavnost (1–10)</div>
-  <div class="difficulty-row" id="diff-row">
-    <div class="diff-btn" onclick="selectDiff(this)">1</div>
-    <div class="diff-btn" onclick="selectDiff(this)">2</div>
-    <div class="diff-btn" onclick="selectDiff(this)">3</div>
-    <div class="diff-btn" onclick="selectDiff(this)">4</div>
-    <div class="diff-btn selected" onclick="selectDiff(this)">5</div>
-    <div class="diff-btn" onclick="selectDiff(this)">6</div>
-    <div class="diff-btn" onclick="selectDiff(this)">7</div>
-    <div class="diff-btn" onclick="selectDiff(this)">8</div>
-    <div class="diff-btn" onclick="selectDiff(this)">9</div>
-    <div class="diff-btn" onclick="selectDiff(this)">10</div>
-  </div>
-  <button class="log-btn" style="background:var(--accent2);" onclick="saveCardio()">Shrani kardio ✓</button>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// KONFIGURACIJA
-// ============================================================
-const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
-const CLIENT = 'Nina';
+const CLIENT_NAME = 'Nina';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
 
-// ============================================================
-// STANJE
-// ============================================================
-let PROGRAM_A = [
-  { name:'Heels Elevated Goblet Squat', sets:3, reps:'10', tip:'3s spust, premor spodaj. Prva serija dotik droga za samozavest.' },
-  { name:'DB Romanian Deadlift', sets:3, reps:'12', tip:'Spust samo do raztega, ne do tal. Počasen ekscentrik.' },
-  { name:'Hip Thrust', sets:3, reps:'15', tip:'Stisni zadnjico na vrhu, kontroliran spust.' },
-  { name:'Dead Hang', sets:3, reps:'20-30s', tip:'Lopatice dol in skupaj. Dekompresija hrbtenice.' },
-  { name:'Dead Bug', sets:3, reps:'6 / stran', tip:'Brez loka v križu. Ustavi če forma odpove.' }
-];
-let PROGRAM_B = [
-  { name:'Single Arm DB Row', sets:3, reps:'12', tip:'Brez momenta, nasprotna roka na kolenu.' },
-  { name:'Band Pull-down', sets:3, reps:'12', tip:'Kontroliran spust, čuti late.' },
-  { name:'DB Floor Press', sets:3, reps:'12', tip:'Premor spodaj, poln obseg.' },
-  { name:'DB Lateral Raise', sets:3, reps:'15', tip:'Rahlo naprej, vodi s komolcem.' },
-  { name:'Band Face Pull', sets:3, reps:'20', tip:'Komolci visoko, zunanja rotacija.' },
-  { name:'Push-up (elevated)', sets:3, reps:'submaks.', tip:'3 reps od odpovedi.' },
-  { name:'Pallof Press', sets:3, reps:'10 / stran', tip:'Počasen in kontroliran.' }
-];
-let PROGRAM = PROGRAM_A;
-let activeDay = 'A';
-let MOBILITY = [];
-let loggedExercises = {};
-let currentExIndex = null;
-let currentSetCount = 0;
-let selectedEnergy = '💪';
-let mobilityDone = {};
+let isHomeWorkout = false;
+let currentDayIndex = new Date().getDay();
+if(currentDayIndex === 0) currentDayIndex = 7;
+let selectedEnergy = 'Dobro';
+let selectedEnergyEmoji = '💪';
+let workoutData = null;
+let loggedExercises = new Set();
+let weightChart = null;
 
-// Lokalni podatki — SAMO za tisti telefon/browser
-let logs = JSON.parse(localStorage.getItem('nina_logs') || '[]');
-let checkins = JSON.parse(localStorage.getItem('nina_checkins') || '[]');
-let weights = JSON.parse(localStorage.getItem('nina_weights') || '[]');
-let measurements = JSON.parse(localStorage.getItem('nina_measurements') || '[]');
-let cardioLogs = JSON.parse(localStorage.getItem('nina_cardio') || '[]');
+// INITIAL LOAD
+window.onload = () => {
+  renderWeek();
+  loadProgramFromSheets();
+  loadHistory();
+  updateGreetingDate();
+};
 
-// ============================================================
-// DATUM
-// ============================================================
-const dayNames = ['Ned','Pon','Tor','Sre','Čet','Pet','Sob'];
-const monthNames = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
-const now = new Date();
-const todayStr = now.toISOString().split('T')[0];
-document.getElementById('greeting-date').textContent =
-  dayNames[now.getDay()] + ', ' + now.getDate() + '. ' + monthNames[now.getMonth()] + ' ' + now.getFullYear();
-
-// Obnovi check-in če obstaja za danes
-const todayCheckin = checkins.find(c => c.date === todayStr);
-if (todayCheckin) {
-  document.getElementById('sleep-slider').value = todayCheckin.sleep;
-  document.getElementById('sleep-display').textContent = todayCheckin.sleep;
-  document.getElementById('checkin-note').value = todayCheckin.note || '';
-  document.getElementById('checkin-saved').style.display = 'inline';
-  selectedEnergy = todayCheckin.energy;
-  document.querySelectorAll('.emoji-btn').forEach(b => {
-    b.classList.toggle('selected', b.textContent.startsWith(todayCheckin.energy));
-  });
+function updateGreetingDate() {
+  const options = { weekday: 'long', day: 'numeric', month: 'long' };
+  document.getElementById('greeting-date').textContent = new Date().toLocaleDateString('sl-SI', options);
 }
 
-// ============================================================
-// POMOŽNE FUNKCIJE
-// ============================================================
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
+function renderWeek() {
+  const container = document.getElementById('week-strip');
+  const days = ['PON','TOR','SRE','ČET','PET','SOB','NED'];
+  const todayNum = new Date().getDate();
+  const todayDay = new Date().getDay() === 0 ? 7 : new Date().getDay();
+ 
+  const startOfWeek = new Date();
+  startOfWeek.setDate(todayNum - (todayDay - 1));
 
-function selectEnergy(el, emoji) {
-  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedEnergy = emoji;
-}
-
-function switchPage(page, el) {
-  ['today','progress','body','zgodovina'].forEach(p => {
-    document.getElementById('page-'+p).style.display = p === page ? 'block' : 'none';
-  });
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.remove('active');
-    b.querySelector('.nav-btn-label').style.color = '';
-  });
-  el.classList.add('active');
-  el.querySelector('.nav-btn-label').style.color = 'var(--accent)';
-  if (page === 'progress') updateProgress();
-  if (page === 'body') renderWeightHistory();
-  if (page === 'zgodovina') initZgodovina();
-}
-
-// ============================================================
-// CHECK-IN — SHRANI V SHEETS
-// ============================================================
-async function saveCheckin() {
-  const sleep = document.getElementById('sleep-slider').value;
-  const note = document.getElementById('checkin-note').value;
-
-  const local = { date: todayStr, sleep, energy: selectedEnergy, note };
-  const idx = checkins.findIndex(c => c.date === todayStr);
-  if (idx >= 0) checkins[idx] = local; else checkins.unshift(local);
-  localStorage.setItem('nina_checkins', JSON.stringify(checkins));
-
-  // Shrani v Sheets
-  try {
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'logWorkout',
-        client: CLIENT + '_checkin',
-        session: 'Check-in',
-        exercise: 'Dnevni check-in',
-        sets: '',
-        reps: '',
-        weight: sleep,
-        rpe: selectedEnergy,
-        notes: note,
-        date: todayStr
-      })
-    });
-  } catch(e) { /* Lokalno shranjeno */ }
-
-  document.getElementById('checkin-saved').style.display = 'inline';
-  showToast('✓ Check-in shranjen!');
-}
-
-// ============================================================
-// TEDEN STRIP
-// ============================================================
-function buildWeek() {
-  const strip = document.getElementById('week-strip');
-  const today = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (today === 0 ? 6 : today - 1));
-  strip.innerHTML = '';
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dStr = d.toISOString().split('T')[0];
-    const isToday = dStr === todayStr;
-    const isPast = d < now && !isToday;
-    const hasWorkout = logs.some(l => l.date === dStr);
-    const hasCheckin = checkins.some(c => c.date === dStr);
+  days.forEach((d, i) => {
+    const date = new Date(startOfWeek);
+    date.setDate(startOfWeek.getDate() + i);
+    const num = date.getDate();
+    const isToday = (i + 1) === todayDay;
+   
     const chip = document.createElement('div');
-    chip.className = 'day-chip' + (isToday ? ' today' : isPast ? ' done' : '') + (hasCheckin && !isToday ? ' checked-in' : '');
+    chip.className = `day-chip ${isToday ? 'today' : ''}`;
     chip.innerHTML = `
-      <div class="day-name">${dayNames[d.getDay()]}</div>
-      <div class="day-num">${d.getDate()}</div>
-      <div class="day-type">${isToday ? 'Danes' : hasWorkout ? '✓' : '—'}</div>`;
-    strip.appendChild(chip);
-  }
-}
-
-// ============================================================
-// PROGRAM — NALOŽI IZ SHEETS (samo enkrat, brez podvajanja)
-// ============================================================
-// ============================================================
-// ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
-// ============================================================
-function parseProgramText(rawText) {
-  if (!rawText || !rawText.trim()) return {};
-  // Normalize line endings
-  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  const days = {};
-  let currentDay = null;
-
-  lines.forEach(rawLine => {
-    const line = rawLine.trim();
-    if (!line) return;
-    if (line.startsWith('##')) {
-      currentDay = line.replace(/^##\s*/, '').trim();
-      if (!days[currentDay]) days[currentDay] = [];
-    } else {
-      if (!currentDay) { currentDay = 'A'; days[currentDay] = []; }
-      const parts = line.split('|').map(p => p.trim());
-      if (!parts[0]) return;
-      days[currentDay].push({
-        name: parts[0], sets: parseInt(parts[1]) || 3,
-        reps: parts[2] || '—', tip: parts[3] || '', note: parts[4] || ''
-      });
-    }
+      <div class="day-name">${d}</div>
+      <div class="day-num">${num}</div>
+      <div class="day-type">${isToday ? 'Danes' : ''}</div>
+    `;
+    container.appendChild(chip);
   });
-  Object.keys(days).forEach(d => { if (!days[d].length) delete days[d]; });
-  return days;
 }
 
-// Pomožna: vrne vaje za en dan kot array (backward compat)
-function parseProgramLines(lines) {
-  const joined = lines.join('\n');
-  const result = parseProgramText(joined);
-  const keys = Object.keys(result);
-  return keys.length ? result[keys[0]] : [];
-}
-
-// ============================================================
-// GYM / HOME MODE SWITCHER
-// ============================================================
-let activeMode = 'gym'; // 'gym' ali 'home'
-
-// Gym program arrays (iz Sheets)
-let GYM_DAYS = {}; // { 'Dan 1 — Noge': [...], ... }
-let GYM_DAY_KEYS = [];
-let GYM_ACTIVE_DAY_IDX = 0;
-
-// Home program arrays (iz Sheets)
-let HOME_DAYS = {};
-let HOME_DAY_KEYS = [];
-let HOME_ACTIVE_DAY_IDX = 0;
-
+// FIXED PROGRAM LOADING LOGIC
 async function loadProgramFromSheets() {
-  // Naloži oba programa vzporedno
-  await Promise.all([
-    loadProgramForMode('gym'),
-    loadProgramForMode('home')
-  ]);
-  // Po nalaganju nastavi pravilni PROGRAM glede na aktiven mode
-  if (activeMode === 'gym' && GYM_DAY_KEYS.length > 0) {
-    PROGRAM = GYM_DAYS[GYM_DAY_KEYS[GYM_ACTIVE_DAY_IDX]] || [];
-    activeDay = 'gym_' + GYM_ACTIVE_DAY_IDX;
-  } else if (activeMode === 'home') {
-    PROGRAM = PROGRAM_A.length ? PROGRAM_A : [];
-    activeDay = 'A';
-  }
-  buildWorkoutSection();
-}
-
-async function loadProgramForMode(mode) {
-  try {
-    const res = await fetch(API + '?action=getProgram&client=' + CLIENT + '&type=' + mode);
-    const data = await res.json();
-    if (!data || !data.program || !data.program.trim()) return;
-
-    const parsed = parseProgramText(data.program);
-    const keys = Object.keys(parsed);
-    if (!keys.length) return;
-
-    if (mode === 'gym') {
-      GYM_DAYS = parsed;
-      GYM_DAY_KEYS = keys;
-      GYM_ACTIVE_DAY_IDX = 0;
-    } else {
-      HOME_DAYS = parsed;
-      HOME_DAY_KEYS = keys;
-      HOME_ACTIVE_DAY_IDX = 0;
+    const container = document.getElementById('workout-container');
+    const switcher = document.getElementById('mode-switcher');
+    const type = isHomeWorkout ? 'home' : 'gym';
+   
+    container.innerHTML = '<div class="mode-loading">Nalaganje programa...</div>';
+   
+    try {
+        const resp = await fetch(`${scriptURL}?action=getProgram&client=${CLIENT_NAME}&type=${type}`);
+        const data = await resp.json();
+       
+        if (data.program && data.program.trim() !== "") {
+            workoutData = data.program;
+            parseProgram(data.program);
+            switcher.style.display = 'flex';
+        } else {
+            container.innerHTML = `<div class="rest-card"><div class="rest-emoji">☕</div><div class="rest-title">Počitek</div><p class="rest-text">Danes ni načrtovanega treninga za ${type}.</p></div>`;
+            switcher.style.display = 'flex';
+        }
+    } catch (e) {
+        console.error("Load error:", e);
+        container.innerHTML = '<div class="rest-card">❌ Napaka pri povezavi.</div>';
+    } finally {
+        // RESET BUTTON STATE
+        const homeBtn = document.getElementById('homeBtn');
+        const gymBtn = document.getElementById('gymBtn');
+        homeBtn.classList.remove('processing');
+        homeBtn.disabled = false;
+       
+        if (isHomeWorkout) {
+            homeBtn.classList.add('active');
+            gymBtn.classList.remove('active');
+        } else {
+            gymBtn.classList.add('active');
+            homeBtn.classList.remove('active');
+        }
     }
+}
 
-    // Naloži mobilnost in sporočilo (samo enkrat, iz gym)
-    if (mode === 'gym') {
-      if (data.mobility && data.mobility.trim()) {
-        MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
-          .filter(l => l.trim())
-          .map(line => {
-            const p = line.split('|').map(x => x.trim());
-            return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
-          }).filter(m => m.name);
-      }
-      if (data.message && data.message.trim()) {
-        const el = document.getElementById('coach-message-text');
-        if (el) el.textContent = data.message.trim();
-      }
+function parseProgram(text) {
+  const container = document.getElementById('workout-container');
+  container.innerHTML = '';
+  const lines = text.split('\n');
+ 
+  let currentDay = '';
+  lines.forEach(line => {
+    if (line.startsWith('##')) {
+      currentDay = line.replace('##','').trim();
+      const h = document.createElement('div');
+      h.className = 'section-title';
+      h.style = 'margin: 20px 0 10px 5px; color: var(--accent);';
+      h.innerText = currentDay;
+      container.appendChild(h);
+    } else if (line.includes('|')) {
+      const parts = line.split('|');
+      const name = parts[0].trim();
+      const prescription = `${parts[1].trim()} serije × ${parts[2].trim()} pon.`;
+      const tip = parts[3] ? parts[3].trim() : '';
+     
+      const row = document.createElement('div');
+      row.className = 'exercise-row';
+      row.onclick = () => openLogSheet(name, parts[1].trim(), parts[2].trim(), tip);
+     
+      const isLogged = loggedExercises.has(name);
+      row.innerHTML = `
+        <div class="ex-num ${isLogged ? 'logged' : ''}">${isLogged ? '✓' : '•'}</div>
+        <div class="ex-info">
+          <div class="ex-name">${name}</div>
+          <div class="ex-prescription">${prescription}</div>
+          ${tip ? `<div class="ex-tip">${tip}</div>` : ''}
+        </div>
+        <div class="ex-chevron">›</div>
+      `;
+      container.appendChild(row);
     }
-  } catch(e) {
-    console.log('Program load failed for mode:', mode);
-  }
-}
-
-function switchMode(mode) {
-  activeMode = mode;
-  loggedExercises = {};
-  if (mode === 'gym') {
-    GYM_ACTIVE_DAY_IDX = 0;
-    activeDay = 'gym_0';
-    const keys = GYM_DAY_KEYS;
-    PROGRAM = (keys.length > 0 && GYM_DAYS[keys[0]]) ? GYM_DAYS[keys[0]] : [];
-  } else {
-    activeDay = 'A';
-    PROGRAM = PROGRAM_A.length ? PROGRAM_A : [];
-  }
-  syncProgramFromMode();
-  buildWorkoutSection();
-}
-
-function syncProgramFromMode() {
-  if (activeMode === 'gym') {
-    const keys = GYM_DAY_KEYS;
-    if (!keys.length) return;
-    // Gym: dinamično po indeksu aktivnega dne
-    const idx = GYM_ACTIVE_DAY_IDX;
-    PROGRAM_A = GYM_DAYS[keys[0]] || [];
-    PROGRAM_B = GYM_DAYS[keys[1]] || [];
-    // Za gym imamo 3 dni — shranjujemo vse v PROGRAM_DAYS
-  } else {
-    PROGRAM_A = HOME_DAYS[HOME_DAY_KEYS[0]] || [];
-    PROGRAM_B = HOME_DAYS[HOME_DAY_KEYS[1]] || [];
-  }
-  PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
-}
-
-// ============================================================
-// WORKOUT UI
-// ============================================================
-function modeSwitcherHTML() {
-  return `<div class="mode-switcher">
-    <button class="mode-btn ${activeMode==='gym'?'active':''}" onclick="switchMode('gym')">🏋️ Gym</button>
-    <button class="mode-btn home-btn ${activeMode==='home'?'active':''}" onclick="switchMode('home')">🏠 Doma</button>
-  </div>`;
-}
-
-function gymDayTabsHTML() {
-  const keys = GYM_DAY_KEYS;
-  if (!keys.length) return '';
-  const icons = ['🦵','💪','🔙'];
-  const shortNames = keys.map(k => {
-    if (/noge|lower/i.test(k)) return { icon:'🦵', label:'Noge' };
-    if (/potisk|push/i.test(k)) return { icon:'💪', label:'Potisk' };
-    if (/vlečenje|pull/i.test(k)) return { icon:'🔙', label:'Vlečenje' };
-    return { icon: icons[keys.indexOf(k)] || '🏋️', label: k.replace(/##\s*/,'').replace(/Dan \d+ — /,'') };
   });
-  const tabs = keys.map((k, i) => {
-    const active = GYM_ACTIVE_DAY_IDX === i && activeDay !== 'cardio' && activeDay !== 'mobility';
-    return `<div class="day-tab ${active?'active':''}" onclick="switchGymDay(${i})"><span class="day-tab-icon">${shortNames[i].icon}</span>${shortNames[i].label}</div>`;
-  }).join('');
-  return `<div class="day-tabs">
-    ${tabs}
-    <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')"><span class="day-tab-icon">🏃</span>Kardio</div>
-    <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')"><span class="day-tab-icon">💙</span>Mobilnost</div>
-  </div>`;
 }
 
-function homeDayTabsHTML() {
-  const keys = HOME_DAY_KEYS;
-  const tabA = `<div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')"><span class="day-tab-icon">🦵</span>Day A</div>`;
-  const tabB = keys.length > 1 ? `<div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')"><span class="day-tab-icon">💪</span>Day B</div>` : '';
-  return `<div class="day-tabs">
-    ${tabA}${tabB}
-    <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')"><span class="day-tab-icon">🏃</span>Kardio</div>
-    <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')"><span class="day-tab-icon">💙</span>Mobilnost</div>
-  </div>`;
+function toggleHomeWorkout() {
+    const btn = document.getElementById('homeBtn');
+    if (btn.classList.contains('processing')) return;
+   
+    isHomeWorkout = !isHomeWorkout;
+    btn.classList.add('processing');
+    btn.innerText = "Nalaganje...";
+   
+    loadProgramFromSheets();
 }
 
-function tabsHTML() {
-  const modeSwitcher = modeSwitcherHTML();
-  const dayTabs = activeMode === 'gym' ? gymDayTabsHTML() : homeDayTabsHTML();
-  return modeSwitcher + dayTabs;
-}
-
-function switchGymDay(idx) {
-  GYM_ACTIVE_DAY_IDX = idx;
-  activeDay = 'gym_' + idx;
-  const keys = GYM_DAY_KEYS;
-  PROGRAM = GYM_DAYS[keys[idx]] || [];
-  loggedExercises = {};
-  buildWorkoutSection();
-  buildCardioStandalone();
-}
-
-function switchDay(day) {
-  activeDay = day;
-  if (day === 'A') {
-    if (activeMode === 'gym') { GYM_ACTIVE_DAY_IDX = 0; PROGRAM = GYM_DAYS[GYM_DAY_KEYS[0]] || PROGRAM_A; }
-    else { PROGRAM = PROGRAM_A; }
-    loggedExercises = {};
-  } else if (day === 'B') {
-    if (activeMode === 'gym') { GYM_ACTIVE_DAY_IDX = 1; PROGRAM = GYM_DAYS[GYM_DAY_KEYS[1]] || PROGRAM_B; }
-    else { PROGRAM = PROGRAM_B; }
-    loggedExercises = {};
-  }
-  buildWorkoutSection();
-  buildCardioStandalone();
-}
-
-function buildCardioStandalone() {
-  const el = document.getElementById('cardio-standalone-btn');
-  if (!el) return;
-  const cardioLogged = cardioLogs.find(c => c.date === todayStr);
-  if (cardioLogged) {
-    el.innerHTML = `<div class="session-card" style="border-color:rgba(255,107,53,0.3);">
-      <div class="session-card-header" style="border-bottom:none;">
-        <div><div class="session-name" style="font-size:18px;">🏃 Kardio</div>
-        <div class="session-meta">${cardioLogged.time} min · ${cardioLogged.dist} km · težavnost ${cardioLogged.diff}/10</div></div>
-        <button class="start-btn" style="background:rgba(255,107,53,0.15);color:var(--accent2);border:1px solid rgba(255,107,53,0.3);" onclick="openCardioSheet()">+ Posodobi</button>
-      </div></div>`;
-  } else {
-    el.innerHTML = `<button class="cardio-add-btn" onclick="openCardioSheet()">🏃 + Zabeleži kardio (kadarkoli)</button>`;
-  }
-}
-
-function buildWorkoutSection() {
-  const section = document.getElementById('workout-section');
-  if (activeDay === 'mobility') {
-    section.innerHTML = tabsHTML() + `<div class="session-card" style="border-color:rgba(68,136,255,0.3);">
-      <div class="session-card-header"><div><div class="session-name" style="color:#88aaff;">💙 Mobilnost</div>
-      <div class="session-meta">Opravi kadarkoli · pred ali po treningu</div></div></div>
-      ${MOBILITY.length > 0 ? MOBILITY.map((m,i) => `
-        <div class="mobility-row"><div class="mobility-icon">🔵</div>
-        <div class="mobility-info"><div class="mobility-name">${m.name}</div>
-        <div class="mobility-detail">${m.detail}</div>
-        ${m.tip ? `<div class="ex-tip">${m.tip}</div>` : ''}</div>
-        <button class="mobility-done-btn ${mobilityDone[i]?'done':''}" id="mob-${i}" onclick="toggleMobility(this,${i})">${mobilityDone[i]?'✓ Opravljeno':'Opravi'}</button>
-        </div>`).join('') : '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">Trener še ni dodal mobilnostnega protokola.</div>'}
-    </div>`;
-    return;
-  }
-  if (activeDay === 'cardio') {
-    section.innerHTML = tabsHTML() + `<div class="session-card" style="border-color:rgba(255,107,53,0.3);">
-      <div class="session-card-header"><div><div class="session-name">🏃 Kardio dan</div>
-      <div class="session-meta">Zone 2 · 30–45 min · konverzacijski tempo</div></div></div>
-      <div style="padding:16px 18px;"><div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;">Danes je kardio dan. Cilj: ohranjaj tempo, pri katerem lahko govoriš v stavkih.</div>
-      <button class="cardio-add-btn" style="border-color:var(--accent2);" onclick="openCardioSheet()">🏃 + Zabeleži kardio ↗</button></div>
-    </div>`;
-    return;
-  }
-  const allLogged = PROGRAM.length > 0 && PROGRAM.every((_, i) => loggedExercises[i]);
-  if (allLogged) {
-    section.innerHTML = tabsHTML() + `<div class="rest-card">
-      <div class="rest-emoji">🎉</div>
-      <div class="rest-title">Trening zaključen!</div>
-      <div class="rest-text">Odlično opravljeno, Nina. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
-    </div>`;
-    return;
-  }
-  let dayLabel, dayMeta;
-  if (activeMode === 'gym' && GYM_DAY_KEYS.length) {
-    const idx = typeof GYM_ACTIVE_DAY_IDX !== 'undefined' ? GYM_ACTIVE_DAY_IDX : 0;
-    dayLabel = GYM_DAY_KEYS[idx] || 'Trening';
-    dayMeta = PROGRAM.length + ' vaj · gym trening';
-  } else {
-    dayLabel = activeDay === 'A' ? 'Day A — Lower + Core' : 'Day B — Upper + Core';
-    dayMeta = activeDay === 'A' ? (PROGRAM_A.length + ' vaj · ~50 min') : (PROGRAM_B.length + ' vaj · ~55 min');
-  }
-  section.innerHTML = tabsHTML() + `<div class="session-card">
-    <div class="session-card-header"><div>
-      <div class="session-name">${dayLabel}</div>
-      <div class="session-meta">${dayMeta}</div>
-    </div><button class="start-btn" onclick="showToast('Začni z vajo 1! 💪')">Začni ▶</button></div>
-    <div id="exercise-list"></div>
-  </div>`;
-  buildExerciseList();
-}
-
-function buildExerciseList() {
-  const list = document.getElementById('exercise-list');
-  if (!list) return;
-  list.innerHTML = PROGRAM.map((ex, i) => {
-    const logged = loggedExercises[i];
-    return `<div class="exercise-row" onclick="openSheet(${i})">
-      <div class="ex-num ${logged ? 'logged' : ''}">${logged ? '✓' : i+1}</div>
-      <div class="ex-info">
-        <div class="ex-name">${ex.name}</div>
-        <div class="ex-prescription">${ex.sets} × ${ex.reps}</div>
-        ${ex.tip ? `<div class="ex-tip">${ex.tip}</div>` : ''}
-      </div>
-      <div class="ex-chevron">›</div>
-    </div>`;
-  }).join('');
-}
-
-// ============================================================
-// LOG SHEET
-// ============================================================
-function openSheet(idx) {
-  const ex = PROGRAM[idx];
-  currentExIndex = idx;
-  currentSetCount = ex.sets;
-  document.getElementById('sheet-title').textContent = ex.name;
-  document.getElementById('sheet-prescription').textContent = ex.sets + ' serije × ' + ex.reps;
-  document.getElementById('sheet-tip').textContent = ex.tip || '';
-  const grid = document.getElementById('sets-grid');
-  // Ohrani header, odstrani stare vrstice
-  while (grid.children.length > 4) grid.removeChild(grid.lastChild);
-  for (let s = 1; s <= ex.sets; s++) addSetRowAt(grid, s);
+function openLogSheet(name, sets, reps, tip) {
   document.getElementById('overlay').style.display = 'block';
-  document.getElementById('log-sheet').style.display = 'block';
+  const sheet = document.getElementById('log-sheet');
+  sheet.style.display = 'block';
+ 
+  let setsHtml = '';
+  for(let i=1; i<=parseInt(sets); i++) {
+    setsHtml += `
+      <div class="sets-grid">
+        <div class="set-num">${i}</div>
+        <input type="number" class="set-input weight-in" placeholder="kg" id="w_${i}">
+        <input type="number" class="set-input reps-in" placeholder="${reps}" id="r_${i}">
+        <div class="set-done" onclick="this.classList.toggle('checked')">✓</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('sheet-content').innerHTML = `
+    <div class="sheet-ex-title">${name}</div>
+    <div class="sheet-prescription">${sets} serije × ${reps} ponovitev</div>
+    ${tip ? `<div class="sheet-tip">💡 ${tip}</div>` : ''}
+    <div class="sets-grid" style="margin-bottom:8px; opacity:0.5;">
+      <div class="sets-grid-header">SET</div>
+      <div class="sets-grid-header">TEŽA</div>
+      <div class="sets-grid-header">PON.</div>
+      <div class="sets-grid-header">OK</div>
+    </div>
+    ${setsHtml}
+    <div class="rpe-section-label" style="margin-top:15px;">Intenzivnost (RPE)</div>
+    <div class="rpe-pills">
+      ${[6,7,8,9,10].map(n => `<div class="rpe-pill" onclick="selectRPE(this, ${n})">${n}</div>`).join('')}
+    </div>
+    <button class="log-btn" onclick="saveLog('${name}', ${sets})">Shrani serije ↗</button>
+  `;
 }
 
-function addSetRowAt(grid, num) {
-  grid.innerHTML += `
-    <div class="set-num">${num}</div>
-    <input class="set-input" type="number" placeholder="kg" step="0.5">
-    <input class="set-input" type="number" placeholder="${PROGRAM[currentExIndex]?.reps || '—'}">
-    <div class="set-done" onclick="this.classList.toggle('checked')">✓</div>`;
+let selectedRPE = 8;
+function selectRPE(el, val) {
+  document.querySelectorAll('.rpe-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRPE = val;
 }
 
-function addSetRow() {
-  currentSetCount++;
-  const grid = document.getElementById('sets-grid');
-  addSetRowAt(grid, currentSetCount);
+async function saveLog(name, totalSets) {
+  const btn = document.querySelector('.log-btn');
+  btn.disabled = true;
+  btn.innerText = "Shranjevanje...";
+
+  let noteParts = [];
+  for(let i=1; i<=totalSets; i++) {
+    const w = document.getElementById(`w_${i}`).value;
+    const r = document.getElementById(`r_${i}`).value;
+    if(w && r) noteParts.push(`S${i}: ${w}kg×${r}`);
+  }
+
+  const payload = {
+    action: 'logWorkout',
+    client: CLIENT_NAME,
+    date: new Date().toISOString(),
+    exercise: name,
+    sets: totalSets,
+    reps: document.getElementById('r_1').placeholder,
+    weight: document.getElementById('w_1').value || 0,
+    rpe: selectedRPE,
+    notes: noteParts.join(' | ')
+  };
+
+  try {
+    await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+    loggedExercises.add(name);
+    showToast();
+    closeLogSheet();
+    parseProgram(workoutData);
+  } catch(e) {
+    alert("Napaka pri shranjevanju.");
+  }
 }
 
-function closeSheet() {
+function closeLogSheet() {
   document.getElementById('overlay').style.display = 'none';
   document.getElementById('log-sheet').style.display = 'none';
 }
 
-function selectRPE(el) {
-  document.querySelectorAll('.rpe-pill').forEach(p => p.classList.remove('selected'));
+function selectEnergy(el, emoji, text) {
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
+  selectedEnergy = text;
+  selectedEnergyEmoji = emoji;
 }
 
-async function saveExercise() {
-  const ex = PROGRAM[currentExIndex];
-  const grid = document.getElementById('sets-grid');
-  const inputs = grid.querySelectorAll('.set-input');
-  const rpe = document.querySelector('.rpe-pill.selected')?.textContent || '7';
-  let setsData = [];
-  for (let i = 0; i < inputs.length; i += 2) {
-    setsData.push({ kg: inputs[i].value || '—', reps: inputs[i+1].value || '—' });
-  }
-  const entry = {
-    date: todayStr,
-    session: activeMode === 'gym' ? (GYM_DAY_KEYS[GYM_ACTIVE_DAY_IDX] || 'Gym') : 'Day ' + activeDay,
-    exercise: ex.name,
-    sets: setsData.length,
-    reps: setsData.map(s => s.reps).join('/'),
-    weight: setsData.map(s => s.kg).join('/'),
-    rpe
-  };
-  logs.unshift(entry);
-  localStorage.setItem('nina_logs', JSON.stringify(logs));
-  loggedExercises[currentExIndex] = true;
-  closeSheet();
-  buildWorkoutSection();
-  // Shrani v Sheets
-  try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, ...entry }) });
-    showToast('✓ ' + ex.name + ' shranjeno!');
-  } catch(e) {
-    showToast('✓ Shranjeno lokalno!');
-  }
-}
-
-// ============================================================
-// KARDIO
-// ============================================================
-function openCardioSheet() {
-  document.getElementById('cardio-overlay').style.display = 'block';
-  document.getElementById('cardio-sheet').style.display = 'block';
-}
-function closeCardioSheet() {
-  document.getElementById('cardio-overlay').style.display = 'none';
-  document.getElementById('cardio-sheet').style.display = 'none';
-}
-function selectDiff(el) {
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-}
-async function saveCardio() {
-  const time = document.getElementById('cardio-time').value || '—';
-  const dist = document.getElementById('cardio-dist').value || '—';
-  const diff = document.querySelector('.diff-btn.selected')?.textContent || '5';
-  const entry = { date: todayStr, time, dist, diff };
-  const idx = cardioLogs.findIndex(c => c.date === todayStr);
-  if (idx >= 0) cardioLogs[idx] = entry; else cardioLogs.unshift(entry);
-  localStorage.setItem('nina_cardio', JSON.stringify(cardioLogs));
-  closeCardioSheet();
-  buildCardioStandalone();
-  try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Kardio', exercise: 'Tek/Hoja', sets: 1, reps: time + 'min', weight: dist + 'km', rpe: diff, date: todayStr }) });
-    showToast('✓ Kardio shranjen!');
-  } catch(e) {
-    showToast('✓ Kardio shranjen lokalno!');
-  }
-}
-
-// ============================================================
-// TELO
-// ============================================================
-async function saveDailyWeight() {
-  const w = document.getElementById('daily-weight').value;
-  if (!w) return;
-  const entry = { date: todayStr, weight: w };
-  const idx = weights.findIndex(x => x.date === todayStr);
-  if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
-  localStorage.setItem('nina_weights', JSON.stringify(weights));
-  renderWeightHistory();
-  try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: todayStr }) });
-    showToast('✓ Teža shranjena!');
-  } catch(e) {
-    showToast('✓ Shranjeno lokalno!');
-  }
-}
-async function saveMeasurements() {
-  const entry = { date: todayStr, waist: document.getElementById('meas-waist').value, hips: document.getElementById('meas-hips').value, chest: document.getElementById('meas-chest').value, thigh: document.getElementById('meas-thigh').value };
-  measurements.unshift(entry);
-  localStorage.setItem('nina_measurements', JSON.stringify(measurements));
-  try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr }) });
-    showToast('✓ Mere shranjene!');
-  } catch(e) {
-    showToast('✓ Shranjeno lokalno!');
-  }
-}
-function renderWeightHistory() {
-  const card = document.getElementById('weight-history-card');
-  const container = document.getElementById('weight-history');
-  if (!weights.length) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
-  container.innerHTML = weights.slice(0,10).map(w => `
-    <div class="history-entry">
-      <div class="history-date">${w.date}</div>
-      <div class="history-vals"><div class="history-val"><div class="history-val-num">${w.weight} kg</div></div></div>
-    </div>`).join('');
-}
-
-// ============================================================
-// NAPREDEK
-// ============================================================
-function updateProgress() {
-  document.getElementById('prog-sessions').textContent = [...new Set(logs.map(l => l.date))].length;
-  document.getElementById('prog-sets').textContent = logs.reduce((sum, l) => sum + (parseInt(l.sets) || 0), 0);
-  const last7 = checkins.slice(0,7);
-  if (last7.length) {
-    const avg = (last7.reduce((s,c) => s + parseFloat(c.sleep || 0), 0) / last7.length).toFixed(1);
-    document.getElementById('prog-sleep').innerHTML = avg + '<span class="stat-unit">ur</span>';
-    document.getElementById('prog-sleep-sub').textContent = 'povprečje zadnjih ' + last7.length + ' dni';
-  }
-  const logList = document.getElementById('prog-log-list');
-  if (logs.length) {
-    logList.innerHTML = `<div style="margin-top:14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Zadnji treningi</div>` +
-      logs.slice(0,5).map(l => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">${l.date} · ${l.session}</div>
-        <div style="font-size:14px;font-weight:500;">${l.exercise}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-top:3px;">${l.weight} kg · ${l.sets}×${l.reps} · RPE ${l.rpe}</div>
-      </div>`).join('');
-  }
-}
-
-function toggleMobility(btn, idx) {
-  mobilityDone[idx] = !mobilityDone[idx];
-  btn.classList.toggle('done', mobilityDone[idx]);
-  btn.textContent = mobilityDone[idx] ? '✓ Opravljeno' : 'Opravi';
-}
-
-// ============================================================
-// INIT
-// ============================================================
-buildWeek();
-buildWorkoutSection();
-buildCardioStandalone();
-renderWeightHistory();
-loadProgramFromSheets(); // Enkrat ob nalaganju strani — naloži gym + home
-
-// ============================================================
-// ZGODOVINA TAB — fetch Sheets + localStorage merge
-// ============================================================
-let zgChart = null;
-let zgAllLogs = [];
-let zgLoaded = false;
-
-async function initZgodovina() {
-  if (zgLoaded) { renderZgodovinaStats(); renderZgodovinaList(); return; }
-  document.getElementById('zg-loading').style.display = 'block';
-  document.getElementById('zg-list').innerHTML = '';
-
-  let combined = [...logs];
-
-  try {
-    const res = await fetch(API + '?action=getLogs&client=' + CLIENT);
-    const data = await res.json();
-    if (data && Array.isArray(data.logs)) {
-      data.logs.forEach(entry => {
-        const key = entry.date + '|' + entry.exercise;
-        const exists = combined.some(l => l.date + '|' + l.exercise === key);
-        if (!exists) combined.push(entry);
-      });
+async function saveCheckin() {
+  const btn = document.querySelector('.checkin-save-btn');
+  btn.innerText = "Shranjevanje...";
+ 
+  const payload = {
+    action: 'saveProfile',
+    client: CLIENT_NAME,
+    profile: {
+      checkin_date: new Date().toISOString(),
+      sleep: document.getElementById('sleep-slider').value,
+      energy: selectedEnergy,
+      note: document.getElementById('checkin-note').value
     }
-  } catch(e) {
-    console.log('Sheets history fetch failed, using localStorage only');
+  };
+
+  try {
+    await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('checkin-saved').style.display = 'block';
+    setTimeout(() => { document.getElementById('checkin-saved').style.display = 'none'; }, 3000);
+  } finally {
+    btn.innerText = "Shrani ↗";
   }
-
-  combined.sort((a,b) => b.date.localeCompare(a.date));
-  zgAllLogs = combined;
-  zgLoaded = true;
-
-  populateZgExerciseDropdown();
-  renderZgodovinaStats();
-  renderZgodovinaList();
-  document.getElementById('zg-loading').style.display = 'none';
 }
 
-function populateZgExerciseDropdown() {
-  const sel = document.getElementById('zg-exercise-select');
-  const fromA = typeof PROGRAM_A !== 'undefined' ? PROGRAM_A.map(e => e.name) : [];
-  const fromB = typeof PROGRAM_B !== 'undefined' ? PROGRAM_B.map(e => e.name) : [];
-  const fromLogs = zgAllLogs.map(l => l.exercise).filter(e => e && !e.includes('Check-in') && !e.includes('Telesna') && !e.includes('Tek'));
-  const allExercises = [...new Set([...fromA, ...fromB, ...fromLogs])].filter(Boolean).sort();
-  sel.innerHTML = '<option value="">Izberi vajo…</option>' +
-    allExercises.map(e => `<option value="${e}">${e}</option>`).join('');
+async function loadHistory() {
+    try {
+        const resp = await fetch(`${scriptURL}?action=getLogs&client=${CLIENT_NAME}`);
+        const data = await resp.json();
+        if(data.logs) renderHistory(data.logs);
+    } catch(e) { console.error("History fail:", e); }
 }
 
-function renderZgodovinaStats() {
-  const trainDays = new Set(zgAllLogs.filter(l => l.session && !l.session.includes('Kardio') && !l.session.includes('Mere') && !l.session.includes('Teža') && !l.session.includes('check')).map(l => l.date));
-  document.getElementById('zg-total').textContent = trainDays.size;
-  const totalSets = zgAllLogs.reduce((a,l) => a + (parseInt(l.sets)||0), 0);
-  document.getElementById('zg-sets').textContent = totalSets;
-  const last = zgAllLogs.find(l => l.date);
-  document.getElementById('zg-pr').textContent = last ? last.date.slice(5).replace('-','/') : '—';
-}
-
-function renderZgodovinaList() {
-  const byDate = {};
-  zgAllLogs.forEach(l => {
-    if (!l.date) return;
-    if (!byDate[l.date]) byDate[l.date] = [];
-    byDate[l.date].push(l);
+function renderHistory(logs) {
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+ 
+  // Group by date
+  const grouped = {};
+  logs.forEach(l => {
+    const d = l.date.split('T')[0];
+    if(!grouped[d]) grouped[d] = [];
+    grouped[d].push(l);
   });
-  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
-  const container = document.getElementById('zg-list');
-  container.innerHTML = dates.slice(0, 30).map((date, idx) => {
-    const entries = byDate[date].filter(l => !l.session?.includes('check') && !l.exercise?.includes('Telesna'));
-    if (!entries.length) return '';
-    const session = entries[0].session || 'Trening';
-    return `
-      <div class="zh-day-card ${idx===0?'open':''}">
-        <div class="zh-day-header" onclick="this.parentElement.classList.toggle('open')">
-          <div>
-            <div class="zh-day-title">${session}</div>
-            <div class="zh-day-date">${date}</div>
+
+  Object.keys(grouped).slice(0, 10).forEach(date => {
+    const card = document.createElement('div');
+    card.className = 'zh-day-card';
+    const dayLogs = grouped[date];
+    card.innerHTML = `
+      <div class="zh-day-header" onclick="this.parentElement.classList.toggle('open')">
+        <div>
+          <div class="zh-day-date">${date}</div>
+          <div class="zh-day-title">${dayLogs[0].session || 'Trening'}</div>
+        </div>
+        <div class="zh-day-chevron">▼</div>
+      </div>
+      <div class="zh-day-body">
+        ${dayLogs.map(dl => `
+          <div class="zh-ex-row">
+            <div class="zh-ex-name">${dl.exercise}</div>
+            <div class="zh-ex-stats">${dl.notes || `${dl.weight}kg × ${dl.reps} (RPE ${dl.rpe})`}</div>
           </div>
-          <div class="zh-day-chevron">▾</div>
-        </div>
-        <div class="zh-day-body">
-          ${entries.map(l => `
-            <div class="zh-ex-row">
-              <div class="zh-ex-name">${l.exercise||'—'}</div>
-              <div class="zh-ex-stats">${l.sets||'—'}×${l.reps||'—'} · ${l.weight||'—'}kg · RPE ${l.rpe||'—'}</div>
-            </div>
-          `).join('')}
-        </div>
+        `).join('')}
       </div>
     `;
-  }).join('');
-}
-
-function renderZgodovinaChart() {
-  const sel = document.getElementById('zg-exercise-select');
-  const exercise = sel.value;
-  const wrap = document.getElementById('zg-chart-wrap');
-  if (!exercise) { wrap.style.display = 'none'; return; }
-
-  const entries = zgAllLogs
-    .filter(l => l.exercise === exercise && l.weight && l.weight !== '—')
-    .map(l => {
-      const parts = String(l.weight).split('/').map(v => parseFloat(v)).filter(v => !isNaN(v));
-      const maxW = parts.length ? Math.max(...parts) : parseFloat(l.weight) || 0;
-      return { date: l.date, weight: maxW };
-    })
-    .filter(l => l.weight > 0)
-    .sort((a,b) => a.date.localeCompare(b.date));
-
-  if (!entries.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-
-  const maxEntry = entries.reduce((max, e) => e.weight > max.weight ? e : max, entries[0]);
-  document.getElementById('zg-pr-display').innerHTML =
-    `🏆 PR: <strong>${maxEntry.weight} kg</strong> · ${maxEntry.date}`;
-
-  const ctx = document.getElementById('zg-chart').getContext('2d');
-  if (zgChart) zgChart.destroy();
-  zgChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: entries.map(e => e.date.slice(5)),
-      datasets: [{
-        data: entries.map(e => e.weight),
-        borderColor: '#c8f135',
-        backgroundColor: 'rgba(200,241,53,0.08)',
-        pointBackgroundColor: '#c8f135',
-        tension: 0.3,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } },
-        y: { ticks: { color: '#666', font: { size: 10 } }, grid: { color: '#2a2a2a' } }
-      }
-    }
+    list.appendChild(card);
   });
 }
 
+function showPage(pageId, navEl) {
+  document.querySelectorAll('.content > div').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + pageId).style.display = 'block';
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  navEl.classList.add('active');
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 </script>
 </body>
 </html>
