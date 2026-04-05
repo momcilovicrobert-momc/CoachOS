@@ -500,6 +500,7 @@ let PROGRAM_B = [
 ];
 let PROGRAM = PROGRAM_A;
 let PROGRAM_C = [];
+let DAY_NAMES = { A: 'Day A', B: 'Day B', C: 'Day C' }; // Dejanska imena iz programa
 let activeDay = 'A';
 let MOBILITY = [];
 let loggedExercises = {};
@@ -694,12 +695,11 @@ async function loadProgramFromSheets() {
 
     // Dinamično mapiranje: prvi dan → A, drugi → B, tretji → C
     keys.forEach((key, idx) => {
-      const k = key.toLowerCase().replace(/\s+/g, '');
-      if (idx === 0) PROGRAM_A = parsed[key];
-      else if (idx === 1) PROGRAM_B = parsed[key];
-      else if (idx === 2) PROGRAM_C = parsed[key];
+      if (idx === 0) { PROGRAM_A = parsed[key]; DAY_NAMES.A = key; }
+      else if (idx === 1) { PROGRAM_B = parsed[key]; DAY_NAMES.B = key; }
+      else if (idx === 2) { PROGRAM_C = parsed[key]; DAY_NAMES.C = key; }
     });
-    if (keys.length === 1) PROGRAM_A = parsed[keys[0]];
+    if (keys.length === 1) { PROGRAM_A = parsed[keys[0]]; DAY_NAMES.A = keys[0]; }
 
     // Naloži mobilnost
     if (data.mobility && data.mobility.trim()) {
@@ -798,9 +798,9 @@ function switchProgram(which) {
 function tabsHTML() {
   const hasDayC = PROGRAM_C && PROGRAM_C.length > 0;
   return `<div class="day-tabs">
-    <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')"><span class="day-tab-icon">🦵</span>Day A</div>
-    <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')"><span class="day-tab-icon">💪</span>Day B</div>
-    ${hasDayC ? `<div class="day-tab ${activeDay==='C'?'active':''}" onclick="switchDay('C')"><span class="day-tab-icon">🔋</span>Day C</div>` : ''}
+    <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')"><span class="day-tab-icon">🦵</span>${DAY_NAMES.A}</div>
+    <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')"><span class="day-tab-icon">💪</span>${DAY_NAMES.B}</div>
+    ${hasDayC ? `<div class="day-tab ${activeDay==='C'?'active':''}" onclick="switchDay('C')"><span class="day-tab-icon">🔋</span>${DAY_NAMES.C}</div>` : ''}
     <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')"><span class="day-tab-icon">🏃</span>Kardio</div>
     <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')"><span class="day-tab-icon">💙</span>Mobilnost</div>
   </div>`;
