@@ -258,6 +258,19 @@ input[type=range]{width:100%;}
       </div>
     </div>
     <div class="section" id="workout-section"></div>
+    <!-- Program toggle — prikazan samo če obstaja alt program -->
+    <div id="program-toggle-section" style="display:none;margin:0 0 4px 0;">
+      <div style="display:flex;gap:8px;padding:0;">
+        <button id="toggle-btn-main" onclick="switchProgram('main')"
+          style="flex:1;padding:10px;border-radius:12px;background:rgba(200,241,53,0.15);border:1px solid var(--accent);color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">
+          🏋️ Gym
+        </button>
+        <button id="toggle-btn-alt" onclick="switchProgram('alt')"
+          style="flex:1;padding:10px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;">
+          🏠 <span id="toggle-alt-label">Alt</span>
+        </button>
+      </div>
+    </div>
     <div class="section" id="cardio-standalone-section">
       <div id="cardio-standalone-btn"></div>
     </div>
@@ -494,6 +507,14 @@ let currentSetCount = 0;
 let selectedEnergy = '💪';
 let mobilityDone = {};
 
+// Multi-program support
+let ALT_PROGRAM_A = null;
+let ALT_PROGRAM_B = null;
+let ALT_PROGRAM_NAME = '';
+let activeProgram = 'main'; // 'main' ali 'alt'
+let MAIN_PROGRAM_A = null; // shranjeni originali
+let MAIN_PROGRAM_B = null;
+
 // Lokalni podatki — SAMO za tisti telefon/browser
 let logs = JSON.parse(localStorage.getItem('nina_logs') || '[]');
 let checkins = JSON.parse(localStorage.getItem('nina_checkins') || '[]');
@@ -668,13 +689,12 @@ async function loadProgramFromSheets() {
     const keys = Object.keys(parsed);
     if (!keys.length) return;
 
-    // Dinamično mapiranje: prvi dan → A, drugi → B (ne glede na ime)
+    // Dinamično mapiranje: prvi dan → A, drugi → B
     keys.forEach((key, idx) => {
       const k = key.toLowerCase().replace(/\s+/g, '');
       if (idx === 0 || /a$|lower|spodnji/.test(k)) PROGRAM_A = parsed[key];
       else if (idx === 1 || /b$|upper|zgornji/.test(k)) PROGRAM_B = parsed[key];
     });
-    // Fallback: če samo en dan, daj v A
     if (keys.length === 1) PROGRAM_A = parsed[keys[0]];
 
     // Naloži mobilnost
@@ -695,10 +715,75 @@ async function loadProgramFromSheets() {
 
     PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
     loggedExercises = {};
+    // Shrani originale
+    MAIN_PROGRAM_A = PROGRAM_A;
+    MAIN_PROGRAM_B = PROGRAM_B;
     buildWorkoutSection();
+
+    // Preveri alt programe
+    checkAltPrograms();
   } catch(e) {
     console.log('Program load failed, using default');
   }
+}
+
+async function checkAltPrograms() {
+  try {
+    const res = await fetch(API + '?action=getAltPrograms&client=' + CLIENT);
+    const data = await res.json();
+    if (!data || !data.alts || !data.alts.length) return;
+
+    const altName = data.alts[0];
+    ALT_PROGRAM_NAME = altName;
+
+    // Naloži alt program
+    const altRes = await fetch(API + '?action=getProgram&client=' + CLIENT + '&type=' + encodeURIComponent(altName));
+    const altData = await altRes.json();
+    if (!altData || !altData.program || !altData.program.trim()) return;
+
+    const altParsed = parseProgramText(altData.program);
+    const altKeys = Object.keys(altParsed);
+    if (!altKeys.length) return;
+
+    altKeys.forEach((key, idx) => {
+      if (idx === 0) ALT_PROGRAM_A = altParsed[key];
+      else if (idx === 1) ALT_PROGRAM_B = altParsed[key];
+    });
+    if (altKeys.length === 1) ALT_PROGRAM_A = altParsed[altKeys[0]];
+
+    // Prikaži toggle in nastavi label
+    const toggleSection = document.getElementById('program-toggle-section');
+    const altLabel = document.getElementById('toggle-alt-label');
+    const capitalizedName = altName.charAt(0).toUpperCase() + altName.slice(1).replace(/_/g,' ');
+    if (altLabel) altLabel.textContent = capitalizedName;
+    if (toggleSection) toggleSection.style.display = 'block';
+
+  } catch(e) { /* Tiho — toggle ostane skrit */ }
+}
+
+function switchProgram(which) {
+  activeProgram = which;
+  const btnMain = document.getElementById('toggle-btn-main');
+  const btnAlt = document.getElementById('toggle-btn-alt');
+
+  if (which === 'main') {
+    if (MAIN_PROGRAM_A) PROGRAM_A = MAIN_PROGRAM_A;
+    if (MAIN_PROGRAM_B) PROGRAM_B = MAIN_PROGRAM_B;
+    if (btnMain) { btnMain.style.background='rgba(200,241,53,0.15)'; btnMain.style.borderColor='var(--accent)'; btnMain.style.color='var(--accent)'; }
+    if (btnAlt)  { btnAlt.style.background='var(--surface2)'; btnAlt.style.borderColor='var(--border)'; btnAlt.style.color='var(--muted)'; }
+  } else {
+    // Zamenjaj A in B z alt verzijama
+    if (ALT_PROGRAM_A) PROGRAM_A = ALT_PROGRAM_A;
+    if (ALT_PROGRAM_B) PROGRAM_B = ALT_PROGRAM_B;
+    if (btnMain) { btnMain.style.background='var(--surface2)'; btnMain.style.borderColor='var(--border)'; btnMain.style.color='var(--muted)'; }
+    if (btnAlt)  { btnAlt.style.background='rgba(200,241,53,0.15)'; btnAlt.style.borderColor='var(--accent)'; btnAlt.style.color='var(--accent)'; }
+  }
+
+  activeDay = 'A';
+  PROGRAM = PROGRAM_A;
+  loggedExercises = {};
+  buildWorkoutSection();
+  localStorage.setItem('nina_activeProgram', which);
 }
 
 // ============================================================

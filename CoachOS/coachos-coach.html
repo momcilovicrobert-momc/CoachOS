@@ -261,15 +261,47 @@ textarea.form-input { resize:vertical; min-height:80px; }
 
 <!-- MODAL: EDIT PROGRAM -->
 <div class="modal-overlay" id="modal-program">
-  <div class="modal" style="max-width:600px;">
+  <div class="modal" style="max-width:620px;">
     <div class="modal-title" id="modal-program-title">Uredi program</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">
       Format za en dan: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;">Vaja | Serije | Ponovitve | Nasvet | Metodologija</code><br>
       Za več dni, loči z: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;">## Ime dneva</code> (npr. <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;">## Day A</code>)
     </p>
-    <div class="form-group">
-      <textarea class="form-input" id="program-text" style="min-height:260px;font-family:'JetBrains Mono',monospace;font-size:12px;"></textarea>
+
+    <!-- Program 1 — privzeti (vedno prisoten) -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Program 1</span>
+          <span style="font-size:10px;color:var(--accent);background:rgba(200,241,53,0.1);padding:2px 8px;border-radius:10px;border:1px solid rgba(200,241,53,0.2);">Privzeti</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <textarea class="form-input" id="program-text" style="min-height:220px;font-family:'JetBrains Mono',monospace;font-size:12px;" placeholder="Sem vnesi program..."></textarea>
+      </div>
     </div>
+
+    <!-- Program 2 — alternativni (opcijski) -->
+    <div id="alt-program-block" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Program 2</span>
+          <input id="alt-program-name" class="form-input" type="text" placeholder="Ime (npr. Home, Na poti...)" style="width:180px;padding:5px 10px;font-size:12px;height:auto;">
+        </div>
+        <button onclick="removeAltProgram()" style="background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;" title="Odstrani">×</button>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <textarea class="form-input" id="alt-program-text" style="min-height:180px;font-family:'JetBrains Mono',monospace;font-size:12px;" placeholder="Sem vnesi alternativni program..."></textarea>
+      </div>
+    </div>
+
+    <!-- Gumb za dodajanje alternativnega programa -->
+    <div id="add-alt-btn-row" style="margin-bottom:4px;">
+      <button class="btn btn-ghost" onclick="showAltProgram()" style="width:100%;justify-content:center;border-style:dashed;">
+        + Dodaj alternativni program
+      </button>
+    </div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-program')">Prekliči</button>
       <button class="btn btn-primary" onclick="saveProgram()">Shrani program</button>
@@ -280,7 +312,7 @@ textarea.form-input { resize:vertical; min-height:80px; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
 const BASE_URL = 'https://momcilovicrobert-momc.github.io/CoachOS/CoachOS/';
 
 // ============================================================
@@ -467,19 +499,32 @@ async function loadProgramFromSheets(clientName) {
   } catch(e) { /* Tiha napaka */ }
 }
 
-// ============================================================
-// SHRANI PROGRAM
-// ============================================================
 async function saveProgram() {
   const text = document.getElementById('program-text').value.trim();
   if (!text) return;
-  // SAMO localStorage — konec podvajanja
+
+  // Shrani privzeti program
   localStorage.setItem('coachos_program_' + currentClient, text);
   renderProgram(text);
+
+  // Shrani v Sheets v ozadju (brez type = privzeti tab)
+  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
+
+  // Alternativni program (če je prikazan in ima ime)
+  const altBlock = document.getElementById('alt-program-block');
+  if (altBlock.style.display !== 'none') {
+    const altName = document.getElementById('alt-program-name').value.trim().toLowerCase().replace(/\s+/g, '_');
+    const altText = document.getElementById('alt-program-text').value.trim();
+    if (altName && altText) {
+      // Shrani alt v localStorage
+      localStorage.setItem('coachos_program_' + currentClient + '_' + altName, altText);
+      // Shrani v Sheets
+      fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, type:altName, program:altText }) }).catch(()=>{});
+    }
+  }
+
   closeModal('modal-program');
   showToast('✓ Program shranjen za ' + currentClient + '!');
-  // Shrani v Sheets v ozadju
-  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
 }
 
 // ============================================================
@@ -501,11 +546,47 @@ function switchTab(name, el) {
 function openLogWorkout() { document.getElementById('log-date').value = new Date().toISOString().split('T')[0]; document.getElementById('modal-log').classList.add('open'); }
 function openAddNote() { document.getElementById('modal-note').classList.add('open'); }
 function openNewClient() { document.getElementById('modal-client').classList.add('open'); }
-function openEditProgram() {
+async function openEditProgram() {
   document.getElementById('modal-program-title').textContent = 'Uredi program — ' + currentClient;
   document.getElementById('program-text').value = localStorage.getItem('coachos_program_' + currentClient) || '';
+
+  // Reset alt program block
+  document.getElementById('alt-program-block').style.display = 'none';
+  document.getElementById('add-alt-btn-row').style.display = 'block';
+  document.getElementById('alt-program-name').value = '';
+  document.getElementById('alt-program-text').value = '';
+
+  // Preveri ali obstaja alternativni program v Sheetsu
+  try {
+    const res = await fetch(API + '?action=getAltPrograms&client=' + encodeURIComponent(currentClient));
+    const data = await res.json();
+    if (data && data.alts && data.alts.length > 0) {
+      const altName = data.alts[0]; // Vzamemo prvega
+      const altRes = await fetch(API + '?action=getProgram&client=' + encodeURIComponent(currentClient) + '&type=' + encodeURIComponent(altName));
+      const altData = await altRes.json();
+      document.getElementById('alt-program-name').value = altName;
+      document.getElementById('alt-program-text').value = altData.program || '';
+      document.getElementById('alt-program-block').style.display = 'block';
+      document.getElementById('add-alt-btn-row').style.display = 'none';
+    }
+  } catch(e) { /* Tiha napaka — samo ne prikaži alt bloka */ }
+
   document.getElementById('modal-program').classList.add('open');
 }
+
+function showAltProgram() {
+  document.getElementById('alt-program-block').style.display = 'block';
+  document.getElementById('add-alt-btn-row').style.display = 'none';
+  document.getElementById('alt-program-name').focus();
+}
+
+function removeAltProgram() {
+  document.getElementById('alt-program-block').style.display = 'none';
+  document.getElementById('add-alt-btn-row').style.display = 'block';
+  document.getElementById('alt-program-name').value = '';
+  document.getElementById('alt-program-text').value = '';
+}
+
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
