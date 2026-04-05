@@ -642,6 +642,14 @@ async function loadProgramFromSheets() {
     loadProgramForMode('gym'),
     loadProgramForMode('home')
   ]);
+  // Po nalaganju nastavi pravilni PROGRAM glede na aktiven mode
+  if (activeMode === 'gym' && GYM_DAY_KEYS.length > 0) {
+    PROGRAM = GYM_DAYS[GYM_DAY_KEYS[GYM_ACTIVE_DAY_IDX]] || [];
+    activeDay = 'gym_' + GYM_ACTIVE_DAY_IDX;
+  } else if (activeMode === 'home') {
+    PROGRAM = PROGRAM_A.length ? PROGRAM_A : [];
+    activeDay = 'A';
+  }
   buildWorkoutSection();
 }
 
@@ -687,9 +695,16 @@ async function loadProgramForMode(mode) {
 
 function switchMode(mode) {
   activeMode = mode;
-  activeDay = 'A';
   loggedExercises = {};
-  // Posodobi PROGRAM_A / PROGRAM_B glede na mode
+  if (mode === 'gym') {
+    GYM_ACTIVE_DAY_IDX = 0;
+    activeDay = 'gym_0';
+    const keys = GYM_DAY_KEYS;
+    PROGRAM = (keys.length > 0 && GYM_DAYS[keys[0]]) ? GYM_DAYS[keys[0]] : [];
+  } else {
+    activeDay = 'A';
+    PROGRAM = PROGRAM_A.length ? PROGRAM_A : [];
+  }
   syncProgramFromMode();
   buildWorkoutSection();
 }
