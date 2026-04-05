@@ -178,6 +178,18 @@ textarea.form-input { resize:vertical; min-height:80px; }
         <tbody id="program-tbody"></tbody>
       </table>
     </div>
+    <!-- Alt program prikaz -->
+    <div id="alt-program-card" style="display:none;" class="card" style="margin-top:14px;">
+      <div class="card-title">
+        <span id="alt-program-card-title">Alternativni program</span>
+        <span class="card-action" onclick="openEditProgram()">Uredi</span>
+      </div>
+      <div id="alt-day-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div>
+      <table class="prog-table">
+        <thead><tr><th>#</th><th>Vaja</th><th>Serije × Pon.</th><th>Nasvet</th><th>Metodologija (samo ti)</th></tr></thead>
+        <tbody id="alt-program-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <div id="tab-log" style="display:none;">
@@ -415,13 +427,69 @@ function switchClient(name) {
   } else {
     document.getElementById('day-tabs').innerHTML = '';
     document.getElementById('program-tbody').innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;font-size:13px;">Klikni "Uredi program" da dodaš program za ${name}.</td></tr>`;
-    // Poskusi naložiti iz Sheets SAMO če lokalno ni nič
     loadProgramFromSheets(name);
   }
+
+  // Alt program — preveri localStorage + Sheets
+  document.getElementById('alt-program-card').style.display = 'none';
+  loadAltProgramForCoach(name);
 }
 
 function copyLink(link) {
   navigator.clipboard.writeText(link).then(() => showToast('✓ Link kopiran!'));
+}
+
+async function loadAltProgramForCoach(clientName) {
+  try {
+    const res = await fetch(API + '?action=getAltPrograms&client=' + encodeURIComponent(clientName));
+    const data = await res.json();
+    if (!data || !data.alts || !data.alts.length) return;
+
+    const altName = data.alts[0];
+    const altRes = await fetch(API + '?action=getProgram&client=' + encodeURIComponent(clientName) + '&type=' + encodeURIComponent(altName));
+    const altData = await altRes.json();
+    if (!altData || !altData.program || !altData.program.trim()) return;
+
+    // Prikaži alt program card
+    const card = document.getElementById('alt-program-card');
+    const cardTitle = document.getElementById('alt-program-card-title');
+    const capitalizedName = altName.charAt(0).toUpperCase() + altName.slice(1).replace(/_/g,' ');
+    if (cardTitle) cardTitle.textContent = clientName + ' — ' + capitalizedName;
+    card.style.display = 'block';
+    card.style.marginTop = '14px';
+
+    // Render alt program v svojo tabelo
+    renderAltProgram(altData.program);
+  } catch(e) { /* Tiho */ }
+}
+
+function renderAltProgram(text) {
+  const days = parseProgram(text);
+  const dayNames = Object.keys(days);
+  const altDayTabsEl = document.getElementById('alt-day-tabs');
+  const altTbody = document.getElementById('alt-program-tbody');
+  altDayTabsEl.innerHTML = '';
+
+  if (dayNames.length > 1) {
+    altDayTabsEl.style.display = 'flex';
+    dayNames.forEach((day, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (idx === 0 ? 'btn-primary' : 'btn-ghost');
+      btn.style.cssText = 'font-size:12px;padding:5px 12px;';
+      btn.textContent = day;
+      btn.onclick = () => {
+        altDayTabsEl.querySelectorAll('button').forEach(b => { b.className='btn btn-ghost'; b.style.cssText='font-size:12px;padding:5px 12px;'; });
+        btn.className = 'btn btn-primary';
+        btn.style.cssText = 'font-size:12px;padding:5px 12px;';
+        renderDayExercises(days[day], altTbody);
+      };
+      altDayTabsEl.appendChild(btn);
+    });
+    renderDayExercises(days[dayNames[0]], altTbody);
+  } else {
+    altDayTabsEl.style.display = 'none';
+    renderDayExercises(days[dayNames[0]] || [], altTbody);
+  }
 }
 
 // ============================================================
