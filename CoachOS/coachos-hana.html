@@ -305,14 +305,6 @@ input[type=range]{width:100%;}
           </div>
           <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Vsak dan, zjutraj, na tešče</div>
         </div>
-        <div class="date-picker-row" style="margin-top:10px;">
-          <span class="date-picker-label">📅 Datum teže</span>
-          <span>
-            <span class="date-picker-val" id="weight-date-display"></span>
-            &nbsp;<span class="date-picker-change" onclick="document.getElementById('weight-date-input').showPicker()">spremeni</span>
-            <input type="date" class="date-picker-input" id="weight-date-input" onchange="onWeightDateChange(this.value)">
-          </span>
-        </div>
         <button class="body-save-btn" onclick="saveDailyWeight()">Shrani težo</button>
       </div>
       <div class="body-log-card">
@@ -465,7 +457,7 @@ input[type=range]{width:100%;}
 // ============================================================
 // KONFIGURACIJA
 // ============================================================
-const API = 'https://script.google.com/macros/s/AKfycbxFuwXRIRxBYXBOC4UFmPg6YUrlyUiBoMcLggckEQLmVJh2Y95BOI_lAGJyiLpxwPcK/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
 const CLIENT = 'Hana';
 
 // ============================================================
@@ -895,13 +887,13 @@ async function saveCardio() {
 async function saveDailyWeight() {
   const w = document.getElementById('daily-weight').value;
   if (!w) return;
-  const entry = { date: weightDateStr, weight: w };
-  const idx = weights.findIndex(x => x.date === weightDateStr);
+  const entry = { date: todayStr, weight: w };
+  const idx = weights.findIndex(x => x.date === todayStr);
   if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
   localStorage.setItem('hana_weights', JSON.stringify(weights));
   renderWeightHistory();
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: todayStr }) });
     showToast('✓ Teža shranjena!');
   } catch(e) {
     showToast('✓ Shranjeno lokalno!');
@@ -1116,7 +1108,6 @@ function renderZgodovinaChart() {
 let logDateStr = todayStr;
 let checkinDateStr = todayStr;
 let cardioDateStr = todayStr;
-let weightDateStr = todayStr;
 
 function formatDateSL(str) {
   if (!str) return '—';
@@ -1128,7 +1119,6 @@ function initDatePickers() {
   const ld = document.getElementById('log-date-display');
   const li = document.getElementById('log-date-input');
   const cd = document.getElementById('checkin-date-display');
-  document.getElementById('weight-date-display').textContent = 'danes';
   const ci = document.getElementById('checkin-date-input');
   const kd = document.getElementById('cardio-date-display');
   const ki = document.getElementById('cardio-date-input');
@@ -1153,11 +1143,6 @@ function onCheckinDateChange(val) {
 function onCardiDateChange(val) {
   cardioDateStr = val;
   const el = document.getElementById('cardio-date-display');
-  if (el) el.textContent = formatDateSL(val);
-}
-function onWeightDateChange(val) {
-  weightDateStr = val;
-  const el = document.getElementById('weight-date-display');
   if (el) el.textContent = formatDateSL(val);
 }
 
