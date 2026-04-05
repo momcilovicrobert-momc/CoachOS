@@ -8,148 +8,99 @@
 <style>
 :root {
   --bg:#0d0d0d; --surface:#141414; --surface2:#1c1c1c; --border:#2a2a2a;
-  --accent:#c8f135; --accent2:#ff6b35; --text:#f0f0f0; --muted:#666; --muted2:#444;
-  --red:#ff4444; --blue:#4488ff;
+  --accent:#c8f135; --text:#f0f0f0; --muted:#666; --muted2:#444;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;}
-.header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between;}
-.logo-row{display:flex;align-items:center;gap:8px;}
-.logo-mark{width:26px;height:26px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;}
-.logo-mark svg{width:14px;height:14px;}
-.logo-text{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max-width:480px;margin:0 auto;min-height:100vh;}
+
+/* Header & Typography */
+.header{padding:18px 20px; display:flex; align-items:center; justify-content:space-between;}
+.logo-text{font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px;}
 .logo-text span{color:var(--accent);}
-.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
-.greeting{padding:20px 20px 0;}
-.greeting-sub{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;font-weight:600;margin-bottom:3px;}
-.greeting-name{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;letter-spacing:1px;}
+.avatar{width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#a78bfa,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
+
+.greeting{padding:10px 20px 20px;}
+.greeting-name{font-family:'Bebas Neue',sans-serif; font-size:38px; line-height:1;}
 .greeting-name span{color:var(--accent);}
-.checkin-card{margin:16px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;position:relative;overflow:hidden;}
-.checkin-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-.checkin-saved{font-size:10px;color:var(--accent);font-weight:500;letter-spacing:0;text-transform:none;display:none;}
-.checkin-row{margin-bottom:14px;}
-.checkin-label{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500;}
-.sleep-row{display:flex;align-items:center;gap:10px;}
-.sleep-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;}
-.sleep-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 0 3px rgba(200,241,53,0.2);}
-.emoji-row{display:flex;gap:8px;}
-.emoji-btn{flex:1;padding:10px 4px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;font-size:20px;}
-.emoji-btn.selected{background:rgba(200,241,53,0.1);border-color:var(--accent);transform:scale(1.08);}
-.emoji-label{font-size:9px;color:var(--muted);margin-top:3px;display:block;}
-.checkin-note{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;resize:none;min-height:60px;transition:border .15s;}
-.checkin-note:focus{outline:none;border-color:rgba(200,241,53,0.4);}
-.checkin-note::placeholder{color:var(--muted2);}
-.checkin-save-btn{width:100%;margin-top:10px;padding:10px;background:rgba(200,241,53,0.1);border:1px solid rgba(200,241,53,0.25);border-radius:10px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
-.checkin-save-btn:hover{background:rgba(200,241,53,0.18);}
-.content{padding:0 20px 100px;}
-.section{margin-top:20px;}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
-.week-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
-.week-strip::-webkit-scrollbar{display:none;}
-.day-chip{flex-shrink:0;width:52px;padding:10px 6px;border-radius:14px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;}
-.day-chip.today{background:var(--accent);border-color:var(--accent);}
-.day-chip.today .day-name,.day-chip.today .day-num,.day-chip.today .day-type{color:#0d0d0d!important;}
-.day-name{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:0.5px;}
-.day-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1.1;margin:1px 0;}
-.day-type{font-size:9px;color:var(--muted);}
-.session-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
-.exercise-row{padding:13px 18px;border-bottom:1px solid rgba(42,42,42,0.6);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s;}
-.ex-num{width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0;}
-.ex-num.logged{background:rgba(200,241,53,0.12);border-color:var(--accent);color:var(--accent);}
-.ex-info{flex:1;min-width:0;}
-.ex-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ex-prescription{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px;}
-.ex-chevron{color:var(--muted2);font-size:16px;flex-shrink:0;}
 
-/* SWITCHER STYLE */
-.mode-switcher{display:flex;gap:0;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;}
-.mode-btn{flex:1;padding:10px 8px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
-.mode-btn.active{background:var(--accent);color:#0d0d0d;}
-.mode-btn.processing{opacity: 0.5; cursor: wait;}
+/* Tabs / Switcher */
+.mode-switcher{display:flex; gap:8px; padding:0 20px; margin-bottom:20px;}
+.mode-btn{flex:1; padding:12px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--muted); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;}
+.mode-btn.active{background:var(--accent); color:#0d0d0d; border-color:var(--accent);}
+.mode-btn.loading{opacity: 0.6; cursor: wait;}
 
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:10px 0 18px;z-index:100;}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
-.nav-btn.active .nav-btn-label{color:var(--accent);}
-.nav-btn-label{font-size:10px;color:var(--muted);font-weight:500;}
+/* Workout List */
+.workout-list{padding:0 20px 100px;}
+.ex-card{background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;}
+.ex-card:active{transform:scale(0.98); background:var(--surface2);}
+.ex-name{font-weight:600; font-size:15px; margin-bottom:4px;}
+.ex-meta{font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
+.status-msg{text-align:center; padding:40px; color:var(--muted); font-size:14px;}
 
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:199;display:none;}
-.log-sheet{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#1a1a1a;border-top:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px 40px;z-index:200;display:none;}
-.log-btn{width:100%;padding:14px;background:var(--accent);color:#0d0d0d;border:none;border-radius:12px;font-weight:700;cursor:pointer;margin-top:15px;}
+/* Modal / Overlay */
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99; display:none;}
+.log-sheet{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:#1a1a1a; border-radius:20px 20px 0 0; padding:25px; z-index:100; display:none; border-top:1px solid var(--border);}
+.log-input{width:100%; padding:12px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:white; margin-bottom:12px; font-size:16px;}
+.save-btn{width:100%; padding:15px; background:var(--accent); color:#0d0d0d; border:none; border-radius:12px; font-weight:700; cursor:pointer; font-size:15px;}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo-text">COACH<span>OS</span></div>
-  <div class="avatar">NI</div>
+    <div class="logo-text">COACH<span>OS</span></div>
+    <div class="avatar">NI</div>
 </div>
 
 <div class="greeting">
-  <div class="greeting-sub" id="greeting-date">—</div>
-  <div class="greeting-name">Hej, <span>Nina.</span></div>
+    <div class="greeting-name">HEJ, <span>NINA.</span></div>
 </div>
 
-<div class="content">
-    <div class="section">
-        <div class="mode-switcher">
-            <button class="mode-btn active" id="gymBtn" onclick="setWorkoutMode('gym')">🏢 Gym</button>
-            <button class="mode-btn" id="homeBtn" onclick="setWorkoutMode('home')">🏠 Home</button>
-        </div>
-        <div id="workout-container">Nalaganje...</div>
-    </div>
+<div class="mode-switcher">
+    <button class="mode-btn active" id="gymBtn" onclick="changeMode('gym')">🏢 Gym</button>
+    <button class="mode-btn" id="homeBtn" onclick="changeMode('home')">🏠 Home</button>
 </div>
 
-<nav class="bottom-nav">
-  <div class="nav-btn active">
-    <div class="nav-btn-label">Danes</div>
-  </div>
-</nav>
+<div class="workout-list" id="workout-container">
+    <div class="status-msg">Povezava s tabelo...</div>
+</div>
 
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
 <div class="log-sheet" id="log-sheet">
-    <h3 id="sheet-ex-name">Vaja</h3>
-    <div id="sheet-inputs" style="margin-top:15px;">
-        <input type="number" id="log-weight" placeholder="kg" style="width:100%; padding:10px; margin-bottom:10px; background:#222; border:1px solid #444; color:white;">
-        <input type="number" id="log-reps" placeholder="ponovitve" style="width:100%; padding:10px; background:#222; border:1px solid #444; color:white;">
-    </div>
-    <button class="log-btn" onclick="submitLog()">Shrani ↗</button>
+    <h3 id="sheet-ex-name" style="margin-bottom:15px; font-family:'Bebas Neue'; letter-spacing:1px; font-size:24px;">Vaja</h3>
+    <input type="number" id="log-weight" placeholder="Teža (kg)" class="log-input">
+    <input type="number" id="log-reps" placeholder="Ponovitve" class="log-input">
+    <button class="save-btn" onclick="submitLog()">SHRANI REZULTAT ↗</button>
 </div>
 
 <script>
 const CLIENT_NAME = 'Nina';
 const scriptURL = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
-let isHomeWorkout = false;
-let currentEx = '';
+let currentType = 'gym';
+let selectedEx = '';
 
-async function loadProgramFromSheets() {
+async function loadProgram() {
     const container = document.getElementById('workout-container');
     const gymBtn = document.getElementById('gymBtn');
     const homeBtn = document.getElementById('homeBtn');
-    const type = isHomeWorkout ? 'home' : 'gym';
-   
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Povezava s tabelo...</div>';
-   
+    
+    // Vizualni feedback za nalaganje
+    gymBtn.classList.add('loading');
+    homeBtn.classList.add('loading');
+    
     try {
-        const resp = await fetch(`${scriptURL}?action=getProgram&client=${CLIENT_NAME}&type=${type}`);
-        const data = await resp.json();
-       
-        if (data.program) {
+        const res = await fetch(`${scriptURL}?action=getProgram&client=${CLIENT_NAME}&type=${currentType}`);
+        const data = await res.json();
+        
+        if (data.program && data.program.trim() !== "") {
             renderProgram(data.program);
         } else {
-            container.innerHTML = '<div style="text-align:center; padding:20px;">Danes ni treninga.</div>';
+            container.innerHTML = `<div class="status-msg">Trenutno nimaš vpisanih vaj za ${currentType}.</div>`;
         }
     } catch (e) {
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:red;">Napaka pri nalaganju.</div>';
+        container.innerHTML = `<div class="status-msg" style="color:#ff6b35;">Napaka pri povezavi. Preveri tabelo.</div>`;
     } finally {
-        // ODKLENI GUMBE NE GLEDE NA REZULTAT
-        gymBtn.classList.remove('processing');
-        homeBtn.classList.remove('processing');
-        if(isHomeWorkout) {
-            homeBtn.classList.add('active'); gymBtn.classList.remove('active');
-        } else {
-            gymBtn.classList.add('active'); homeBtn.classList.add('active');
-        }
+        gymBtn.classList.remove('loading');
+        homeBtn.classList.remove('loading');
     }
 }
 
@@ -157,45 +108,35 @@ function renderProgram(text) {
     const container = document.getElementById('workout-container');
     container.innerHTML = '';
     const lines = text.split('\n');
-   
+    
     lines.forEach(line => {
         if (line.includes('|')) {
-            const parts = line.split('|');
-            const name = parts[0].trim();
+            const p = line.split('|');
             const card = document.createElement('div');
-            card.className = 'exercise-row';
-            card.onclick = () => openSheet(name);
+            card.className = 'ex-card';
+            card.onclick = () => openSheet(p[0].trim());
             card.innerHTML = `
-                <div class="ex-num">•</div>
-                <div class="ex-info">
-                    <div class="ex-name">${name}</div>
-                    <div class="ex-prescription">${parts[1].trim()} serije | ${parts[2].trim()} pon.</div>
+                <div>
+                    <div class="ex-name">${p[0].trim()}</div>
+                    <div class="ex-meta">${p[1]?.trim() || '0'} SERIJE | ${p[2]?.trim() || '0'} PONOVITEV</div>
                 </div>
-                <div class="ex-chevron">›</div>
+                <div style="color:var(--muted2);">›</div>
             `;
             container.appendChild(card);
         }
     });
 }
 
-function setWorkoutMode(mode) {
-    const gymBtn = document.getElementById('gymBtn');
-    const homeBtn = document.getElementById('homeBtn');
-   
-    if (gymBtn.classList.contains('processing') || homeBtn.classList.contains('processing')) return;
-
-    isHomeWorkout = (mode === 'home');
-    if (isHomeWorkout) {
-        homeBtn.classList.add('processing');
-    } else {
-        gymBtn.classList.add('processing');
-    }
-   
-    loadProgramFromSheets();
+function changeMode(mode) {
+    if (document.getElementById('gymBtn').classList.contains('loading')) return;
+    currentType = mode;
+    document.getElementById('gymBtn').classList.toggle('active', mode === 'gym');
+    document.getElementById('homeBtn').classList.toggle('active', mode === 'home');
+    loadProgram();
 }
 
 function openSheet(name) {
-    currentEx = name;
+    selectedEx = name;
     document.getElementById('sheet-ex-name').innerText = name;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('log-sheet').style.display = 'block';
@@ -209,26 +150,40 @@ function closeSheet() {
 async function submitLog() {
     const w = document.getElementById('log-weight').value;
     const r = document.getElementById('log-reps').value;
-   
-    const payload = {
-        action: 'logWorkout',
-        client: CLIENT_NAME,
-        exercise: currentEx,
-        weight: w,
-        reps: r,
-        date: new Date().toISOString()
-    };
+    if(!w || !r) return alert('Vpiši težo in ponovitve!');
+
+    const btn = document.querySelector('.save-btn');
+    btn.innerText = 'POŠILJAM...';
+    btn.disabled = true;
 
     try {
-        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(payload) });
-        alert('Shranjeno!');
+        const payload = {
+            action: 'logWorkout',
+            client: CLIENT_NAME,
+            exercise: selectedEx,
+            weight: w,
+            reps: r
+        };
+
+        await fetch(scriptURL, { 
+            method: 'POST', 
+            mode: 'no-cors', // Nujno za Google Apps Script POST
+            body: JSON.stringify(payload) 
+        });
+        
+        alert('Uspešno shranjeno!');
         closeSheet();
+        document.getElementById('log-weight').value = '';
+        document.getElementById('log-reps').value = '';
     } catch(e) {
-        alert('Napaka!');
+        alert('Napaka pri shranjevanju.');
+    } finally {
+        btn.innerText = 'SHRANI REZULTAT ↗';
+        btn.disabled = false;
     }
 }
 
-window.onload = loadProgramFromSheets;
+window.onload = loadProgram;
 </script>
 </body>
 </html>
