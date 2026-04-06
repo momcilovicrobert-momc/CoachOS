@@ -252,6 +252,25 @@ input[type=range]{width:100%;}
 .zg-bio-details{flex:1;font-size:12px;color:var(--text);}
 .zg-bio-note{font-size:11px;color:var(--muted);margin-top:2px;}
 
+
+/* ============================================================ */
+/* DATE STRIP */
+/* ============================================================ */
+.date-strip-wrapper{position:sticky;top:0;z-index:90;background:var(--bg);padding:10px 20px 8px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.date-strip-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.date-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.date-strip::-webkit-scrollbar{display:none;}
+.date-chip{min-width:46px;padding:7px 6px;border-radius:10px;background:var(--surface);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.date-chip:active{transform:scale(0.95);}
+.date-chip .chip-day{font-size:9px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;}
+.date-chip .chip-date{font-size:13px;font-weight:700;color:var(--text);}
+.date-chip.is-today{border-color:rgba(200,241,53,0.4);background:rgba(200,241,53,0.05);}
+.date-chip.is-today .chip-date{color:var(--accent);}
+.date-chip.is-selected{background:var(--accent);border-color:var(--accent);}
+.date-chip.is-selected .chip-day{color:#0d0d0d;opacity:0.7;}
+.date-chip.is-selected .chip-date{color:#0d0d0d;}
+.date-chip.is-today.is-selected{background:var(--accent);border-color:var(--accent);}
+
 </style>
 </head>
 <body>
@@ -275,6 +294,11 @@ input[type=range]{width:100%;}
 </div>
 
 <!-- DAILY CHECK-IN — always visible -->
+<div class="date-strip-wrapper">
+  <div class="date-strip-label">Beležiš za datum</div>
+  <div class="date-strip" id="global-date-strip"></div>
+</div>
+
 <div class="checkin-card">
   <div class="checkin-title">
     Kako si danes?
@@ -303,14 +327,7 @@ input[type=range]{width:100%;}
     <textarea class="checkin-note" id="checkin-note" placeholder="Npr. bolijo me mišice od ponedeljka, malo pod pritiskom v službi..."></textarea>
   </div>
 
-  <div class="date-picker-row">
-    <span class="date-picker-label">📅 Datum check-ina</span>
-    <span>
-      <span class="date-picker-val" id="checkin-date-display"></span>
-      &nbsp;<span class="date-picker-change" onclick="document.getElementById('checkin-date-input').showPicker()">spremeni</span>
-      <input type="date" class="date-picker-input" id="checkin-date-input" onchange="onCheckinDateChange(this.value)">
-    </span>
-  </div>
+
   <button class="checkin-save-btn" onclick="saveCheckin()">Shrani ↗</button>
 </div>
 
@@ -390,12 +407,7 @@ input[type=range]{width:100%;}
       <div class="body-log-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div class="body-log-title" style="margin-bottom:0;">⚖️ Telesna teža</div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span id="weight-date-label" style="font-size:11px;color:var(--muted);"></span>
-            <input type="date" id="weight-date-input"
-              style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:8px;color:var(--accent);font-size:11px;padding:4px 8px;cursor:pointer;"
-              onchange="onWeightDateChange()">
-          </div>
+
         </div>
         <div style="display:flex;gap:10px;align-items:flex-end;">
           <div class="input-group" style="flex:1;">
@@ -525,14 +537,7 @@ input[type=range]{width:100%;}
     <div class="rpe-pill" onclick="selectRPE(this)">9</div>
     <div class="rpe-pill" onclick="selectRPE(this)">10</div>
   </div>
-  <div class="date-picker-row" style="margin-top:10px;">
-    <span class="date-picker-label">📅 Datum treninga</span>
-    <span>
-      <span class="date-picker-val" id="log-date-display"></span>
-      &nbsp;<span class="date-picker-change" onclick="document.getElementById('log-date-input').showPicker()">spremeni</span>
-      <input type="date" class="date-picker-input" id="log-date-input" onchange="onLogDateChange(this.value)">
-    </span>
-  </div>
+
   <button class="log-btn" onclick="saveExercise()">Shrani vajo ✓</button>
 </div>
 
@@ -568,14 +573,7 @@ input[type=range]{width:100%;}
     <div class="diff-btn" onclick="selectDiff(this)">10</div>
   </div>
 
-  <div class="date-picker-row" style="margin-top:10px;">
-    <span class="date-picker-label">📅 Datum kardio</span>
-    <span>
-      <span class="date-picker-val" id="cardio-date-display"></span>
-      &nbsp;<span class="date-picker-change" onclick="document.getElementById('cardio-date-input').showPicker()">spremeni</span>
-      <input type="date" class="date-picker-input" id="cardio-date-input" onchange="onCardiDateChange(this.value)">
-    </span>
-  </div>
+
   <button class="log-btn" style="background:var(--accent2);" onclick="saveCardio()">Shrani kardio ✓</button>
 </div>
 
@@ -1325,12 +1323,16 @@ renderWeightHistory();
 updateProgress();
 
 // ============================================================
-// DATE PICKER STATE
 // ============================================================
-let logDateStr = todayStr;
-let checkinDateStr = todayStr;
-let cardioDateStr = todayStr;
-let weightDateStr = todayStr;
+// GLOBAL SELECTED DATE
+// ============================================================
+let selectedDate = todayStr;
+
+// aliases so save functions work unchanged
+Object.defineProperty(window, 'logDateStr', { get: () => selectedDate });
+Object.defineProperty(window, 'checkinDateStr', { get: () => selectedDate });
+Object.defineProperty(window, 'cardioDateStr', { get: () => selectedDate });
+Object.defineProperty(window, 'weightDateStr', { get: () => selectedDate });
 
 function formatDateSL(str) {
   if (!str) return '—';
@@ -1338,49 +1340,45 @@ function formatDateSL(str) {
   return d + '. ' + m + '. ' + y;
 }
 
-
-function onWeightDateChange() {
-  const inp = document.getElementById('weight-date-input');
-  weightDateStr = inp.value || todayStr;
-  const lbl = document.getElementById('weight-date-label');
-  if (lbl) lbl.textContent = formatDateSL(weightDateStr);
+function initDateStrip() {
+  const strip = document.getElementById('global-date-strip');
+  if (!strip) return;
+  const days = ['Ne','Po','To','Sr','Če','Pe','So'];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const dateStr = yyyy+'-'+mm+'-'+dd;
+    const isToday = i === 0;
+    const chip = document.createElement('div');
+    chip.className = 'date-chip' + (isToday ? ' is-today is-selected' : '');
+    chip.dataset.date = dateStr;
+    chip.innerHTML = '<div class="chip-day">'+days[d.getDay()]+'</div><div class="chip-date">'+dd+'</div>';
+    chip.addEventListener('click', () => selectDateChip(dateStr));
+    strip.appendChild(chip);
+  }
+  setTimeout(() => { strip.scrollLeft = strip.scrollWidth; }, 50);
 }
+
+function selectDateChip(dateStr) {
+  selectedDate = dateStr;
+  document.querySelectorAll('#global-date-strip .date-chip').forEach(c => {
+    c.classList.remove('is-selected');
+    if (c.dataset.date === dateStr) c.classList.add('is-selected');
+  });
+}
+
 function initDatePickers() {
-  // Weight date picker
-  const wdi = document.getElementById('weight-date-input');
-  const wdl = document.getElementById('weight-date-label');
-  if (wdi) { wdi.value = todayStr; wdi.max = todayStr; }
-  if (wdl) wdl.textContent = formatDateSL(todayStr);
-
-  const ld = document.getElementById('log-date-display');
-  const li = document.getElementById('log-date-input');
-  const cd = document.getElementById('checkin-date-display');
-  const ci = document.getElementById('checkin-date-input');
-  const kd = document.getElementById('cardio-date-display');
-  const ki = document.getElementById('cardio-date-input');
-  if (ld) ld.textContent = formatDateSL(todayStr);
-  if (li) { li.value = todayStr; li.max = todayStr; }
-  if (cd) cd.textContent = formatDateSL(todayStr);
-  if (ci) { ci.value = todayStr; ci.max = todayStr; }
-  if (kd) kd.textContent = formatDateSL(todayStr);
-  if (ki) { ki.value = todayStr; ki.max = todayStr; }
+  initDateStrip();
 }
 
-function onLogDateChange(val) {
-  logDateStr = val;
-  const el = document.getElementById('log-date-display');
-  if (el) el.textContent = formatDateSL(val);
-}
-function onCheckinDateChange(val) {
-  checkinDateStr = val;
-  const el = document.getElementById('checkin-date-display');
-  if (el) el.textContent = formatDateSL(val);
-}
-function onCardiDateChange(val) {
-  cardioDateStr = val;
-  const el = document.getElementById('cardio-date-display');
-  if (el) el.textContent = formatDateSL(val);
-}
+// legacy no-ops
+function onWeightDateChange() {}
+function onLogDateChange(val) {}
+function onCheckinDateChange(val) {}
+function onCardiDateChange(val) {}
 
 function renderZgodovinaBiofeedback() {
   const container = document.getElementById('zg-biofeedback-list');
