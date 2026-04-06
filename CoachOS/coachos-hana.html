@@ -297,13 +297,21 @@ input[type=range]{width:100%;}
     <div class="section">
       <div class="section-header"><div class="section-title">Telesne mere</div></div>
       <div class="body-log-card">
-        <div class="body-log-title">⚖️ Telesna teža — danes</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="body-log-title" style="margin-bottom:0;">⚖️ Telesna teža</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="weight-date-label" style="font-size:11px;color:var(--muted);"></span>
+            <input type="date" id="weight-date-input"
+              style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:8px;color:var(--accent);font-size:11px;padding:4px 8px;cursor:pointer;"
+              onchange="onWeightDateChange()">
+          </div>
+        </div>
         <div style="display:flex;gap:10px;align-items:flex-end;">
           <div class="input-group" style="flex:1;">
             <div class="input-label">Teža (kg)</div>
             <input class="body-input" type="number" id="daily-weight" placeholder="60.0" step="0.1">
           </div>
-          <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Vsak dan, zjutraj, na tešče</div>
+          <div style="font-size:11px;color:var(--muted);padding-bottom:14px;">Zjutraj, na tešče</div>
         </div>
         <button class="body-save-btn" onclick="saveDailyWeight()">Shrani težo</button>
       </div>
@@ -887,13 +895,13 @@ async function saveCardio() {
 async function saveDailyWeight() {
   const w = document.getElementById('daily-weight').value;
   if (!w) return;
-  const entry = { date: todayStr, weight: w };
-  const idx = weights.findIndex(x => x.date === todayStr);
+  const entry = { date: weightDateStr, weight: w };
+  const idx = weights.findIndex(x => x.date === weightDateStr);
   if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
   localStorage.setItem('hana_weights', JSON.stringify(weights));
   renderWeightHistory();
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: todayStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr }) });
     showToast('✓ Teža shranjena!');
   } catch(e) {
     showToast('✓ Shranjeno lokalno!');
@@ -1108,6 +1116,7 @@ function renderZgodovinaChart() {
 let logDateStr = todayStr;
 let checkinDateStr = todayStr;
 let cardioDateStr = todayStr;
+let weightDateStr = todayStr;
 
 function formatDateSL(str) {
   if (!str) return '—';
@@ -1115,7 +1124,20 @@ function formatDateSL(str) {
   return d + '. ' + m + '. ' + y;
 }
 
+
+function onWeightDateChange() {
+  const inp = document.getElementById('weight-date-input');
+  weightDateStr = inp.value || todayStr;
+  const lbl = document.getElementById('weight-date-label');
+  if (lbl) lbl.textContent = formatDateSL(weightDateStr);
+}
 function initDatePickers() {
+  // Weight date picker
+  const wdi = document.getElementById('weight-date-input');
+  const wdl = document.getElementById('weight-date-label');
+  if (wdi) { wdi.value = todayStr; wdi.max = todayStr; }
+  if (wdl) wdl.textContent = formatDateSL(todayStr);
+
   const ld = document.getElementById('log-date-display');
   const li = document.getElementById('log-date-input');
   const cd = document.getElementById('checkin-date-display');
