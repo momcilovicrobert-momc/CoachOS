@@ -486,22 +486,8 @@ const CLIENT = 'KLIENT';
 // ============================================================
 // STANJE
 // ============================================================
-let PROGRAM_A = [
-  { name:'Heels Elevated Goblet Squat', sets:3, reps:'10', tip:'3s spust, premor spodaj. Prva serija dotik droga za samozavest.' },
-  { name:'DB Romanian Deadlift', sets:3, reps:'12', tip:'Spust samo do raztega, ne do tal. Počasen ekscentrik.' },
-  { name:'Hip Thrust', sets:3, reps:'15', tip:'Stisni zadnjico na vrhu, kontroliran spust.' },
-  { name:'Dead Hang', sets:3, reps:'20-30s', tip:'Lopatice dol in skupaj. Dekompresija hrbtenice.' },
-  { name:'Dead Bug', sets:3, reps:'6 / stran', tip:'Brez loka v križu. Ustavi če forma odpove.' }
-];
-let PROGRAM_B = [
-  { name:'Single Arm DB Row', sets:3, reps:'12', tip:'Brez momenta, nasprotna roka na kolenu.' },
-  { name:'Band Pull-down', sets:3, reps:'12', tip:'Kontroliran spust, čuti late.' },
-  { name:'DB Floor Press', sets:3, reps:'12', tip:'Premor spodaj, poln obseg.' },
-  { name:'DB Lateral Raise', sets:3, reps:'15', tip:'Rahlo naprej, vodi s komolcem.' },
-  { name:'Band Face Pull', sets:3, reps:'20', tip:'Komolci visoko, zunanja rotacija.' },
-  { name:'Push-up (elevated)', sets:3, reps:'submaks.', tip:'3 reps od odpovedi.' },
-  { name:'Pallof Press', sets:3, reps:'10 / stran', tip:'Počasen in kontroliran.' }
-];
+let PROGRAM_A = []; // Naloži iz Sheets
+let PROGRAM_B = []; // Prazen dokler Sheets ne vrne B dne
 let PROGRAM = PROGRAM_A;
 let PROGRAM_C = [];
 let DAY_NAMES = { A: 'Day A', B: 'Day B', C: 'Day C' }; // Dejanska imena iz programa
