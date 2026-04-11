@@ -583,23 +583,23 @@ async function saveCheckin() {
   localStorage.setItem('klient_checkins', JSON.stringify(checkins));
 
   // Shrani v Sheets
+  const checkinPayload = {
+    action: 'logWorkout',
+    client: CLIENT + '_checkin',
+    session: 'Check-in',
+    exercise: 'Dnevni check-in',
+    sets: '',
+    reps: '',
+    weight: sleep,
+    rpe: selectedEnergy,
+    notes: note,
+    date: checkinDateStr
+  };
   try {
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'logWorkout',
-        client: CLIENT + '_checkin',
-        session: 'Check-in',
-        exercise: 'Dnevni check-in',
-        sets: '',
-        reps: '',
-        weight: sleep,
-        rpe: selectedEnergy,
-        notes: note,
-        date: checkinDateStr
-      })
-    });
-  } catch(e) { /* Lokalno shranjeno */ }
+    await fetch(API, { method: 'POST', body: JSON.stringify(checkinPayload) });
+  } catch(e) {
+    addToPendingQueue(checkinPayload);
+  }
 
   document.getElementById('checkin-saved').style.display = 'inline';
   showToast('✓ Check-in shranjen!');
@@ -673,52 +673,113 @@ function parseProgramLines(lines) {
   return keys.length ? result[keys[0]] : [];
 }
 
+// ============================================================
+// OFFLINE PODPORA — program cache + pending logs
+// ============================================================
+const CACHE_KEY = 'klient_program_cache';
+const PENDING_KEY = 'klient_pending_logs';
+
+function saveProgramCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadProgramFromCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    applyProgramData(data);
+    showToast('📱 Program naložen iz predpomnilnika');
+    return true;
+  } catch(e) { return false; }
+}
+
+function applyProgramData(data) {
+  if (!data || !data.program || !data.program.trim()) return;
+  const parsed = parseProgramText(data.program);
+  const keys = Object.keys(parsed);
+  if (!keys.length) return;
+
+  keys.forEach((key, idx) => {
+    if (idx === 0) { PROGRAM_A = parsed[key]; DAY_NAMES.A = key; }
+    else if (idx === 1) { PROGRAM_B = parsed[key]; DAY_NAMES.B = key; }
+    else if (idx === 2) { PROGRAM_C = parsed[key]; DAY_NAMES.C = key; }
+  });
+  if (keys.length === 1) { PROGRAM_A = parsed[keys[0]]; DAY_NAMES.A = keys[0]; }
+
+  if (data.mobility && data.mobility.trim()) {
+    MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
+      .filter(l => l.trim())
+      .map(line => {
+        const p = line.split('|').map(x => x.trim());
+        return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
+      }).filter(m => m.name);
+  }
+
+  if (data.message && data.message.trim()) {
+    const el = document.getElementById('coach-message-text');
+    if (el) el.textContent = data.message.trim();
+  }
+
+  PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
+  loggedExercises = {};
+  MAIN_PROGRAM_A = PROGRAM_A;
+  MAIN_PROGRAM_B = PROGRAM_B;
+  MAIN_PROGRAM_C = PROGRAM_C;
+  buildWorkoutSection();
+}
+
+// Pending queue — logi shranjeni brez interneta
+let pendingLogs = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+
+function addToPendingQueue(payload) {
+  pendingLogs.push(payload);
+  localStorage.setItem(PENDING_KEY, JSON.stringify(pendingLogs));
+}
+
+async function flushPendingLogs() {
+  if (!pendingLogs.length) return;
+  const toFlush = [...pendingLogs];
+  let flushed = 0;
+  for (const payload of toFlush) {
+    try {
+      await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+      flushed++;
+    } catch(e) { break; }
+  }
+  if (flushed > 0) {
+    pendingLogs = pendingLogs.slice(flushed);
+    localStorage.setItem(PENDING_KEY, JSON.stringify(pendingLogs));
+    if (flushed === toFlush.length) showToast('☁️ ' + flushed + ' logov sinhroniziranih!');
+  }
+}
+
+// Ob reconnect — avtomatično pošlji pending loge
+window.addEventListener('online', () => { setTimeout(flushPendingLogs, 1000); });
+
 async function loadProgramFromSheets() {
   try {
     const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
     const data = await res.json();
-    if (!data || !data.program || !data.program.trim()) return;
-
-    const parsed = parseProgramText(data.program);
-    const keys = Object.keys(parsed);
-    if (!keys.length) return;
-
-    // Dinamično mapiranje: prvi dan → A, drugi → B, tretji → C
-    keys.forEach((key, idx) => {
-      if (idx === 0) { PROGRAM_A = parsed[key]; DAY_NAMES.A = key; }
-      else if (idx === 1) { PROGRAM_B = parsed[key]; DAY_NAMES.B = key; }
-      else if (idx === 2) { PROGRAM_C = parsed[key]; DAY_NAMES.C = key; }
-    });
-    if (keys.length === 1) { PROGRAM_A = parsed[keys[0]]; DAY_NAMES.A = keys[0]; }
-
-    // Naloži mobilnost
-    if (data.mobility && data.mobility.trim()) {
-      MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
-        .filter(l => l.trim())
-        .map(line => {
-          const p = line.split('|').map(x => x.trim());
-          return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
-        }).filter(m => m.name);
+    if (!data || !data.program || !data.program.trim()) {
+      loadProgramFromCache();
+      return;
     }
 
-    // Naloži sporočilo trenerja
-    if (data.message && data.message.trim()) {
-      const el = document.getElementById('coach-message-text');
-      if (el) el.textContent = data.message.trim();
-    }
+    // Shrani v cache za offline
+    saveProgramCache(data);
 
-    PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
-    loggedExercises = {};
-    // Shrani originale
-    MAIN_PROGRAM_A = PROGRAM_A;
-    MAIN_PROGRAM_B = PROGRAM_B;
-    MAIN_PROGRAM_C = PROGRAM_C;
-    buildWorkoutSection();
+    applyProgramData(data);
 
     // Preveri alt programe
     checkAltPrograms();
+
+    // Flush pending logov (imamo internet)
+    flushPendingLogs();
+
   } catch(e) {
-    console.log('Program load failed, using default');
+    console.log('Program load failed, trying cache...');
+    loadProgramFromCache();
   }
 }
 
@@ -951,10 +1012,12 @@ async function saveExercise() {
   closeSheet();
   buildWorkoutSection();
   // Shrani v Sheets
+  const payload = { action: 'logWorkout', client: CLIENT, ...entry };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, ...entry }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
     showToast('✓ ' + ex.name + ' shranjeno!');
   } catch(e) {
+    addToPendingQueue(payload);
     showToast('✓ Shranjeno lokalno!');
   }
 }
@@ -984,10 +1047,12 @@ async function saveCardio() {
   localStorage.setItem('klient_cardio', JSON.stringify(cardioLogs));
   closeCardioSheet();
   buildCardioStandalone();
+  const cardioPayload = { action: 'logWorkout', client: CLIENT, session: 'Kardio', exercise: 'Tek/Hoja', sets: 1, reps: time + 'min', weight: dist + 'km', rpe: diff, date: cardioDateStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Kardio', exercise: 'Tek/Hoja', sets: 1, reps: time + 'min', weight: dist + 'km', rpe: diff, date: cardioDateStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(cardioPayload) });
     showToast('✓ Kardio shranjen!');
   } catch(e) {
+    addToPendingQueue(cardioPayload);
     showToast('✓ Kardio shranjen lokalno!');
   }
 }
@@ -1003,10 +1068,12 @@ async function saveDailyWeight() {
   if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
   localStorage.setItem('klient_weights', JSON.stringify(weights));
   renderWeightHistory();
+  const weightPayload = { action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(weightPayload) });
     showToast('✓ Teža shranjena!');
   } catch(e) {
+    addToPendingQueue(weightPayload);
     showToast('✓ Shranjeno lokalno!');
   }
 }
@@ -1014,10 +1081,12 @@ async function saveMeasurements() {
   const entry = { date: todayStr, waist: document.getElementById('meas-waist').value, hips: document.getElementById('meas-hips').value, chest: document.getElementById('meas-chest').value, thigh: document.getElementById('meas-thigh').value };
   measurements.unshift(entry);
   localStorage.setItem('klient_measurements', JSON.stringify(measurements));
+  const measPayload = { action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(measPayload) });
     showToast('✓ Mere shranjene!');
   } catch(e) {
+    addToPendingQueue(measPayload);
     showToast('✓ Shranjeno lokalno!');
   }
 }

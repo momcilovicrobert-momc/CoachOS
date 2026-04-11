@@ -549,23 +549,12 @@ async function saveCheckin() {
   if (idx >= 0) checkins[idx] = local; else checkins.unshift(local);
   localStorage.setItem('hana_checkins', JSON.stringify(checkins));
 
+  const checkinPayload = { action: 'logWorkout', client: CLIENT + '_checkin', session: 'Check-in', exercise: 'Dnevni check-in', sets: '', reps: '', weight: sleep, rpe: selectedEnergy, notes: note, date: checkinDateStr };
   try {
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'logWorkout',
-        client: CLIENT + '_checkin',
-        session: 'Check-in',
-        exercise: 'Dnevni check-in',
-        sets: '',
-        reps: '',
-        weight: sleep,
-        rpe: selectedEnergy,
-        notes: note,
-        date: checkinDateStr
-      })
-    });
-  } catch(e) { /* Lokalno shranjeno */ }
+    await fetch(API, { method: 'POST', body: JSON.stringify(checkinPayload) });
+  } catch(e) {
+    addToPendingQueue(checkinPayload);
+  }
 
   document.getElementById('checkin-saved').style.display = 'inline';
   showToast('✓ Check-in shranjen!');
@@ -627,42 +616,99 @@ function parseProgramText(rawText) {
   return days;
 }
 
+// ============================================================
+// OFFLINE PODPORA — program cache + pending logs
+// ============================================================
+const CACHE_KEY = 'hana_program_cache';
+const PENDING_KEY = 'hana_pending_logs';
+
+function saveProgramCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadProgramFromCache(applyFn) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    applyFn(data);
+    showToast('📱 Program naložen iz predpomnilnika');
+    return true;
+  } catch(e) { return false; }
+}
+
+let pendingLogs = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+
+function addToPendingQueue(payload) {
+  pendingLogs.push(payload);
+  localStorage.setItem(PENDING_KEY, JSON.stringify(pendingLogs));
+}
+
+async function flushPendingLogs() {
+  if (!pendingLogs.length) return;
+  const toFlush = [...pendingLogs];
+  let flushed = 0;
+  for (const payload of toFlush) {
+    try {
+      await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+      flushed++;
+    } catch(e) { break; }
+  }
+  if (flushed > 0) {
+    pendingLogs = pendingLogs.slice(flushed);
+    localStorage.setItem(PENDING_KEY, JSON.stringify(pendingLogs));
+    if (flushed === toFlush.length) showToast('☁️ ' + flushed + ' logov sinhroniziranih!');
+  }
+}
+
+window.addEventListener('online', () => { setTimeout(flushPendingLogs, 1000); });
+
+async function applyHanaProgramData(data) {
+  if (!data || !data.program || !data.program.trim()) return;
+  const parsed = parseProgramText(data.program);
+  const keys = Object.keys(parsed);
+  if (!keys.length) return;
+
+  keys.forEach((key, idx) => {
+    const k = key.toLowerCase().replace(/\s+/g, '');
+    if (idx === 0 || /a$|lower|spodnji/.test(k)) PROGRAM_A = parsed[key];
+    else if (idx === 1 || /b$|upper|zgornji/.test(k)) PROGRAM_B = parsed[key];
+  });
+  if (keys.length === 1) PROGRAM_A = parsed[keys[0]];
+
+  if (data.mobility && data.mobility.trim()) {
+    MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
+      .filter(l => l.trim())
+      .map(line => {
+        const p = line.split('|').map(x => x.trim());
+        return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
+      }).filter(m => m.name);
+  }
+
+  if (data.message && data.message.trim()) {
+    const el = document.getElementById('coach-message-text');
+    if (el) el.textContent = data.message.trim();
+  }
+
+  PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
+  loggedExercises = {};
+  buildWorkoutSection();
+}
+
 async function loadProgramFromSheets() {
   try {
     const res = await fetch(API + '?action=getProgram&client=' + CLIENT);
     const data = await res.json();
-    if (!data || !data.program || !data.program.trim()) return;
-
-    const parsed = parseProgramText(data.program);
-    const keys = Object.keys(parsed);
-    if (!keys.length) return;
-
-    keys.forEach((key, idx) => {
-      const k = key.toLowerCase().replace(/\s+/g, '');
-      if (idx === 0 || /a$|lower|spodnji/.test(k)) PROGRAM_A = parsed[key];
-      else if (idx === 1 || /b$|upper|zgornji/.test(k)) PROGRAM_B = parsed[key];
-    });
-    if (keys.length === 1) PROGRAM_A = parsed[keys[0]];
-
-    if (data.mobility && data.mobility.trim()) {
-      MOBILITY = data.mobility.replace(/\r\n/g,'\n').trim().split('\n')
-        .filter(l => l.trim())
-        .map(line => {
-          const p = line.split('|').map(x => x.trim());
-          return { name: p[0] || '', detail: p[1] || '', tip: p[2] || '' };
-        }).filter(m => m.name);
+    if (!data || !data.program || !data.program.trim()) {
+      loadProgramFromCache(applyHanaProgramData);
+      return;
     }
-
-    if (data.message && data.message.trim()) {
-      const el = document.getElementById('coach-message-text');
-      if (el) el.textContent = data.message.trim();
-    }
-
-    PROGRAM = activeDay === 'B' ? PROGRAM_B : PROGRAM_A;
-    loggedExercises = {};
-    buildWorkoutSection();
+    saveProgramCache(data);
+    await applyHanaProgramData(data);
+    flushPendingLogs();
   } catch(e) {
-    console.log('Program load failed:', e);
+    console.log('Program load failed, trying cache...');
+    loadProgramFromCache(applyHanaProgramData);
   }
 }
 
@@ -842,10 +888,12 @@ async function saveExercise() {
   loggedExercises[currentExIndex] = true;
   closeSheet();
   buildWorkoutSection();
+  const exPayload = { action: 'logWorkout', client: CLIENT, ...entry };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, ...entry }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(exPayload) });
     showToast('✓ ' + ex.name + ' shranjeno!');
   } catch(e) {
+    addToPendingQueue(exPayload);
     showToast('✓ Shranjeno lokalno!');
   }
 }
@@ -875,10 +923,12 @@ async function saveCardio() {
   localStorage.setItem('hana_cardio', JSON.stringify(cardioLogs));
   closeCardioSheet();
   buildCardioStandalone();
+  const cardioPayload = { action: 'logWorkout', client: CLIENT, session: 'Kardio', exercise: 'Tek/Hoja', sets: 1, reps: time + 'min', weight: dist + 'km', rpe: diff, date: cardioDateStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Kardio', exercise: 'Tek/Hoja', sets: 1, reps: time + 'min', weight: dist + 'km', rpe: diff, date: cardioDateStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(cardioPayload) });
     showToast('✓ Kardio shranjen!');
   } catch(e) {
+    addToPendingQueue(cardioPayload);
     showToast('✓ Kardio shranjen lokalno!');
   }
 }
@@ -894,10 +944,12 @@ async function saveDailyWeight() {
   if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
   localStorage.setItem('hana_weights', JSON.stringify(weights));
   renderWeightHistory();
+  const weightPayload = { action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(weightPayload) });
     showToast('✓ Teža shranjena!');
   } catch(e) {
+    addToPendingQueue(weightPayload);
     showToast('✓ Shranjeno lokalno!');
   }
 }
@@ -905,10 +957,12 @@ async function saveMeasurements() {
   const entry = { date: todayStr, waist: document.getElementById('meas-waist').value, hips: document.getElementById('meas-hips').value, chest: document.getElementById('meas-chest').value, thigh: document.getElementById('meas-thigh').value };
   measurements.unshift(entry);
   localStorage.setItem('hana_measurements', JSON.stringify(measurements));
+  const measPayload = { action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr };
   try {
-    await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr }) });
+    await fetch(API, { method: 'POST', body: JSON.stringify(measPayload) });
     showToast('✓ Mere shranjene!');
   } catch(e) {
+    addToPendingQueue(measPayload);
     showToast('✓ Shranjeno lokalno!');
   }
 }
