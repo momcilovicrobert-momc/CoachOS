@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoachOS — Janja</title>
+<title>CoachOS — KLIENT</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -225,7 +225,7 @@ input[type=range]{width:100%;}
 
 <div class="greeting">
   <div class="greeting-sub" id="greeting-date">—</div>
-  <div class="greeting-name">Hej, <span>Janja.</span></div>
+  <div class="greeting-name">Hej, <span>KLIENT.</span></div>
 </div>
 
 <div class="date-strip-wrapper">
@@ -476,7 +476,7 @@ input[type=range]{width:100%;}
 // KONFIGURACIJA
 // ============================================================
 const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
-const CLIENT = 'Janja';
+const CLIENT = 'KLIENT';
 // Dinamične inicialke iz CLIENT imena
 (function() {
   const el = document.getElementById('client-initials');
@@ -524,11 +524,11 @@ let MAIN_PROGRAM_B = null;
 let MAIN_PROGRAM_C = null;
 
 // Lokalni podatki — SAMO za tisti telefon/browser
-let logs = JSON.parse(localStorage.getItem('janja_logs') || '[]');
-let checkins = JSON.parse(localStorage.getItem('janja_checkins') || '[]');
-let weights = JSON.parse(localStorage.getItem('janja_weights') || '[]');
-let measurements = JSON.parse(localStorage.getItem('janja_measurements') || '[]');
-let cardioLogs = JSON.parse(localStorage.getItem('janja_cardio') || '[]');
+let logs = JSON.parse(localStorage.getItem('klient_logs') || '[]');
+let checkins = JSON.parse(localStorage.getItem('klient_checkins') || '[]');
+let weights = JSON.parse(localStorage.getItem('klient_weights') || '[]');
+let measurements = JSON.parse(localStorage.getItem('klient_measurements') || '[]');
+let cardioLogs = JSON.parse(localStorage.getItem('klient_cardio') || '[]');
 
 // ============================================================
 // DATUM
@@ -594,7 +594,7 @@ async function saveCheckin() {
   const local = { date: checkinDateStr, sleep, energy: selectedEnergy, note };
   const idx = checkins.findIndex(c => c.date === checkinDateStr);
   if (idx >= 0) checkins[idx] = local; else checkins.unshift(local);
-  localStorage.setItem('janja_checkins', JSON.stringify(checkins));
+  localStorage.setItem('klient_checkins', JSON.stringify(checkins));
 
   // Shrani v Sheets
   try {
@@ -793,7 +793,7 @@ function switchProgram(which) {
   PROGRAM = PROGRAM_A;
   loggedExercises = {};
   buildWorkoutSection();
-  localStorage.setItem('janja_activeProgram', which);
+  localStorage.setItem('klient_activeProgram', which);
 }
 
 // ============================================================
@@ -866,7 +866,7 @@ function buildWorkoutSection() {
     section.innerHTML = tabsHTML() + `<div class="rest-card">
       <div class="rest-emoji">🎉</div>
       <div class="rest-title">Trening zaključen!</div>
-      <div class="rest-text">Odlično opravljeno, Janja. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
+      <div class="rest-text">Odlično opravljeno, KLIENT. Vse vaje so zabeležene. Počivaj in jej dobro! 💪</div>
     </div>`;
     return;
   }
@@ -960,7 +960,7 @@ async function saveExercise() {
     rpe
   };
   logs.unshift(entry);
-  localStorage.setItem('janja_logs', JSON.stringify(logs));
+  localStorage.setItem('klient_logs', JSON.stringify(logs));
   loggedExercises[currentExIndex] = true;
   closeSheet();
   buildWorkoutSection();
@@ -995,7 +995,7 @@ async function saveCardio() {
   const entry = { date: cardioDateStr, time, dist, diff };
   const idx = cardioLogs.findIndex(c => c.date === cardioDateStr);
   if (idx >= 0) cardioLogs[idx] = entry; else cardioLogs.unshift(entry);
-  localStorage.setItem('janja_cardio', JSON.stringify(cardioLogs));
+  localStorage.setItem('klient_cardio', JSON.stringify(cardioLogs));
   closeCardioSheet();
   buildCardioStandalone();
   try {
@@ -1015,7 +1015,7 @@ async function saveDailyWeight() {
   const entry = { date: weightDateStr, weight: w };
   const idx = weights.findIndex(x => x.date === weightDateStr);
   if (idx >= 0) weights[idx] = entry; else weights.unshift(entry);
-  localStorage.setItem('janja_weights', JSON.stringify(weights));
+  localStorage.setItem('klient_weights', JSON.stringify(weights));
   renderWeightHistory();
   try {
     await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Teža', exercise: 'Telesna teža', sets: '', reps: '', weight: w, rpe: '', date: weightDateStr }) });
@@ -1027,7 +1027,7 @@ async function saveDailyWeight() {
 async function saveMeasurements() {
   const entry = { date: todayStr, waist: document.getElementById('meas-waist').value, hips: document.getElementById('meas-hips').value, chest: document.getElementById('meas-chest').value, thigh: document.getElementById('meas-thigh').value };
   measurements.unshift(entry);
-  localStorage.setItem('janja_measurements', JSON.stringify(measurements));
+  localStorage.setItem('klient_measurements', JSON.stringify(measurements));
   try {
     await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'logWorkout', client: CLIENT, session: 'Mere', exercise: 'Telesne mere', sets: '', reps: '', weight: JSON.stringify(entry), rpe: '', date: todayStr }) });
     showToast('✓ Mere shranjene!');
