@@ -307,6 +307,17 @@ textarea.form-input { resize:vertical; min-height:80px; }
       </div>
     </div>
 
+    <!-- Sporočilo stranki -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">💬 Sporočilo stranki</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;">— prikaže se v aplikaciji stranke</span>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <textarea class="form-input" id="coach-message-input" style="min-height:80px;font-family:'DM Sans',sans-serif;font-size:13px;" placeholder="Napiši sporočilo za stranko (npr. Danes fokus na tehniko 💪)..."></textarea>
+      </div>
+    </div>
+
     <!-- Gumb za dodajanje alternativnega programa -->
     <div id="add-alt-btn-row" style="margin-bottom:4px;">
       <button class="btn btn-ghost" onclick="showAltProgram()" style="width:100%;justify-content:center;border-style:dashed;">
@@ -575,8 +586,12 @@ async function saveProgram() {
   localStorage.setItem('coachos_program_' + currentClient, text);
   renderProgram(text);
 
+  // Shrani sporočilo stranki
+  const message = document.getElementById('coach-message-input').value.trim();
+  localStorage.setItem('coachos_message_' + currentClient, message);
+
   // Shrani v Sheets v ozadju (brez type = privzeti tab)
-  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text }) }).catch(()=>{});
+  fetch(API, { method:'POST', body: JSON.stringify({ action:'saveProgram', client:currentClient, program:text, message:message }) }).catch(()=>{});
 
   // Alternativni program (če je prikazan in ima ime)
   const altBlock = document.getElementById('alt-program-block');
@@ -617,6 +632,7 @@ function openNewClient() { document.getElementById('modal-client').classList.add
 async function openEditProgram() {
   document.getElementById('modal-program-title').textContent = 'Uredi program — ' + currentClient;
   document.getElementById('program-text').value = localStorage.getItem('coachos_program_' + currentClient) || '';
+  document.getElementById('coach-message-input').value = localStorage.getItem('coachos_message_' + currentClient) || '';
 
   // Reset alt program block
   document.getElementById('alt-program-block').style.display = 'none';

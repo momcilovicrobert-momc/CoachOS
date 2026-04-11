@@ -345,7 +345,7 @@ input[type=range]{width:100%;}
     <div class="section">
       <div class="coach-msg">
         <div class="coach-msg-from">📋 Sporočilo trenerja</div>
-        <div class="coach-msg-text">Izberi današnji trening spodaj. Fokus na tehniko in počasen tempo — masa se gradi s kontrolo, ne z egom. 💪</div>
+        <div class="coach-msg-text" id="coach-message-text">Izberi današnji trening spodaj. Fokus na tehniko in počasen tempo — masa se gradi s kontrolo, ne z egom. 💪</div>
       </div>
     </div>
 
@@ -697,6 +697,10 @@ async function applyNikoProgramData(data) {
     buildDaySelector();
     buildWorkoutSection();
     buildExerciseList();
+  }
+  if (data.message && data.message.trim()) {
+    const el = document.getElementById('coach-message-text');
+    if (el) el.textContent = data.message.trim();
   }
 }
 
