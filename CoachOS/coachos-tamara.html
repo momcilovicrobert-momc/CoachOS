@@ -220,7 +220,7 @@ input[type=range]{width:100%;}
     </div>
     <div class="logo-text">COACH<span>OS</span></div>
   </div>
-  <div class="avatar">NI</div>
+  <div class="avatar" id="client-initials">—</div>
 </div>
 
 <div class="greeting">
@@ -477,6 +477,11 @@ input[type=range]{width:100%;}
 // ============================================================
 const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
 const CLIENT = 'Tamara';
+// Dinamične inicialke iz CLIENT imena
+(function() {
+  const el = document.getElementById('client-initials');
+  if (el) el.textContent = CLIENT.substring(0,2).toUpperCase();
+})();
 
 // ============================================================
 // STANJE
@@ -642,7 +647,7 @@ function buildWeek() {
 }
 
 // ============================================================
-// PROGRAM — NALOŽI IZ SHEETS (samo enkrat, brez podvatamara)
+// PROGRAM — NALOŽI IZ SHEETS (samo enkrat, brez podvajanja)
 // ============================================================
 // ============================================================
 // ROBUST PROGRAM PARSER — v2 (odporen na CRLF, whitespace, velika/mala)
@@ -795,10 +800,11 @@ function switchProgram(which) {
 // WORKOUT UI
 // ============================================================
 function tabsHTML() {
+  const hasDayB = PROGRAM_B && PROGRAM_B.length > 0;
   const hasDayC = PROGRAM_C && PROGRAM_C.length > 0;
   return `<div class="day-tabs">
     <div class="day-tab ${activeDay==='A'?'active':''}" onclick="switchDay('A')"><span class="day-tab-icon">🦵</span>${DAY_NAMES.A}</div>
-    <div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')"><span class="day-tab-icon">💪</span>${DAY_NAMES.B}</div>
+    ${hasDayB ? `<div class="day-tab ${activeDay==='B'?'active':''}" onclick="switchDay('B')"><span class="day-tab-icon">💪</span>${DAY_NAMES.B}</div>` : ''}
     ${hasDayC ? `<div class="day-tab ${activeDay==='C'?'active':''}" onclick="switchDay('C')"><span class="day-tab-icon">🔋</span>${DAY_NAMES.C}</div>` : ''}
     <div class="day-tab cardio-tab ${activeDay==='cardio'?'active':''}" onclick="switchDay('cardio')"><span class="day-tab-icon">🏃</span>Kardio</div>
     <div class="day-tab mobility-tab ${activeDay==='mobility'?'active':''}" onclick="switchDay('mobility')"><span class="day-tab-icon">💙</span>Mobilnost</div>
@@ -864,8 +870,8 @@ function buildWorkoutSection() {
     </div>`;
     return;
   }
-  const dayLabel = activeDay === 'A' ? 'Day A — Lower + Core' : 'Day B — Upper + Core';
-  const dayMeta = activeDay === 'A' ? (PROGRAM_A.length + ' vaj · ~50 min') : (PROGRAM_B.length + ' vaj · ~55 min');
+  const dayLabel = DAY_NAMES[activeDay] || ('Dan ' + activeDay);
+  const dayMeta = PROGRAM.length + ' vaj';
   section.innerHTML = tabsHTML() + `<div class="session-card">
     <div class="session-card-header"><div>
       <div class="session-name">${dayLabel}</div>
