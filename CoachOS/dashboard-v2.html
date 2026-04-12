@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.A.R.V.I.S. — CoachOS v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f1a;
+  --s1: #0d1520;
+  --s2: #111c2d;
+  --border: #1a2d40;
+  --teal: #00e5ff;
+  --teal2: #00b8cc;
+  --cyan: #7efff5;
+  --green: #39ff14;
+  --yellow: #ffcc00;
+  --red: #ff3355;
+  --text: #c8e8f0;
+  --dim: #5a7a8a;
+  --bright: #e8f8ff;
+  --gt: 0 0 12px #00e5ff55, 0 0 24px #00e5ff22;
+  --gg: 0 0 8px #39ff1455;
+  --gy: 0 0 8px #ffcc0055;
+  --gr: 0 0 8px #ff335555;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.012) 3px,rgba(0,229,255,0.012) 4px);
+  pointer-events:none; z-index:0;
+}
+
+/* ─── LAYOUT ─── */
+.hud { position:relative; z-index:1; max-width:1680px; margin:0 auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+
+/* ─── HEADER ─── */
+.hud-header {
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--s1); border:1px solid var(--border); border-top:2px solid var(--teal);
+  padding:12px 22px; border-radius:3px; box-shadow:var(--gt);
+}
+.hud-brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:4px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
+.hud-brand span { color:var(--bright); }
+.hud-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:1.5px; margin-top:3px; }
+.hud-clock { font-family:'JetBrains Mono',monospace; font-size:22px; color:var(--teal); font-weight:500; text-shadow:var(--gt); }
+.hud-date { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:right; margin-top:2px; }
+.btn-refresh {
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1.5px;
+  background:transparent; border:1px solid var(--teal); color:var(--teal);
+  padding:7px 16px; border-radius:2px; cursor:pointer; transition:all .2s;
+}
+.btn-refresh:hover { background:var(--teal); color:var(--bg); box-shadow:var(--gt); }
+
+/* ─── SECTION TITLE ─── */
+.stitle {
+  font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:2.5px;
+  color:var(--teal2); text-transform:uppercase; border-bottom:1px solid var(--border);
+  padding-bottom:8px; margin-bottom:14px; display:flex; align-items:center; gap:8px;
+}
+.stitle::before { content:'▸'; color:var(--teal); }
+
+/* ─── PANEL ─── */
+.panel {
+  background:var(--s1); border:1px solid var(--border); border-radius:3px;
+  padding:16px; position:relative; overflow:hidden;
+}
+.panel::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--teal)44,transparent);
+}
+
+/* ─── METRICS ROW ─── */
+.metrics-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.mcard { background:var(--s2); border:1px solid var(--border); border-radius:3px; padding:14px 16px; text-align:center; position:relative; overflow:hidden; }
+.mcard::before { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--teal); opacity:.3; }
+.mval { font-family:'Bebas Neue',sans-serif; font-size:38px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
+.mlabel { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:1.5px; text-transform:uppercase; margin-top:4px; }
+
+/* ─── CLIENT HEX GRID ─── */
+.hex-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+.hex-item { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; transition:transform .2s; }
+.hex-item:hover { transform:scale(1.04); }
+.hex-name { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:1.5px; color:var(--bright); text-transform:uppercase; }
+.hex-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); }
+.cstat-pill { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); background:var(--s2); border:1px solid var(--border); padding:2px 8px; border-radius:2px; }
+
+/* ─── MID GRID ─── */
+.mid-grid { display:grid; grid-template-columns:280px 1fr 240px; gap:12px; }
+
+/* ─── BODY SILHOUETTE ─── */
+.body-wrap { display:flex; gap:20px; justify-content:center; align-items:flex-start; }
+.body-label { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--teal2); letter-spacing:2px; text-align:center; margin-bottom:6px; }
+.rpe-legend { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.legend-item { display:flex; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
+.legend-swatch { width:10px; height:10px; border-radius:2px; border:1px solid var(--border); }
+
+/* ─── HEATMAP ─── */
+.hmap-sel { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
+.hmap-btn { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:1px; background:transparent; border:1px solid var(--border); color:var(--dim); padding:3px 10px; border-radius:2px; cursor:pointer; transition:all .2s; }
+.hmap-btn.active { background:var(--teal); color:var(--bg); border-color:var(--teal); }
+.hmap-btn:hover:not(.active) { border-color:var(--teal2); color:var(--teal2); }
+.hmap-grid { display:grid; grid-template-columns:36px repeat(7,1fr); gap:3px; }
+.hmap-day { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--teal2); text-align:center; padding-bottom:2px; }
+.hmap-wlabel { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); display:flex; align-items:center; }
+.hmap-cell {
+  width:100%; aspect-ratio:1;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:var(--s2); transition:all .2s; cursor:default;
+}
+.hmap-cell:hover { transform:scale(1.12); }
+.hmap-legend { display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
+.hmap-scale { display:flex; gap:3px; align-items:center; }
+.hmap-scale-cell { width:10px; height:10px; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+
+/* ─── TOP PERFORMERS ─── */
+.perf-row {
+  display:flex; align-items:center; gap:8px; padding:7px 10px;
+  background:var(--s2); border:1px solid var(--border); border-radius:2px;
+  margin-bottom:6px; cursor:pointer; transition:all .2s;
+}
+.perf-row:hover { border-color:var(--teal2); }
+.perf-rank { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; width:22px; text-align:center; }
+.perf-name { font-size:13px; font-weight:600; color:var(--bright); }
+.perf-meta { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:1px; }
+.perf-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ─── BOT GRID ─── */
+.bot-grid { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+
+/* ─── RECENT ACTIVITY ─── */
+.act-row {
+  display:flex; align-items:center; gap:8px; padding:6px 8px;
+  background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:5px;
+}
+.act-date { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); min-width:28px; }
+.act-client { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; }
+.act-ex { font-size:11px; color:var(--bright); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; }
+.act-meta { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-left:auto; white-space:nowrap; }
+
+/* ─── STATUS BAR ─── */
+.status-bar {
+  background:var(--s1); border:1px solid var(--border); border-bottom:2px solid var(--teal);
+  padding:9px 20px; display:flex; align-items:center; justify-content:space-between;
+  font-family:'JetBrains Mono',monospace; font-size:10px; border-radius:3px;
+}
+.sys-active { color:var(--green); text-shadow:var(--gg); font-weight:600; }
+.waveform { display:flex; align-items:center; gap:2px; height:18px; }
+.wbar { width:3px; background:var(--teal); border-radius:1px; opacity:.6; animation:wv 1s ease-in-out infinite; }
+@keyframes wv { 0%,100%{height:3px} 50%{height:14px} }
+
+/* ─── LOADING ─── */
+.loading {
+  position:fixed; inset:0; background:var(--bg); z-index:1000;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  transition:opacity .5s;
+}
+.loading.out { opacity:0; pointer-events:none; }
+.ld-title { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:6px; color:var(--teal); text-shadow:var(--gt); }
+.ld-sub { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:2px; }
+.ld-bar-wrap { width:320px; height:2px; background:var(--s2); border:1px solid var(--border); }
+.ld-bar { height:100%; background:var(--teal); width:0%; transition:width .35s; box-shadow:var(--gt); }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.panel { animation:fadeUp .4s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="ld-title">J.A.R.V.I.S.</div>
+  <div class="ld-sub" id="ld-msg">INITIALIZING COACH PROTOCOL...</div>
+  <div class="ld-bar-wrap"><div class="ld-bar" id="ld-bar"></div></div>
+</div>
+
+<div class="hud">
+
+  <!-- HEADER -->
+  <div class="hud-header">
+    <div>
+      <div class="hud-brand">J.A.R.V.I.S. <span>COACH HUD</span></div>
+      <div class="hud-sub">COACH: ROBERT M. // CoachOS v2.0 // CLIENTS: 6</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;">
+      <div>
+        <div class="hud-clock" id="hud-clock">--:--:--</div>
+        <div class="hud-date" id="hud-date"></div>
+      </div>
+      <button class="btn-refresh" onclick="refreshAll()">⟳ REFRESH</button>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics-row">
+    <div class="mcard"><div class="mval" id="m-active">—</div><div class="mlabel">Aktivni klienti</div></div>
+    <div class="mcard"><div class="mval" id="m-sessions">—</div><div class="mlabel">Treningi (7 dni)</div></div>
+    <div class="mcard"><div class="mval" id="m-volume">—</div><div class="mlabel">Skupni volumen kg</div></div>
+    <div class="mcard"><div class="mval" id="m-rpe">—</div><div class="mlabel">Avg RPE (zadnji)</div></div>
+  </div>
+
+  <!-- CLIENT OVERVIEW -->
+  <div class="panel">
+    <div class="stitle">CLIENT OVERVIEW // TRAFFIC LIGHT STATUS</div>
+    <div class="hex-grid" id="hex-grid"></div>
+  </div>
+
+  <!-- MID ROW -->
+  <div class="mid-grid">
+
+    <!-- BIOMETRICS -->
+    <div class="panel">
+      <div class="stitle">BIOMETRICS // RPE MUSCLE MAP</div>
+      <div class="body-wrap" id="body-wrap"></div>
+      <div class="rpe-legend" id="rpe-legend"></div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="panel">
+      <div class="stitle">WEEKLY PROGRESS // TRAINING HEATMAP</div>
+      <div class="hmap-sel" id="hmap-sel"></div>
+      <div class="hmap-grid" id="hmap-grid"></div>
+      <div class="hmap-legend">
+        <span>LOW</span>
+        <div class="hmap-scale">
+          <div class="hmap-scale-cell" style="background:#00e5ff1a;"></div>
+          <div class="hmap-scale-cell" style="background:#00e5ff44;"></div>
+          <div class="hmap-scale-cell" style="background:#00e5ff88;"></div>
+          <div class="hmap-scale-cell" style="background:#ff8c0088;"></div>
+          <div class="hmap-scale-cell" style="background:#ff3355aa;"></div>
+        </div>
+        <span>HIGH</span>
+      </div>
+    </div>
+
+    <!-- TOP PERFORMERS -->
+    <div class="panel">
+      <div class="stitle">TOP PERFORMERS</div>
+      <div id="top-perf"></div>
+    </div>
+
+  </div>
+
+  <!-- BOT ROW -->
+  <div class="bot-grid">
+
+    <!-- VOLUME CHART -->
+    <div class="panel">
+      <div class="stitle">WEEKLY VOLUME (SETS) // BY MUSCLE GROUP</div>
+      <div style="position:relative;height:210px;">
+        <canvas id="vol-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <div class="panel">
+      <div class="stitle">RECENT ACTIVITY</div>
+      <div id="recent-act"></div>
+    </div>
+
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span style="color:var(--dim);">SYSTEM STATUS:</span>
+      <span class="sys-active" id="sys-status">● ACTIVE</span>
+      <span style="color:var(--dim);">[J.A.R.V.I.S. COACH HUD] — [ROBERT MOMCILOVIC]</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="waveform" id="waveform"></div>
+      <span style="color:var(--dim);" id="sys-info">LOADING...</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
+const BASE = 'https://momcilovicrobert-momc.github.io/CoachOS/CoachOS/';
+
+const CLIENTS = [
+  { name:'Eli',    av:'EL', meta:'Izkušena · Gym',        file:'coachos-eli.html'    },
+  { name:'Hana',   av:'HA', meta:'Displazija kolkov',      file:'coachos-hana.html'   },
+  { name:'Nina',   av:'NI', meta:'Izkušena',               file:'coachos-nina.html'   },
+  { name:'Niko',   av:'NK', meta:'17 let · Boks+Gym',      file:'coachos-niko.html'   },
+  { name:'Janja',  av:'JA', meta:'Nova',                   file:'coachos-janja.html'  },
+  { name:'Tamara', av:'TA', meta:'51 let · Menopauza',     file:'coachos-tamara.html' }
+];
+
+const CCOLORS = ['#00e5ff','#39ff14','#a78bfa','#ff6b35','#ff3385','#ffcc00'];
+
+let allLogs = {};
+let volChart = null;
+let hmClient = 'Eli';
+
+/* ── CLOCK ── */
+function tick() {
+  const n = new Date();
+  const pad = v => String(v).padStart(2,'0');
+  document.getElementById('hud-clock').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  document.getElementById('hud-date').textContent = `${n.getFullYear()}.${pad(n.getMonth()+1)}.${pad(n.getDate())}`;
+}
+setInterval(tick, 1000); tick();
+
+/* ── WAVEFORM ── */
+function buildWaveform() {
+  const w = document.getElementById('waveform');
+  for (let i = 0; i < 22; i++) {
+    const b = document.createElement('div');
+    b.className = 'wbar';
+    b.style.animationDelay = (i * 0.05) + 's';
+    b.style.animationDuration = (0.6 + Math.random() * 0.7) + 's';
+    w.appendChild(b);
+  }
+}
+
+/* ── LOADING ── */
+function setLoad(pct, msg) {
+  document.getElementById('ld-bar').style.width = pct + '%';
+  document.getElementById('ld-msg').textContent = msg;
+}
+function hideLoad() {
+  const el = document.getElementById('loading');
+  el.classList.add('out');
+  setTimeout(() => el.style.display = 'none', 600);
+}
+
+/* ── DATE PARSE ── */
+function parseDate(s) {
+  if (!s) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  if (/^\d{1,2}\.\d{1,2}\.\d{4}/.test(s)) {
+    const [d,m,y] = s.split('.');
+    return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+  }
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+/* ── FETCH LOGS ── */
+async function fetchLogs(name) {
+  try {
+    const r = await fetch(`${API}?action=getLogs&client=${encodeURIComponent(name)}`);
+    const d = await r.json();
+    return (d && d.logs) ? d.logs : [];
+  } catch {
+    try { return JSON.parse(localStorage.getItem('coachos_logs_'+name)||'[]'); } catch { return []; }
+  }
+}
+
+async function loadAll() {
+  setLoad(8, 'CONNECTING TO GOOGLE SHEETS...');
+  await Promise.all(CLIENTS.map(async (c, i) => {
+    allLogs[c.name] = await fetchLogs(c.name);
+    setLoad(10 + (i+1)*13, `LOADED: ${c.name.toUpperCase()}`);
+  }));
+}
+
+/* ── CLIENT STATUS ── */
+function clientStatus(name) {
+  const logs = allLogs[name] || [];
+  const dates = logs.map(l => parseDate(l.date)).filter(Boolean).sort((a,b) => b-a);
+  if (!dates.length) return { label:'OFFLINE', color:'red', days:null };
+  const days = Math.floor((Date.now() - dates[0]) / 86400000);
+  if (days <= 3) return { label:'ACTIVE',   color:'green',  days };
+  if (days <= 7) return { label:'STALLED',  color:'yellow', days };
+  return             { label:'OFFLINE',  color:'red',    days };
+}
+
+/* ── MUSCLE DETECTION ── */
+const MUSCLES = {
+  chest:     /bench|fly|flye|chest|prsni|push.?up|sklece/i,
+  shoulders: /shoulder|overhead|ohp|military|lateral.?raise|front.?raise|ramena|delt/i,
+  back:      /row|pull.?up|lat|pulldown|back|hrbet|mrtvi/i,
+  arms:      /curl|bicep|tricep|extension|roke/i,
+  legs:      /squat|lunge|leg.press|leg.curl|leg.ext|hip.thrust|glute|calf|noge|po.ep|izpad/i,
+  core:      /plank|crunch|\bab\b|abs|core|oblique|trebuh/i
+};
+function detectMuscle(ex) {
+  if (!ex) return null;
+  for (const [m, rx] of Object.entries(MUSCLES)) if (rx.test(ex)) return m;
+  return null;
+}
+
+/* ── RPE COLOR ── */
+function rpeColor(v) {
+  if (!v) return 'rgba(0,229,255,0.07)';
+  if (v <= 5)   return 'rgba(0,229,255,0.22)';
+  if (v <= 7)   return 'rgba(0,229,255,0.52)';
+  if (v <= 8.5) return 'rgba(255,140,0,0.58)';
+  return               'rgba(255,51,85,0.62)';
+}
+
+/* ── AGGREGATE MUSCLE RPE (all clients, last 7d) ── */
+function aggMuscleRPE() {
+  const cutoff = Date.now() - 7*86400000;
+  const map = {};
+  CLIENTS.forEach(c => {
+    (allLogs[c.name]||[]).forEach(l => {
+      const d = parseDate(l.date);
+      if (!d || d < cutoff) return;
+      const m = detectMuscle(l.exercise || l.vaja);
+      if (!m) return;
+      const rpe = parseFloat(l.rpe) || 0;
+      if (!map[m]) map[m] = [];
+      map[m].push(rpe);
+    });
+  });
+  const out = {};
+  for (const [m, arr] of Object.entries(map)) out[m] = arr.reduce((a,b)=>a+b,0)/arr.length;
+  return out;
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: METRICS
+══════════════════════════════════════════════════ */
+function renderMetrics() {
+  const cutoff = Date.now() - 7*86400000;
+  let active=0, sessions=0, volume=0;
+  const rpes = [];
+  CLIENTS.forEach(c => {
+    if (clientStatus(c.name).color === 'green') active++;
+    (allLogs[c.name]||[]).forEach(l => {
+      const d = parseDate(l.date);
+      if (!d || d < cutoff) return;
+      sessions++;
+      const v = (parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0);
+      volume += v;
+      if (l.rpe) rpes.push(parseFloat(l.rpe));
+    });
+  });
+  document.getElementById('m-active').textContent   = active;
+  document.getElementById('m-sessions').textContent = sessions;
+  document.getElementById('m-volume').textContent   = volume > 1000 ? (volume/1000).toFixed(1)+'k' : Math.round(volume)||'—';
+  document.getElementById('m-rpe').textContent      = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: CLIENT HEX GRID
+══════════════════════════════════════════════════ */
+function renderHexGrid() {
+  const grid = document.getElementById('hex-grid');
+  grid.innerHTML = CLIENTS.map((c, i) => {
+    const st = clientStatus(c.name);
+    const col = CCOLORS[i];
+    const ring = st.color==='green' ? '#39ff14' : st.color==='yellow' ? '#ffcc00' : '#ff3355';
+    const dText = st.days !== null ? `${st.days}d ago` : 'no data';
+    const logs7 = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && Date.now()-d < 7*86400000; }).length;
+
+    const gDot = st.color==='green'  ? `fill:#39ff14;filter:drop-shadow(0 0 4px #39ff14)` : `fill:#162216`;
+    const yDot = st.color==='yellow' ? `fill:#ffcc00;filter:drop-shadow(0 0 4px #ffcc00)` : `fill:#222214`;
+    const rDot = st.color==='red'    ? `fill:#ff3355;filter:drop-shadow(0 0 4px #ff3355)` : `fill:#221418`;
+
+    return `<div class="hex-item" onclick="window.open('${c.file}','_blank')">
+      <svg viewBox="0 0 130 152" width="130" height="152">
+        <polygon points="65,4 124,38 124,114 65,148 6,114 6,38"
+          fill="#0d1828" stroke="${ring}" stroke-width="1.8"
+          style="filter:drop-shadow(0 0 7px ${ring}55)"/>
+        <text x="65" y="68" text-anchor="middle" dominant-baseline="middle"
+          font-family="Bebas Neue,sans-serif" font-size="30" fill="${col}"
+          style="filter:drop-shadow(0 0 5px ${col}88)">${c.av}</text>
+        <text x="65" y="93" text-anchor="middle" dominant-baseline="middle"
+          font-family="JetBrains Mono,monospace" font-size="9.5" fill="${ring}" letter-spacing="1">${st.label}</text>
+        <text x="65" y="112" text-anchor="middle" dominant-baseline="middle"
+          font-family="JetBrains Mono,monospace" font-size="8" fill="#5a7a8a">${dText}</text>
+        <circle cx="116" cy="50" r="5.5" style="${gDot}"/>
+        <circle cx="116" cy="76" r="5.5" style="${yDot}"/>
+        <circle cx="116" cy="102" r="5.5" style="${rDot}"/>
+      </svg>
+      <div class="hex-name">${c.name}</div>
+      <div class="cstat-pill">${logs7} / teden</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: BODY SILHOUETTE
+══════════════════════════════════════════════════ */
+function renderBody() {
+  const wrap = document.getElementById('body-wrap');
+  const rpe = aggMuscleRPE();
+  const c = m => rpeColor(rpe[m]);
+
+  const front = `<div>
+    <div class="body-label">FRONT</div>
+    <svg width="110" height="230" viewBox="0 0 110 230">
+      <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
+      <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
+      <!-- shoulders -->
+      <ellipse cx="20" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('shoulders')})"/>
+      <ellipse cx="90" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('shoulders')})"/>
+      <!-- chest -->
+      <path d="M28,50 Q55,44 82,50 L80,88 Q55,93 30,88 Z" fill="${c('chest')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('chest')})"/>
+      <!-- arms upper -->
+      <rect x="7" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
+      <rect x="88" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
+      <!-- arms lower -->
+      <rect x="5" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
+      <rect x="92" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
+      <!-- core -->
+      <path d="M32,88 Q55,93 78,88 L76,130 Q55,135 34,130 Z" fill="${c('core')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('core')})"/>
+      <!-- legs upper -->
+      <rect x="32" y="133" width="21" height="52" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
+      <rect x="57" y="133" width="21" height="52" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
+      <!-- legs lower -->
+      <rect x="34" y="183" width="17" height="40" rx="7" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".75"/>
+      <rect x="59" y="183" width="17" height="40" rx="7" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".75"/>
+      <!-- grid lines -->
+      <line x1="0" y1="77" x2="110" y2="77" stroke="#00e5ff0d" stroke-width="0.5"/>
+      <line x1="0" y1="133" x2="110" y2="133" stroke="#00e5ff0d" stroke-width="0.5"/>
+      <line x1="55" y1="37" x2="55" y2="226" stroke="#00e5ff08" stroke-width="0.5"/>
+    </svg>
+  </div>`;
+
+  const back = `<div>
+    <div class="body-label">BACK</div>
+    <svg width="110" height="230" viewBox="0 0 110 230">
+      <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
+      <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
+      <!-- shoulders back -->
+      <ellipse cx="20" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1"/>
+      <ellipse cx="90" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1"/>
+      <!-- back/lats -->
+      <path d="M28,50 Q55,44 82,50 L80,128 Q55,133 30,128 Z" fill="${c('back')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 6px ${c('back')})"/>
+      <!-- arms upper -->
+      <rect x="7" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
+      <rect x="88" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
+      <!-- arms lower -->
+      <rect x="5" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
+      <rect x="92" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
+      <!-- glutes -->
+      <path d="M32,128 Q55,133 78,128 L76,162 Q55,167 34,162 Z" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
+      <!-- legs back -->
+      <rect x="32" y="162" width="21" height="42" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1"/>
+      <rect x="57" y="162" width="21" height="42" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1"/>
+      <!-- calves -->
+      <rect x="34" y="202" width="17" height="21" rx="6" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".7"/>
+      <rect x="59" y="202" width="17" height="21" rx="6" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".7"/>
+      <!-- grid -->
+      <line x1="0" y1="77" x2="110" y2="77" stroke="#00e5ff0d" stroke-width="0.5"/>
+      <line x1="0" y1="128" x2="110" y2="128" stroke="#00e5ff0d" stroke-width="0.5"/>
+      <line x1="55" y1="37" x2="55" y2="226" stroke="#00e5ff08" stroke-width="0.5"/>
+    </svg>
+  </div>`;
+
+  wrap.innerHTML = front + back;
+
+  document.getElementById('rpe-legend').innerHTML = [
+    ['rgba(0,229,255,0.07)','No data'],
+    ['rgba(0,229,255,0.22)','Low 1-5'],
+    ['rgba(0,229,255,0.52)','Mod 6-7'],
+    ['rgba(255,140,0,0.58)','High 8'],
+    ['rgba(255,51,85,0.62)','Max 9+']
+  ].map(([bg,lbl]) => `<div class="legend-item"><div class="legend-swatch" style="background:${bg}"></div>${lbl}</div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: HEATMAP
+══════════════════════════════════════════════════ */
+function buildHmSel() {
+  const sel = document.getElementById('hmap-sel');
+  sel.innerHTML = CLIENTS.map(c =>
+    `<button class="hmap-btn ${c.name===hmClient?'active':''}" id="hmbtn-${c.name}" onclick="selectHm('${c.name}')">${c.name.toUpperCase()}</button>`
+  ).join('');
+}
+
+function selectHm(name) {
+  hmClient = name;
+  CLIENTS.forEach(c => {
+    const b = document.getElementById('hmbtn-'+c.name);
+    if (b) b.className = 'hmap-btn' + (c.name===name?' active':'');
+  });
+  renderHeatmap();
+}
+
+function renderHeatmap() {
+  const grid = document.getElementById('hmap-grid');
+  const logs = allLogs[hmClient] || [];
+  const drpe = {};
+  logs.forEach(l => {
+    const d = parseDate(l.date);
+    if (!d) return;
+    const k = d.toISOString().slice(0,10);
+    const rpe = parseFloat(l.rpe) || 5;
+    if (!drpe[k] || rpe > drpe[k]) drpe[k] = rpe;
+  });
+
+  const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const now = new Date();
+  let html = '<div></div>' + days.map(d => `<div class="hmap-day">${d}</div>`).join('');
+
+  for (let w = 3; w >= 0; w--) {
+    html += `<div class="hmap-wlabel">${w===0?'NOW':'-'+w+'W'}</div>`;
+    for (let d = 0; d < 7; d++) {
+      const ago = w*7 + (6-d);
+      const dt = new Date(now - ago*86400000);
+      const k = dt.toISOString().slice(0,10);
+      const rpe = drpe[k];
+      const future = dt > now;
+      let bg = '#0d1520', glow = 'none';
+      if (!future && rpe) {
+        if (rpe <= 5)   { bg='#00e5ff22'; glow='0 0 4px #00e5ff44'; }
+        else if (rpe<=7){ bg='#00e5ff66'; glow='0 0 5px #00e5ff66'; }
+        else if (rpe<=8.5){bg='#ff8c0088';glow='0 0 5px #ff8c0066';}
+        else             { bg='#ff3355aa'; glow='0 0 6px #ff335588'; }
+      }
+      html += `<div class="hmap-cell" style="background:${future?'transparent':bg};border:${future?'none':'1px solid var(--border)'};box-shadow:${glow};" title="${k}${rpe?' — RPE '+rpe:''}"></div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: TOP PERFORMERS
+══════════════════════════════════════════════════ */
+function renderTopPerf() {
+  const cutoff = Date.now() - 7*86400000;
+  const sorted = CLIENTS.map((c,i) => {
+    const logs = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && d>=cutoff; });
+    const vol = logs.reduce((s,l) => s + (parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0), 0);
+    return { ...c, vol, sessions:logs.length, st:clientStatus(c.name), col:CCOLORS[i] };
+  }).sort((a,b) => b.vol - a.vol);
+
+  document.getElementById('top-perf').innerHTML = sorted.map((c, r) => {
+    const dot = c.st.color==='green'?'#39ff14':c.st.color==='yellow'?'#ffcc00':'#ff3355';
+    const v = c.vol>1000 ? (c.vol/1000).toFixed(1)+'k' : Math.round(c.vol)||0;
+    return `<div class="perf-row" style="border-left:2px solid ${c.col}" onclick="window.open('${c.file}','_blank')">
+      <div class="perf-rank" style="color:${c.col}">${r+1}</div>
+      <div style="flex:1">
+        <div class="perf-name">${c.name}</div>
+        <div class="perf-meta">${c.sessions} trening · ${v} kg vol</div>
+      </div>
+      <div class="perf-dot" style="background:${dot};box-shadow:0 0 6px ${dot}"></div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: VOLUME CHART
+══════════════════════════════════════════════════ */
+function renderVolChart() {
+  const ctx = document.getElementById('vol-chart').getContext('2d');
+  const cutoff = Date.now() - 7*86400000;
+  const muscleKeys  = ['chest','shoulders','back','arms','legs','core'];
+  const muscleLabels= ['CHEST','SHLD','BACK','ARMS','LEGS','CORE'];
+
+  const datasets = CLIENTS.map((c,i) => {
+    const logs = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && d>=cutoff; });
+    return {
+      label: c.name,
+      data: muscleKeys.map(m => logs.filter(l => detectMuscle(l.exercise||l.vaja)===m).reduce((s,l) => s+(parseInt(l.sets)||1), 0)),
+      backgroundColor: CCOLORS[i] + '77',
+      borderColor: CCOLORS[i],
+      borderWidth: 1
+    };
+  });
+
+  if (volChart) volChart.destroy();
+  volChart = new Chart(ctx, {
+    type:'bar',
+    data: { labels:muscleLabels, datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { labels:{ color:'#5a7a8a', font:{family:'JetBrains Mono',size:10}, padding:10 } },
+        tooltip: { backgroundColor:'#0d1520', borderColor:'#00e5ff33', borderWidth:1, titleColor:'#00e5ff', bodyColor:'#c8e8f0', titleFont:{family:'JetBrains Mono',size:10} }
+      },
+      scales: {
+        x: { stacked:true, grid:{color:'#1a2d4020'}, ticks:{color:'#5a7a8a',font:{family:'JetBrains Mono',size:9}} },
+        y: { stacked:true, grid:{color:'#1a2d4030'}, ticks:{color:'#5a7a8a',font:{family:'JetBrains Mono',size:9}} }
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: RECENT ACTIVITY
+══════════════════════════════════════════════════ */
+function renderRecent() {
+  const all = [];
+  CLIENTS.forEach((c,i) => {
+    (allLogs[c.name]||[]).forEach(l => all.push({...l, cn:c.name, cc:CCOLORS[i]}));
+  });
+  all.sort((a,b) => (parseDate(b.date)||0) - (parseDate(a.date)||0));
+
+  const el = document.getElementById('recent-act');
+  if (!all.length) { el.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--dim);text-align:center;padding:20px">NO DATA</div>'; return; }
+
+  el.innerHTML = all.slice(0,10).map(l => {
+    const d = parseDate(l.date);
+    const ds = d ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}` : '—';
+    const ex = l.exercise || l.vaja || '—';
+    const parts = [l.weight?l.weight+'kg':'', l.sets&&l.reps?l.sets+'×'+l.reps:'', l.rpe?'RPE'+l.rpe:''].filter(Boolean);
+    return `<div class="act-row" style="border-left:2px solid ${l.cc}">
+      <div class="act-date">${ds}</div>
+      <div style="flex:1;min-width:0">
+        <div class="act-client" style="color:${l.cc}">${l.cn}</div>
+        <div class="act-ex">${ex}</div>
+      </div>
+      <div class="act-meta">${parts.join(' · ')}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   REFRESH + INIT
+══════════════════════════════════════════════════ */
+function renderAll() {
+  renderMetrics();
+  renderHexGrid();
+  renderBody();
+  buildHmSel();
+  renderHeatmap();
+  renderVolChart();
+  renderTopPerf();
+  renderRecent();
+  document.getElementById('sys-info').textContent = `${CLIENTS.length} CLIENTS LOADED // LAST SYNC: ${new Date().toLocaleTimeString('sl-SI')}`;
+}
+
+async function refreshAll() {
+  const ss = document.getElementById('sys-status');
+  ss.textContent = '⟳ SYNCING...';
+  ss.style.color = 'var(--yellow)';
+  await loadAll();
+  renderAll();
+  ss.textContent = '● ACTIVE';
+  ss.style.color = 'var(--green)';
+}
+
+async function init() {
+  buildWaveform();
+  setLoad(5, 'INITIALIZING J.A.R.V.I.S...');
+  await new Promise(r => setTimeout(r, 350));
+  await loadAll();
+  setLoad(93, 'RENDERING HUD...');
+  await new Promise(r => setTimeout(r, 150));
+  renderAll();
+  setLoad(100, 'SYSTEM READY.');
+  await new Promise(r => setTimeout(r, 280));
+  hideLoad();
+}
+
+init();
+</script>
+</body>
+</html>
