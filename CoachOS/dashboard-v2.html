@@ -413,11 +413,8 @@ async function loadAll() {
     allLogs[c.name] = await fetchLogs(c.name);
     setLoad(10 + (i+1)*10, `LOADED: ${c.name.toUpperCase()}`);
   }));
-  setLoad(75, 'LOADING CHECK-INS...');
-  await Promise.all(CLIENTS.map(async c => {
-    allCheckins[c.name] = await fetchCheckins(c.name);
-    allMere[c.name]     = await fetchMere(c.name);
-  }));
+  // fetchCheckins / fetchMere disabled — endpoints not yet implemented in Apps Script
+  CLIENTS.forEach(c => { allCheckins[c.name] = []; allMere[c.name] = []; });
 }
 
 /* ── CLIENT STATUS ── */
