@@ -385,9 +385,15 @@ async function fetchLogs(name) {
   }
 }
 
+function fetchWithTimeout(url, ms=3000) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
 async function fetchCheckins(name) {
   try {
-    const r = await fetch(`${API}?action=getCheckins&client=${encodeURIComponent(name)}`);
+    const r = await fetchWithTimeout(`${API}?action=getCheckins&client=${encodeURIComponent(name)}`);
     const d = await r.json();
     return (d && d.checkins) ? d.checkins : [];
   } catch { return []; }
@@ -395,7 +401,7 @@ async function fetchCheckins(name) {
 
 async function fetchMere(name) {
   try {
-    const r = await fetch(`${API}?action=getMeasurements&client=${encodeURIComponent(name)}`);
+    const r = await fetchWithTimeout(`${API}?action=getMeasurements&client=${encodeURIComponent(name)}`);
     const d = await r.json();
     return (d && d.measurements) ? d.measurements : [];
   } catch { return []; }
