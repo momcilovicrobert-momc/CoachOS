@@ -3,195 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J.A.R.V.I.S. — CoachOS v2</title>
+<title>J.A.R.V.I.S. — CoachOS</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0f1a;
-  --s1: #0d1520;
-  --s2: #111c2d;
-  --border: #1a2d40;
-  --teal: #00e5ff;
-  --teal2: #00b8cc;
-  --cyan: #7efff5;
-  --green: #39ff14;
+  --bg:     #04080e;
+  --s1:     #080e1a;
+  --s2:     #0a1220;
+  --border: #162030;
+  --teal:   #00e5ff;
+  --teal2:  #00b8cc;
+  --green:  #27ff12;
   --yellow: #ffcc00;
-  --red: #ff3355;
-  --text: #c8e8f0;
-  --dim: #5a7a8a;
-  --bright: #e8f8ff;
-  --gt: 0 0 12px #00e5ff55, 0 0 24px #00e5ff22;
-  --gg: 0 0 8px #39ff1455;
-  --gy: 0 0 8px #ffcc0055;
-  --gr: 0 0 8px #ff335555;
+  --red:    #ff2244;
+  --purple: #a855f7;
+  --text:   #bdd8e8;
+  --dim:    #4a6a7a;
+  --bright: #e4f4ff;
+  --gt: 0 0 12px #00e5ff55, 0 0 28px #00e5ff22;
+  --gg: 0 0 10px #27ff1255;
+  --gr: 0 0 10px #ff224455;
+  --gp: 0 0 10px #a855f755;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+
+/* ── SPACE BACKGROUND ── */
 body {
   font-family:'DM Sans',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 }
 body::before {
   content:'';
-  position:fixed; inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.012) 3px,rgba(0,229,255,0.012) 4px);
-  pointer-events:none; z-index:0;
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 75% 100% at 5% 65%, rgba(30,200,15,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 70% at 92% 18%, rgba(140,70,230,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 50% at 50% 95%, rgba(0,80,130,0.05) 0%, transparent 45%),
+    radial-gradient(ellipse 30% 30% at 75% 75%, rgba(30,200,15,0.03) 0%, transparent 40%);
+  pointer-events:none;
+}
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.008) 3px,rgba(0,229,255,0.008) 4px);
+  pointer-events:none;
 }
 
-/* ─── LAYOUT ─── */
-.hud { position:relative; z-index:1; max-width:1680px; margin:0 auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+/* ── LAYOUT ── */
+.hud { position:relative; z-index:1; max-width:1720px; margin:0 auto; padding:12px 14px; display:flex; flex-direction:column; gap:10px; min-height:100vh; }
 
-/* ─── HEADER ─── */
+/* ── HEADER ── */
 .hud-header {
   display:flex; align-items:center; justify-content:space-between;
-  background:var(--s1); border:1px solid var(--border); border-top:2px solid var(--teal);
-  padding:12px 22px; border-radius:3px; box-shadow:var(--gt);
+  background:rgba(8,14,26,0.9); border:1px solid var(--border); border-top:2px solid var(--teal);
+  padding:10px 20px; border-radius:2px; box-shadow:var(--gt), inset 0 0 40px rgba(0,229,255,0.03);
+  backdrop-filter:blur(4px);
 }
-.hud-brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:4px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
+.hud-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:5px; color:var(--teal); text-shadow:var(--gt); }
 .hud-brand span { color:var(--bright); }
-.hud-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:1.5px; margin-top:3px; }
-.hud-clock { font-family:'JetBrains Mono',monospace; font-size:22px; color:var(--teal); font-weight:500; text-shadow:var(--gt); }
-.hud-date { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:right; margin-top:2px; }
+.hud-sub { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); letter-spacing:2px; margin-top:2px; }
+.hud-clock { font-family:'JetBrains Mono',monospace; font-size:20px; color:var(--teal); font-weight:500; text-shadow:var(--gt); }
+.hud-date { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); text-align:right; margin-top:2px; }
 .btn-refresh {
-  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1.5px;
+  font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:1.5px;
   background:transparent; border:1px solid var(--teal); color:var(--teal);
-  padding:7px 16px; border-radius:2px; cursor:pointer; transition:all .2s;
+  padding:6px 14px; border-radius:2px; cursor:pointer; transition:all .2s;
 }
 .btn-refresh:hover { background:var(--teal); color:var(--bg); box-shadow:var(--gt); }
 
-/* ─── SECTION TITLE ─── */
+/* ── SECTION TITLE ── */
 .stitle {
-  font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:2.5px;
+  font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:2.5px;
   color:var(--teal2); text-transform:uppercase; border-bottom:1px solid var(--border);
-  padding-bottom:8px; margin-bottom:14px; display:flex; align-items:center; gap:8px;
+  padding-bottom:7px; margin-bottom:12px; display:flex; align-items:center; gap:6px;
 }
 .stitle::before { content:'▸'; color:var(--teal); }
 
-/* ─── PANEL ─── */
+/* ── PANEL ── */
 .panel {
-  background:var(--s1); border:1px solid var(--border); border-radius:3px;
-  padding:16px; position:relative; overflow:hidden;
+  background:rgba(8,14,26,0.85); border:1px solid var(--border); border-radius:2px;
+  padding:14px; position:relative; overflow:hidden; backdrop-filter:blur(2px);
 }
 .panel::after {
   content:''; position:absolute; top:0; left:0; right:0; height:1px;
-  background:linear-gradient(90deg,transparent,var(--teal)44,transparent);
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,0.3),transparent);
 }
 
-/* ─── METRICS ROW ─── */
-.metrics-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-.mcard { background:var(--s2); border:1px solid var(--border); border-radius:3px; padding:14px 16px; text-align:center; position:relative; overflow:hidden; }
-.mcard::before { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--teal); opacity:.3; }
-.mval { font-family:'Bebas Neue',sans-serif; font-size:38px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
-.mlabel { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); letter-spacing:1.5px; text-transform:uppercase; margin-top:4px; }
+/* ── MAIN 3-COL GRID ── */
+.hud-main {
+  display:grid;
+  grid-template-columns: 260px 1fr 230px;
+  gap:10px;
+  flex:1;
+}
 
-/* ─── CLIENT HEX GRID ─── */
-.hex-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
-.hex-item { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; transition:transform .2s; }
-.hex-item:hover { transform:scale(1.04); }
-.hex-name { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:1.5px; color:var(--bright); text-transform:uppercase; }
-.hex-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); }
-.cstat-pill { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); background:var(--s2); border:1px solid var(--border); padding:2px 8px; border-radius:2px; }
+/* ── LEFT COLUMN ── */
+.hud-left { display:flex; flex-direction:column; gap:10px; }
 
-/* ─── MID GRID ─── */
-.mid-grid { display:grid; grid-template-columns:340px 1fr 230px; gap:12px; }
+/* ── HONEYCOMB HEX GRID ── */
+.honeycomb {
+  display:grid;
+  grid-template-columns: repeat(2, 90px);
+  gap:4px;
+  justify-content:center;
+  margin-bottom:4px;
+}
+.hex-item {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; transition:transform .2s;
+}
+.hex-item:hover { transform:scale(1.05); }
+.hex-item:nth-child(2n) { margin-top:42px; }
+.hex-item:nth-child(4) { margin-top:42px; }
+.hex-item:nth-child(6) { margin-top:42px; }
+.hex-name-label {
+  font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600;
+  letter-spacing:1.5px; color:var(--bright); text-transform:uppercase;
+}
+.hex-item.hex-active .hex-name-label { color:var(--teal); text-shadow:var(--gt); }
+.hex-sub-label { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
 
-/* ─── BODY SILHOUETTE ─── */
-.body-wrap { display:flex; gap:20px; justify-content:center; align-items:flex-start; }
-.body-label { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--teal2); letter-spacing:2px; text-align:center; margin-bottom:6px; }
-.rpe-legend { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
-.legend-item { display:flex; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
-.legend-swatch { width:10px; height:10px; border-radius:2px; border:1px solid var(--border); }
+/* ── RECENT ACTIVITY ── */
+.act-row {
+  display:flex; align-items:center; gap:8px; padding:5px 8px;
+  background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:4px;
+  font-size:11px;
+}
+.act-client { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; min-width:42px; }
+.act-date { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); margin-left:auto; }
 
-/* ─── HEATMAP ─── */
-.hmap-sel { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:12px; }
-.hmap-btn { font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:1px; background:transparent; border:1px solid var(--border); color:var(--dim); padding:3px 10px; border-radius:2px; cursor:pointer; transition:all .2s; }
+/* ── CENTER COLUMN ── */
+.hud-center { display:flex; flex-direction:column; gap:10px; }
+
+.center-metrics {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.big-metric {
+  background:rgba(8,14,26,0.9); border:1px solid var(--border); border-radius:2px;
+  padding:14px 18px; position:relative; overflow:hidden;
+}
+.big-metric::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,0.3),transparent);
+}
+.bm-label { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); letter-spacing:2px; margin-bottom:6px; }
+.bm-value { font-family:'Bebas Neue',sans-serif; font-size:46px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
+.bm-unit { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--teal2); }
+.bm-sub { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:3px; }
+
+.center-body {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;
+}
+
+/* ── HEATMAP ── */
+.hmap-sel { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px; }
+.hmap-btn { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1px; background:transparent; border:1px solid var(--border); color:var(--dim); padding:2px 8px; border-radius:2px; cursor:pointer; transition:all .2s; }
 .hmap-btn.active { background:var(--teal); color:var(--bg); border-color:var(--teal); }
 .hmap-btn:hover:not(.active) { border-color:var(--teal2); color:var(--teal2); }
-.hmap-grid { display:grid; grid-template-columns:36px repeat(7,1fr); gap:3px; }
-.hmap-day { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--teal2); text-align:center; padding-bottom:2px; }
-.hmap-wlabel { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); display:flex; align-items:center; }
-.hmap-cell {
-  width:100%; aspect-ratio:1;
-  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-  background:var(--s2); transition:all .2s; cursor:default;
-}
-.hmap-cell:hover { transform:scale(1.12); }
-.hmap-legend { display:flex; align-items:center; justify-content:space-between; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
-.hmap-scale { display:flex; gap:3px; align-items:center; }
-.hmap-scale-cell { width:10px; height:10px; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.hmap-grid { display:grid; grid-template-columns:32px repeat(7,1fr); gap:2px; }
+.hmap-day { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--teal2); text-align:center; padding-bottom:2px; }
+.hmap-wlabel { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--dim); display:flex; align-items:center; }
+.hmap-cell { width:100%; aspect-ratio:1; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); background:var(--s2); transition:all .2s; }
+.hmap-cell:hover { transform:scale(1.15); }
+.hmap-legend { display:flex; align-items:center; justify-content:space-between; margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--dim); }
+.hmap-scale { display:flex; gap:2px; align-items:center; }
+.hmap-scale-cell { width:9px; height:9px; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
 
-/* ─── TOP PERFORMERS ─── */
+/* ── BODY PANEL ── */
+.body-panel { display:flex; flex-direction:column; }
+.athlete-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.athlete-name { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--bright); letter-spacing:2px; }
+.body-display { display:flex; gap:12px; align-items:flex-start; flex:1; }
+.body-svgs { display:flex; gap:8px; }
+.body-label { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--teal2); letter-spacing:2px; text-align:center; margin-bottom:4px; }
+.body-annotations { flex:1; display:flex; flex-direction:column; gap:8px; padding-top:20px; }
+.annot-block { border-left:2px solid var(--teal); padding:6px 10px; background:rgba(0,229,255,0.04); border-radius:0 2px 2px 0; }
+.annot-label { font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--dim); letter-spacing:1.5px; }
+.annot-value { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--teal); text-shadow:var(--gt); line-height:1; }
+.annot-sub { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
+.recovery-bar { height:4px; background:var(--s2); border-radius:2px; margin-top:4px; overflow:hidden; }
+.recovery-fill { height:100%; border-radius:2px; transition:width .6s; }
+
+/* default body screen */
+.body-default { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:10px; padding:20px; }
+.checkin-status-list { width:100%; }
+.ci-row { display:flex; align-items:center; gap:8px; padding:5px 8px; background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:3px; }
+.ci-icon { font-size:12px; }
+.ci-name { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; min-width:55px; }
+.ci-info { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); flex:1; }
+
+/* ── RIGHT COLUMN ── */
+.hud-right { display:flex; flex-direction:column; gap:10px; }
+
+.intensity-panel { text-align:center; padding:18px 14px; }
+.intensity-val { font-family:'Bebas Neue',sans-serif; font-size:64px; color:var(--yellow); text-shadow:0 0 20px rgba(255,204,0,0.5), 0 0 40px rgba(255,204,0,0.25); line-height:1; }
+.intensity-label { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); letter-spacing:1.5px; margin-top:4px; }
+.intensity-bar { height:5px; background:var(--s2); border-radius:2px; margin-top:12px; overflow:hidden; }
+.intensity-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,#ffcc00,#ff6b35,#ff2244); transition:width .6s; }
+
+/* ── TOP PERFORMERS (in right) ── */
 .perf-row {
-  display:flex; align-items:center; gap:8px; padding:7px 10px;
-  background:var(--s2); border:1px solid var(--border); border-radius:2px;
-  margin-bottom:6px; cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; gap:6px; padding:6px 8px;
+  background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:4px;
+  cursor:pointer; transition:all .2s;
 }
 .perf-row:hover { border-color:var(--teal2); }
-.perf-rank { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; width:22px; text-align:center; }
-.perf-name { font-size:13px; font-weight:600; color:var(--bright); }
-.perf-meta { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-top:1px; }
-.perf-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.perf-rank { font-family:'Bebas Neue',sans-serif; font-size:18px; width:18px; text-align:center; line-height:1; }
+.perf-name { font-size:12px; font-weight:600; color:var(--bright); flex:1; }
+.perf-meta { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--dim); }
+.perf-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
-/* ─── BOT GRID ─── */
-.bot-grid { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
-
-/* ─── RECENT ACTIVITY ─── */
-.act-row {
-  display:flex; align-items:center; gap:8px; padding:6px 8px;
-  background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:5px;
-}
-.act-date { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); min-width:28px; }
-.act-client { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:600; }
-.act-ex { font-size:11px; color:var(--bright); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; }
-.act-meta { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); margin-left:auto; white-space:nowrap; }
-
-/* ─── STATUS BAR ─── */
+/* ── STATUS BAR ── */
 .status-bar {
-  background:var(--s1); border:1px solid var(--border); border-bottom:2px solid var(--teal);
-  padding:9px 20px; display:flex; align-items:center; justify-content:space-between;
-  font-family:'JetBrains Mono',monospace; font-size:10px; border-radius:3px;
+  background:rgba(8,14,26,0.9); border:1px solid var(--border); border-bottom:2px solid var(--teal);
+  padding:8px 18px; display:flex; align-items:center; justify-content:space-between;
+  font-family:'JetBrains Mono',monospace; font-size:9px; border-radius:2px;
 }
 .sys-active { color:var(--green); text-shadow:var(--gg); font-weight:600; }
-.waveform { display:flex; align-items:center; gap:2px; height:18px; }
-.wbar { width:3px; background:var(--teal); border-radius:1px; opacity:.6; animation:wv 1s ease-in-out infinite; }
-@keyframes wv { 0%,100%{height:3px} 50%{height:14px} }
+.waveform { display:flex; align-items:center; gap:2px; height:16px; }
+.wbar { width:2px; background:var(--teal); border-radius:1px; opacity:.6; animation:wv 1s ease-in-out infinite; }
+@keyframes wv { 0%,100%{height:2px} 50%{height:12px} }
 
-/* ─── LOADING ─── */
+/* ── LOADING ── */
 .loading {
   position:fixed; inset:0; background:var(--bg); z-index:1000;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
   transition:opacity .5s;
 }
 .loading.out { opacity:0; pointer-events:none; }
-.ld-title { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:6px; color:var(--teal); text-shadow:var(--gt); }
-.ld-sub { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:2px; }
-.ld-bar-wrap { width:320px; height:2px; background:var(--s2); border:1px solid var(--border); }
-.ld-bar { height:100%; background:var(--teal); width:0%; transition:width .35s; box-shadow:var(--gt); }
+.ld-title { font-family:'Bebas Neue',sans-serif; font-size:56px; letter-spacing:8px; color:var(--teal); text-shadow:var(--gt); }
+.ld-sub { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:2px; }
+.ld-bar-wrap { width:300px; height:2px; background:var(--s2); border:1px solid var(--border); }
+.ld-bar { height:100%; background:var(--teal); width:0%; transition:width .3s; box-shadow:var(--gt); }
 
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-::-webkit-scrollbar-track { background:transparent; }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 
-@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.panel { animation:fadeUp .4s ease forwards; }
-
-/* ─── HEX ACTIVE ─── */
-.hex-item.hex-active { transform:scale(1.06); }
-.hex-item.hex-active .hex-name { color:var(--teal); text-shadow:var(--gt); }
-
-/* ─── CHECK-IN ROWS ─── */
-.checkin-row { display:flex; align-items:center; gap:10px; padding:7px 10px; background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:4px; transition:border-color .2s; }
-.checkin-row:hover { border-color:var(--teal2); }
-.ci-status { font-size:13px; flex-shrink:0; }
-.ci-name { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; min-width:58px; }
-.ci-data { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); flex:1; }
-
-/* ─── MCARD CHECKIN ─── */
-.checkin-card-inner { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:left; line-height:1.6; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.panel,.big-metric { animation:fadeUp .4s ease forwards; }
 </style>
 </head>
 <body>
@@ -208,10 +263,10 @@ body::before {
   <!-- HEADER -->
   <div class="hud-header">
     <div>
-      <div class="hud-brand">J.A.R.V.I.S. <span>COACH HUD</span></div>
-      <div class="hud-sub">COACH: ROBERT M. // CoachOS v2.0 // CLIENTS: 6</div>
+      <div class="hud-brand">J.A.R.V.I.S. <span>PERSONAL TRAINER PROTOCOL</span></div>
+      <div class="hud-sub">COACH: ROBERT MOMCILOVIC &nbsp;//&nbsp; CoachOS v3.0 &nbsp;//&nbsp; CLIENTS: 6</div>
     </div>
-    <div style="display:flex;align-items:center;gap:22px;">
+    <div style="display:flex;align-items:center;gap:20px;">
       <div>
         <div class="hud-clock" id="hud-clock">--:--:--</div>
         <div class="hud-date" id="hud-date"></div>
@@ -220,86 +275,106 @@ body::before {
     </div>
   </div>
 
-  <!-- METRICS -->
-  <div class="metrics-row">
-    <div class="mcard"><div class="mval" id="m-active">—</div><div class="mlabel">Aktivni klienti</div></div>
-    <div class="mcard"><div class="mval" id="m-sessions">—</div><div class="mlabel">Treningi (7 dni)</div></div>
-    <div class="mcard"><div class="mval" id="m-volume">—</div><div class="mlabel">Skupni volumen kg</div></div>
-    <div class="mcard" style="text-align:left;">
-      <div class="mlabel" style="margin-bottom:6px">LAST CHECK-IN</div>
-      <div class="checkin-card-inner" id="checkin-mini">— IZBERITE STRANKO —</div>
-    </div>
-  </div>
+  <!-- MAIN 3-COL -->
+  <div class="hud-main">
 
-  <!-- CLIENT OVERVIEW -->
-  <div class="panel">
-    <div class="stitle">CLIENT OVERVIEW // TRAFFIC LIGHT STATUS</div>
-    <div class="hex-grid" id="hex-grid"></div>
-  </div>
+    <!-- ═══ LEFT: CLIENTS + ACTIVITY ═══ -->
+    <div class="hud-left">
 
-  <!-- MID ROW -->
-  <div class="mid-grid">
+      <div class="panel" style="flex:1;">
+        <div class="stitle">CLIENTS: STATUS OVERVIEW</div>
+        <div class="honeycomb" id="hex-grid"></div>
+      </div>
 
-    <!-- CENTER DYNAMIC PANEL -->
-    <div class="panel">
-      <div class="stitle" id="center-title">CHECK-IN STATUS // DANES</div>
-      <div id="center-content"></div>
-      <div class="rpe-legend" id="rpe-legend" style="display:none"></div>
+      <div class="panel">
+        <div class="stitle">RECENT ACTIVITY (Last Session)</div>
+        <div id="recent-act"></div>
+      </div>
+
     </div>
 
-    <!-- HEATMAP -->
-    <div class="panel">
-      <div class="stitle">WEEKLY PROGRESS // TRAINING HEATMAP</div>
-      <div class="hmap-sel" id="hmap-sel"></div>
-      <div class="hmap-grid" id="hmap-grid"></div>
-      <div class="hmap-legend">
-        <span>LOW</span>
-        <div class="hmap-scale">
-          <div class="hmap-scale-cell" style="background:#00e5ff1a;"></div>
-          <div class="hmap-scale-cell" style="background:#00e5ff44;"></div>
-          <div class="hmap-scale-cell" style="background:#00e5ff88;"></div>
-          <div class="hmap-scale-cell" style="background:#ff8c0088;"></div>
-          <div class="hmap-scale-cell" style="background:#ff3355aa;"></div>
+    <!-- ═══ CENTER: METRICS + HEATMAP + BODY ═══ -->
+    <div class="hud-center">
+
+      <!-- Big metrics top -->
+      <div class="center-metrics">
+        <div class="big-metric">
+          <div class="bm-label">AVG HEART RATE</div>
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <div class="bm-value" id="m-rpe">—</div>
+            <div class="bm-unit" id="m-rpe-unit">RPE</div>
+          </div>
+          <div class="bm-sub" id="m-sub">Zadnjih 7 dni</div>
         </div>
-        <span>HIGH</span>
+        <div class="big-metric">
+          <div class="bm-label" id="checkin-label">LAST CHECK-IN</div>
+          <div id="checkin-mini" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);margin-top:4px;">— IZBERITE STRANKO —</div>
+        </div>
       </div>
-    </div>
 
-    <!-- TOP PERFORMERS -->
-    <div class="panel">
-      <div class="stitle">TOP PERFORMERS</div>
-      <div id="top-perf"></div>
-    </div>
+      <!-- Heatmap + Body split -->
+      <div class="center-body">
 
-  </div>
+        <div class="panel">
+          <div class="stitle">WEEKLY TRAINING FREQUENCY: HEATMAP</div>
+          <div class="hmap-sel" id="hmap-sel"></div>
+          <div class="hmap-grid" id="hmap-grid"></div>
+          <div class="hmap-legend">
+            <span>DARK</span>
+            <div class="hmap-scale">
+              <div class="hmap-scale-cell" style="background:#00e5ff1a;"></div>
+              <div class="hmap-scale-cell" style="background:#00e5ff44;"></div>
+              <div class="hmap-scale-cell" style="background:#00e5ff88;"></div>
+              <div class="hmap-scale-cell" style="background:#ff8c0088;"></div>
+              <div class="hmap-scale-cell" style="background:#ff2244aa;"></div>
+            </div>
+            <span>BRIGHT</span>
+          </div>
+        </div>
 
-  <!-- BOT ROW -->
-  <div class="bot-grid">
+        <div class="panel body-panel" id="body-panel">
+          <div class="stitle" id="center-title">ATHLETE DATA</div>
+          <div id="center-content" style="height:100%;"></div>
+        </div>
 
-    <!-- VOLUME CHART -->
-    <div class="panel">
-      <div class="stitle">WEEKLY VOLUME (SETS) // BY MUSCLE GROUP</div>
-      <div style="position:relative;height:210px;">
-        <canvas id="vol-chart"></canvas>
       </div>
+
     </div>
 
-    <!-- RECENT ACTIVITY -->
-    <div class="panel">
-      <div class="stitle">RECENT ACTIVITY</div>
-      <div id="recent-act"></div>
+    <!-- ═══ RIGHT: INTENSITY + VOLUME ═══ -->
+    <div class="hud-right">
+
+      <div class="panel intensity-panel">
+        <div class="stitle" style="border:none;padding:0;margin-bottom:8px;">WORKOUT INTENSITY</div>
+        <div class="intensity-val" id="intensity-val">—</div>
+        <div class="intensity-label" id="intensity-sub">LAST SESSION</div>
+        <div class="intensity-bar"><div class="intensity-fill" id="intensity-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="panel" style="flex:1;">
+        <div class="stitle">MONTHLY VOLUME // PER MUSCLE GROUP</div>
+        <div style="position:relative;height:180px;">
+          <canvas id="vol-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="stitle">TOP PERFORMERS</div>
+        <div id="top-perf"></div>
+      </div>
+
     </div>
 
   </div>
 
   <!-- STATUS BAR -->
   <div class="status-bar">
-    <div style="display:flex;align-items:center;gap:16px;">
+    <div style="display:flex;align-items:center;gap:14px;">
       <span style="color:var(--dim);">SYSTEM STATUS:</span>
       <span class="sys-active" id="sys-status">● ACTIVE</span>
       <span style="color:var(--dim);">[J.A.R.V.I.S. COACH HUD] — [ROBERT MOMCILOVIC]</span>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;">
+    <div style="display:flex;align-items:center;gap:12px;">
       <div class="waveform" id="waveform"></div>
       <span style="color:var(--dim);" id="sys-info">LOADING...</span>
     </div>
@@ -309,625 +384,456 @@ body::before {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
+const API  = 'https://script.google.com/macros/s/AKfycbwdx8hU4EqHM6Ot5swbPmMl-h6PwR78GiyR-s4yd1ysx6CieRrJjQYa1SB6Alcmw4gh/exec';
 const BASE = 'https://momcilovicrobert-momc.github.io/CoachOS/CoachOS/';
 
 const CLIENTS = [
-  { name:'Eli',    av:'EL', meta:'Izkušena · Gym',        file:'coachos-eli.html'    },
-  { name:'Hana',   av:'HA', meta:'Displazija kolkov',      file:'coachos-hana.html'   },
-  { name:'Nina',   av:'NI', meta:'Izkušena',               file:'coachos-nina.html'   },
-  { name:'Niko',   av:'NK', meta:'17 let · Boks+Gym',      file:'coachos-niko.html'   },
-  { name:'Janja',  av:'JA', meta:'Nova',                   file:'coachos-janja.html'  },
-  { name:'Tamara', av:'TA', meta:'51 let · Menopauza',     file:'coachos-tamara.html' }
+  { name:'Eli',    meta:'Izkušena · Gym',    file:'coachos-eli.html'    },
+  { name:'Hana',   meta:'Displazija kolkov',  file:'coachos-hana.html'   },
+  { name:'Nina',   meta:'Izkušena',           file:'coachos-nina.html'   },
+  { name:'Niko',   meta:'17 let · Boks+Gym',  file:'coachos-niko.html'   },
+  { name:'Janja',  meta:'Nova',               file:'coachos-janja.html'  },
+  { name:'Tamara', meta:'51 let · Menopauza', file:'coachos-tamara.html' }
 ];
 
-const CCOLORS = ['#00e5ff','#39ff14','#a78bfa','#ff6b35','#ff3385','#ffcc00'];
+const CCOLORS = ['#00e5ff','#27ff12','#a855f7','#ff6b35','#ff2272','#ffcc00'];
 
-let allLogs = {};
+let allLogs  = {};
 let allCheckins = {};
-let allMere = {};
+let allMere  = {};
 let volChart = null;
 let hmClient = 'Eli';
 let selectedClient = null;
 
 /* ── CLOCK ── */
 function tick() {
-  const n = new Date();
-  const pad = v => String(v).padStart(2,'0');
-  document.getElementById('hud-clock').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
-  document.getElementById('hud-date').textContent = `${n.getFullYear()}.${pad(n.getMonth()+1)}.${pad(n.getDate())}`;
+  const n=new Date(), p=v=>String(v).padStart(2,'0');
+  document.getElementById('hud-clock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  document.getElementById('hud-date').textContent=`${n.getFullYear()}.${p(n.getMonth()+1)}.${p(n.getDate())}`;
 }
-setInterval(tick, 1000); tick();
+setInterval(tick,1000); tick();
 
 /* ── WAVEFORM ── */
 function buildWaveform() {
-  const w = document.getElementById('waveform');
-  for (let i = 0; i < 22; i++) {
-    const b = document.createElement('div');
-    b.className = 'wbar';
-    b.style.animationDelay = (i * 0.05) + 's';
-    b.style.animationDuration = (0.6 + Math.random() * 0.7) + 's';
+  const w=document.getElementById('waveform');
+  for(let i=0;i<20;i++){
+    const b=document.createElement('div'); b.className='wbar';
+    b.style.animationDelay=(i*.05)+'s';
+    b.style.animationDuration=(.6+Math.random()*.7)+'s';
     w.appendChild(b);
   }
 }
 
 /* ── LOADING ── */
-function setLoad(pct, msg) {
-  document.getElementById('ld-bar').style.width = pct + '%';
-  document.getElementById('ld-msg').textContent = msg;
+function setLoad(pct,msg){
+  document.getElementById('ld-bar').style.width=pct+'%';
+  document.getElementById('ld-msg').textContent=msg;
 }
-function hideLoad() {
-  const el = document.getElementById('loading');
+function hideLoad(){
+  const el=document.getElementById('loading');
   el.classList.add('out');
-  setTimeout(() => el.style.display = 'none', 600);
+  setTimeout(()=>el.style.display='none',600);
 }
 
 /* ── DATE PARSE ── */
-function parseDate(s) {
-  if (!s) return null;
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
-  if (/^\d{1,2}\.\d{1,2}\.\d{4}/.test(s)) {
-    const [d,m,y] = s.split('.');
-    return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
-  }
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
+function parseDate(s){
+  if(!s)return null;
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return new Date(s);
+  if(/^\d{1,2}\.\d{1,2}\.\d{4}/.test(s)){const[d,m,y]=s.split('.');return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);}
+  const d=new Date(s); return isNaN(d)?null:d;
 }
 
-/* ── FETCH LOGS ── */
-async function fetchLogs(name) {
-  try {
-    const r = await fetch(`${API}?action=getLogs&client=${encodeURIComponent(name)}`);
-    const d = await r.json();
-    return (d && d.logs) ? d.logs : [];
-  } catch {
-    try { return JSON.parse(localStorage.getItem('coachos_logs_'+name)||'[]'); } catch { return []; }
-  }
+/* ── FETCH ── */
+async function fetchLogs(name){
+  try{
+    const r=await fetch(`${API}?action=getLogs&client=${encodeURIComponent(name)}`);
+    const d=await r.json(); return(d&&d.logs)?d.logs:[];
+  }catch{ try{return JSON.parse(localStorage.getItem('coachos_logs_'+name)||'[]');}catch{return[];} }
 }
 
-function fetchWithTimeout(url, ms=3000) {
-  const ctrl = new AbortController();
-  const id = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(id));
-}
-
-async function fetchCheckins(name) {
-  try {
-    const r = await fetchWithTimeout(`${API}?action=getCheckins&client=${encodeURIComponent(name)}`);
-    const d = await r.json();
-    return (d && d.checkins) ? d.checkins : [];
-  } catch { return []; }
-}
-
-async function fetchMere(name) {
-  try {
-    const r = await fetchWithTimeout(`${API}?action=getMeasurements&client=${encodeURIComponent(name)}`);
-    const d = await r.json();
-    return (d && d.measurements) ? d.measurements : [];
-  } catch { return []; }
-}
-
-async function loadAll() {
-  setLoad(8, 'CONNECTING TO GOOGLE SHEETS...');
-  await Promise.all(CLIENTS.map(async (c, i) => {
-    allLogs[c.name] = await fetchLogs(c.name);
-    setLoad(10 + (i+1)*10, `LOADED: ${c.name.toUpperCase()}`);
+/* ── LOAD ALL ── */
+async function loadAll(){
+  setLoad(8,'CONNECTING TO GOOGLE SHEETS...');
+  await Promise.all(CLIENTS.map(async(c,i)=>{
+    allLogs[c.name]=await fetchLogs(c.name);
+    setLoad(10+(i+1)*13,`LOADED: ${c.name.toUpperCase()}`);
   }));
-  // fetchCheckins / fetchMere disabled — endpoints not yet implemented in Apps Script
-  CLIENTS.forEach(c => { allCheckins[c.name] = []; allMere[c.name] = []; });
+  // checkins / mere disabled — endpoints not yet in Apps Script
+  CLIENTS.forEach(c=>{ allCheckins[c.name]=[]; allMere[c.name]=[]; });
 }
 
 /* ── CLIENT STATUS ── */
-function clientStatus(name) {
-  const logs = allLogs[name] || [];
-  const dates = logs.map(l => parseDate(l.date)).filter(Boolean).sort((a,b) => b-a);
-  if (!dates.length) return { label:'OFFLINE', color:'red', days:null };
-  const days = Math.floor((Date.now() - dates[0]) / 86400000);
-  if (days <= 3) return { label:'ACTIVE',   color:'green',  days };
-  if (days <= 7) return { label:'STALLED',  color:'yellow', days };
-  return             { label:'OFFLINE',  color:'red',    days };
+function clientStatus(name){
+  const logs=allLogs[name]||[];
+  const dates=logs.map(l=>parseDate(l.date)).filter(Boolean).sort((a,b)=>b-a);
+  if(!dates.length)return{label:'OFFLINE',color:'red',days:null};
+  const days=Math.floor((Date.now()-dates[0])/86400000);
+  if(days<=3)return{label:'ACTIVE',color:'green',days};
+  if(days<=7)return{label:'STALLED',color:'yellow',days};
+  return{label:'OFFLINE',color:'red',days};
 }
 
-/* ── MUSCLE DETECTION ── */
-const MUSCLES = {
-  chest:     /bench|fly|flye|chest|prsni|push.?up|sklece/i,
-  shoulders: /shoulder|overhead|ohp|military|lateral.?raise|front.?raise|ramena|delt/i,
-  back:      /row|pull.?up|lat|pulldown|back|hrbet|mrtvi/i,
-  arms:      /curl|bicep|tricep|extension|roke/i,
-  legs:      /squat|lunge|leg.press|leg.curl|leg.ext|hip.thrust|glute|calf|noge|po.ep|izpad/i,
-  core:      /plank|crunch|\bab\b|abs|core|oblique|trebuh/i
+/* ── MUSCLES ── */
+const MUSCLES={
+  chest:/bench|fly|flye|chest|prsni|push.?up|sklece/i,
+  shoulders:/shoulder|overhead|ohp|military|lateral.?raise|front.?raise|ramena|delt/i,
+  back:/row|pull.?up|lat|pulldown|back|hrbet|mrtvi/i,
+  arms:/curl|bicep|tricep|extension|roke/i,
+  legs:/squat|lunge|leg.press|leg.curl|leg.ext|hip.thrust|glute|calf|noge|po.ep|izpad/i,
+  core:/plank|crunch|\bab\b|abs|core|oblique|trebuh/i
 };
-function detectMuscle(ex) {
-  if (!ex) return null;
-  for (const [m, rx] of Object.entries(MUSCLES)) if (rx.test(ex)) return m;
+function detectMuscle(ex){
+  if(!ex)return null;
+  for(const[m,rx]of Object.entries(MUSCLES))if(rx.test(ex))return m;
   return null;
 }
-
-/* ── RPE COLOR ── */
-function rpeColor(v) {
-  if (!v) return 'rgba(0,229,255,0.07)';
-  if (v <= 5)   return 'rgba(0,229,255,0.22)';
-  if (v <= 7)   return 'rgba(0,229,255,0.52)';
-  if (v <= 8.5) return 'rgba(255,140,0,0.58)';
-  return               'rgba(255,51,85,0.62)';
+function rpeColor(v){
+  if(!v)return'rgba(0,229,255,0.06)';
+  if(v<=5)return'rgba(0,229,255,0.22)';
+  if(v<=7)return'rgba(0,229,255,0.52)';
+  if(v<=8.5)return'rgba(255,140,0,0.58)';
+  return'rgba(255,34,68,0.62)';
 }
-
-/* ── AGGREGATE MUSCLE RPE (all clients, last 7d) ── */
-function aggMuscleRPE() {
-  const cutoff = Date.now() - 7*86400000;
-  const map = {};
-  CLIENTS.forEach(c => {
-    (allLogs[c.name]||[]).forEach(l => {
-      const d = parseDate(l.date);
-      if (!d || d < cutoff) return;
-      const m = detectMuscle(l.exercise || l.vaja);
-      if (!m) return;
-      const rpe = parseFloat(l.rpe) || 0;
-      if (!map[m]) map[m] = [];
-      map[m].push(rpe);
-    });
+function aggMuscleRPE(name){
+  const cutoff=Date.now()-7*86400000, map={};
+  (allLogs[name]||[]).forEach(l=>{
+    const d=parseDate(l.date); if(!d||d<cutoff)return;
+    const m=detectMuscle(l.exercise||l.vaja); if(!m)return;
+    const rpe=parseFloat(l.rpe)||0;
+    if(!map[m])map[m]=[];  map[m].push(rpe);
   });
-  const out = {};
-  for (const [m, arr] of Object.entries(map)) out[m] = arr.reduce((a,b)=>a+b,0)/arr.length;
+  const out={};
+  for(const[m,arr]of Object.entries(map))out[m]=arr.reduce((a,b)=>a+b,0)/arr.length;
   return out;
 }
 
-/* ══════════════════════════════════════════════════
-   RENDER: METRICS
-══════════════════════════════════════════════════ */
-function renderMetrics() {
-  const cutoff = Date.now() - 7*86400000;
-  let active=0, sessions=0, volume=0;
-  const rpes = [];
-  CLIENTS.forEach(c => {
-    if (clientStatus(c.name).color === 'green') active++;
-    (allLogs[c.name]||[]).forEach(l => {
-      const d = parseDate(l.date);
-      if (!d || d < cutoff) return;
-      sessions++;
-      const v = (parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0);
-      volume += v;
-      if (l.rpe) rpes.push(parseFloat(l.rpe));
-    });
-  });
-  document.getElementById('m-active').textContent   = active;
-  document.getElementById('m-sessions').textContent = sessions;
-  document.getElementById('m-volume').textContent   = volume > 1000 ? (volume/1000).toFixed(1)+'k' : Math.round(volume)||'—';
-}
-
-/* ══════════════════════════════════════════════════
-   RENDER: CLIENT HEX GRID
-══════════════════════════════════════════════════ */
-function renderHexGrid() {
-  const grid = document.getElementById('hex-grid');
-  grid.innerHTML = CLIENTS.map((c, i) => {
-    const st = clientStatus(c.name);
-    const col = CCOLORS[i];
-    const ring = st.color==='green' ? '#39ff14' : st.color==='yellow' ? '#ffcc00' : '#ff3355';
-    const dText = st.days !== null ? `${st.days}d ago` : 'no data';
-    const logs7 = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && Date.now()-d < 7*86400000; }).length;
-
-    const gDot = st.color==='green'  ? `fill:#39ff14;filter:drop-shadow(0 0 4px #39ff14)` : `fill:#162216`;
-    const yDot = st.color==='yellow' ? `fill:#ffcc00;filter:drop-shadow(0 0 4px #ffcc00)` : `fill:#222214`;
-    const rDot = st.color==='red'    ? `fill:#ff3355;filter:drop-shadow(0 0 4px #ff3355)` : `fill:#221418`;
-
-    const isActive = selectedClient === c.name;
-    const activeRing = isActive ? 'var(--teal)' : ring;
-    const nameFS = c.name.length <= 4 ? 22 : c.name.length <= 5 ? 19 : 16;
-    return `<div class="hex-item${isActive?' hex-active':''}" id="hex-${c.name}" onclick="selectClient('${c.name}')">
-      <svg viewBox="0 0 130 152" width="130" height="152">
-        <polygon points="65,4 124,38 124,114 65,148 6,114 6,38"
-          fill="#0d1828" stroke="${activeRing}" stroke-width="${isActive?2.5:1.8}"
-          style="filter:drop-shadow(0 0 ${isActive?14:7}px ${activeRing}${isActive?'99':'55'})"/>
-        <text x="65" y="68" text-anchor="middle" dominant-baseline="middle"
-          font-family="Bebas Neue,sans-serif" font-size="${nameFS}" fill="${isActive?'var(--teal)':col}"
-          style="filter:drop-shadow(0 0 5px ${col}88)">${c.name.toUpperCase()}</text>
-        <text x="65" y="93" text-anchor="middle" dominant-baseline="middle"
-          font-family="JetBrains Mono,monospace" font-size="9.5" fill="${ring}" letter-spacing="1">${st.label}</text>
-        <text x="65" y="112" text-anchor="middle" dominant-baseline="middle"
-          font-family="JetBrains Mono,monospace" font-size="8" fill="#5a7a8a">${dText}</text>
-        <circle cx="116" cy="50" r="5.5" style="${gDot}"/>
-        <circle cx="116" cy="76" r="5.5" style="${yDot}"/>
-        <circle cx="116" cy="102" r="5.5" style="${rDot}"/>
-      </svg>
-      <div class="hex-name">${c.name}</div>
-      <div class="cstat-pill">${logs7} / teden</div>
-    </div>`;
-  }).join('');
-}
-
-/* ══════════════════════════════════════════════════
-   RENDER: BODY SILHOUETTE
-══════════════════════════════════════════════════ */
-function renderBody() {
-  const wrap = document.getElementById('body-wrap');
-  const rpe = aggMuscleRPE();
-  const c = m => rpeColor(rpe[m]);
-
-  const front = `<div>
-    <div class="body-label">FRONT</div>
-    <svg width="110" height="230" viewBox="0 0 110 230">
-      <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
-      <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
-      <!-- shoulders -->
-      <ellipse cx="20" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('shoulders')})"/>
-      <ellipse cx="90" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('shoulders')})"/>
-      <!-- chest -->
-      <path d="M28,50 Q55,44 82,50 L80,88 Q55,93 30,88 Z" fill="${c('chest')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('chest')})"/>
-      <!-- arms upper -->
-      <rect x="7" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
-      <rect x="88" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
-      <!-- arms lower -->
-      <rect x="5" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
-      <rect x="92" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
-      <!-- core -->
-      <path d="M32,88 Q55,93 78,88 L76,130 Q55,135 34,130 Z" fill="${c('core')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 4px ${c('core')})"/>
-      <!-- legs upper -->
-      <rect x="32" y="133" width="21" height="52" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
-      <rect x="57" y="133" width="21" height="52" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
-      <!-- legs lower -->
-      <rect x="34" y="183" width="17" height="40" rx="7" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".75"/>
-      <rect x="59" y="183" width="17" height="40" rx="7" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".75"/>
-      <!-- grid lines -->
-      <line x1="0" y1="77" x2="110" y2="77" stroke="#00e5ff0d" stroke-width="0.5"/>
-      <line x1="0" y1="133" x2="110" y2="133" stroke="#00e5ff0d" stroke-width="0.5"/>
-      <line x1="55" y1="37" x2="55" y2="226" stroke="#00e5ff08" stroke-width="0.5"/>
-    </svg>
-  </div>`;
-
-  const back = `<div>
-    <div class="body-label">BACK</div>
-    <svg width="110" height="230" viewBox="0 0 110 230">
-      <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
-      <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="#1a2d40" stroke-width="1"/>
-      <!-- shoulders back -->
-      <ellipse cx="20" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1"/>
-      <ellipse cx="90" cy="62" rx="13" ry="17" fill="${c('shoulders')}" stroke="#1a2d40" stroke-width="1"/>
-      <!-- back/lats -->
-      <path d="M28,50 Q55,44 82,50 L80,128 Q55,133 30,128 Z" fill="${c('back')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 6px ${c('back')})"/>
-      <!-- arms upper -->
-      <rect x="7" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
-      <rect x="88" y="77" width="15" height="36" rx="7" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1"/>
-      <!-- arms lower -->
-      <rect x="5" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
-      <rect x="92" y="111" width="13" height="32" rx="6" fill="${c('arms')}" stroke="#1a2d40" stroke-width="1" opacity=".8"/>
-      <!-- glutes -->
-      <path d="M32,128 Q55,133 78,128 L76,162 Q55,167 34,162 Z" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" style="filter:drop-shadow(0 0 5px ${c('legs')})"/>
-      <!-- legs back -->
-      <rect x="32" y="162" width="21" height="42" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1"/>
-      <rect x="57" y="162" width="21" height="42" rx="8" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1"/>
-      <!-- calves -->
-      <rect x="34" y="202" width="17" height="21" rx="6" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".7"/>
-      <rect x="59" y="202" width="17" height="21" rx="6" fill="${c('legs')}" stroke="#1a2d40" stroke-width="1" opacity=".7"/>
-      <!-- grid -->
-      <line x1="0" y1="77" x2="110" y2="77" stroke="#00e5ff0d" stroke-width="0.5"/>
-      <line x1="0" y1="128" x2="110" y2="128" stroke="#00e5ff0d" stroke-width="0.5"/>
-      <line x1="55" y1="37" x2="55" y2="226" stroke="#00e5ff08" stroke-width="0.5"/>
-    </svg>
-  </div>`;
-
-  wrap.innerHTML = front + back;
-
-  document.getElementById('rpe-legend').innerHTML = [
-    ['rgba(0,229,255,0.07)','No data'],
-    ['rgba(0,229,255,0.22)','Low 1-5'],
-    ['rgba(0,229,255,0.52)','Mod 6-7'],
-    ['rgba(255,140,0,0.58)','High 8'],
-    ['rgba(255,51,85,0.62)','Max 9+']
-  ].map(([bg,lbl]) => `<div class="legend-item"><div class="legend-swatch" style="background:${bg}"></div>${lbl}</div>`).join('');
-}
-
-/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    SELECT CLIENT
-══════════════════════════════════════════════════ */
-function selectClient(name) {
-  selectedClient = (selectedClient === name) ? null : name;
+══════════════════════════════════════════════ */
+function selectClient(name){
+  selectedClient=(selectedClient===name)?null:name;
   renderHexGrid();
   renderCenter();
   renderCheckinCard();
 }
 
-function renderCheckinCard() {
-  const el = document.getElementById('checkin-mini');
-  if (!selectedClient) { el.innerHTML = '— IZBERITE STRANKO —'; return; }
-  const cis = (allCheckins[selectedClient]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
-  if (!cis.length) { el.innerHTML = 'NI PODATKOV'; return; }
-  const last = cis[0];
-  const sleep = last.sleep||last.spanec||'—';
-  const wb    = last.wellbeing||last.pocutje||'—';
-  const note  = last.note||last.opomba||'';
-  el.innerHTML = `<span style="color:var(--teal)">😴 ${sleep}/10</span> &nbsp; <span style="color:var(--green)">💪 ${wb}/10</span>`
-    + (note ? `<br><span style="font-size:9px;color:var(--dim)">"${note.slice(0,48)}${note.length>48?'…':''}"</span>` : '');
+function renderCheckinCard(){
+  const el=document.getElementById('checkin-mini');
+  if(!selectedClient){el.innerHTML='<span style="color:var(--dim)">— IZBERITE STRANKO —</span>';return;}
+  const cis=(allCheckins[selectedClient]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  if(!cis.length){el.innerHTML='<span style="color:var(--dim)">NI PODATKOV</span>';return;}
+  const last=cis[0];
+  const sleep=last.sleep||last.spanec||'—';
+  const wb=last.wellbeing||last.pocutje||'—';
+  const note=last.note||last.opomba||'';
+  el.innerHTML=`<div style="display:flex;gap:14px;margin-bottom:3px">
+    <span style="color:var(--teal)">😴 <strong>${sleep}/10</strong></span>
+    <span style="color:var(--green)">💪 <strong>${wb}/10</strong></span>
+  </div>${note?`<div style="font-size:9px;color:var(--dim)">"${note.slice(0,50)}${note.length>50?'…':''}"</div>`:''}`;
 }
 
-/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
+   RENDER: CLIENT HEX GRID (honeycomb)
+══════════════════════════════════════════════ */
+function renderHexGrid(){
+  const grid=document.getElementById('hex-grid');
+  grid.innerHTML=CLIENTS.map((c,i)=>{
+    const st=clientStatus(c.name);
+    const col=CCOLORS[i];
+    const ring=st.color==='green'?'#27ff12':st.color==='yellow'?'#ffcc00':'#ff2244';
+    const isActive=selectedClient===c.name;
+    const activeRing=isActive?'var(--teal)':ring;
+    const dText=st.days!==null?`${st.days}d ago`:'no data';
+    const logs7=(allLogs[c.name]||[]).filter(l=>{const d=parseDate(l.date);return d&&Date.now()-d<7*86400000;}).length;
+    const nameFS=c.name.length<=4?18:c.name.length<=5?16:14;
+    const gDot=st.color==='green'?`fill:#27ff12;filter:drop-shadow(0 0 3px #27ff12)`:`fill:#121a12`;
+    const yDot=st.color==='yellow'?`fill:#ffcc00;filter:drop-shadow(0 0 3px #ffcc00)`:`fill:#1a1a12`;
+    const rDot=st.color==='red'?`fill:#ff2244;filter:drop-shadow(0 0 3px #ff2244)`:`fill:#1a1214`;
+    return`<div class="hex-item${isActive?' hex-active':''}" id="hex-${c.name}" onclick="selectClient('${c.name}')">
+      <svg viewBox="0 0 130 152" width="85" height="99">
+        <polygon points="65,4 124,38 124,114 65,148 6,114 6,38"
+          fill="#080e1a" stroke="${activeRing}" stroke-width="${isActive?2.5:1.6}"
+          style="filter:drop-shadow(0 0 ${isActive?10:5}px ${activeRing}${isActive?'aa':'44'})"/>
+        <text x="65" y="68" text-anchor="middle" dominant-baseline="middle"
+          font-family="Bebas Neue,sans-serif" font-size="${nameFS}" fill="${isActive?'#00e5ff':col}"
+          style="filter:drop-shadow(0 0 4px ${col}77)">${c.name.toUpperCase()}</text>
+        <text x="65" y="91" text-anchor="middle" dominant-baseline="middle"
+          font-family="JetBrains Mono,monospace" font-size="8.5" fill="${ring}" letter-spacing="0.5">${st.label}</text>
+        <text x="65" y="109" text-anchor="middle" dominant-baseline="middle"
+          font-family="JetBrains Mono,monospace" font-size="7" fill="#4a6a7a">${dText}</text>
+        <circle cx="114" cy="48" r="4.5" style="${gDot}"/>
+        <circle cx="114" cy="76" r="4.5" style="${yDot}"/>
+        <circle cx="114" cy="104" r="4.5" style="${rDot}"/>
+      </svg>
+      <div class="hex-name-label">${c.name}</div>
+      <div class="hex-sub-label">${logs7}/week</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════
    RENDER: CENTER PANEL (dynamic)
-══════════════════════════════════════════════════ */
-function renderCenter() {
-  if (!selectedClient) renderCenterDefault();
+══════════════════════════════════════════════ */
+function renderCenter(){
+  if(!selectedClient) renderCenterDefault();
   else renderCenterClient(selectedClient);
 }
 
-function renderCenterDefault() {
-  document.getElementById('center-title').textContent = 'CHECK-IN STATUS // DANES';
-  document.getElementById('rpe-legend').style.display = 'none';
-  const today = new Date().toISOString().slice(0,10);
-  document.getElementById('center-content').innerHTML = CLIENTS.map((c,i) => {
-    const cis = allCheckins[c.name]||[];
-    const todayCI = cis.find(ci => { const d=parseDate(ci.date); return d&&d.toISOString().slice(0,10)===today; });
-    const col = CCOLORS[i];
-    if (todayCI) {
-      const sleep = todayCI.sleep||todayCI.spanec||'?';
-      const wb    = todayCI.wellbeing||todayCI.pocutje||'?';
-      const note  = todayCI.note||todayCI.opomba||'';
-      return `<div class="checkin-row" style="border-left:2px solid ${col}">
-        <div class="ci-status">✅</div>
-        <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
-        <div class="ci-data">😴 ${sleep}/10 &nbsp; 💪 ${wb}/10${note?` &nbsp; <span style="color:var(--bright)">"${note.slice(0,36)}${note.length>36?'…':''}"</span>`:''}</div>
-      </div>`;
-    }
-    return `<div class="checkin-row" style="border-left:2px solid ${col};opacity:.45">
-      <div class="ci-status">🔴</div>
-      <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
-      <div class="ci-data">NI CHECK-IN DANES</div>
+function renderCenterDefault(){
+  document.getElementById('center-title').textContent='CHECK-IN STATUS // DANES';
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('center-content').innerHTML=`
+    <div class="body-default">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:8px">KLIKNI HEX → ATHLETE DATA</div>
+      <div class="checkin-status-list">
+      ${CLIENTS.map((c,i)=>{
+        const cis=allCheckins[c.name]||[];
+        const todayCI=cis.find(ci=>{const d=parseDate(ci.date);return d&&d.toISOString().slice(0,10)===today;});
+        const col=CCOLORS[i];
+        if(todayCI){
+          const sleep=todayCI.sleep||todayCI.spanec||'?';
+          const wb=todayCI.wellbeing||todayCI.pocutje||'?';
+          return`<div class="ci-row" style="border-left:2px solid ${col}">
+            <div class="ci-icon">✅</div>
+            <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
+            <div class="ci-info">😴 ${sleep}/10 &nbsp; 💪 ${wb}/10</div>
+          </div>`;
+        }
+        return`<div class="ci-row" style="border-left:2px solid ${col};opacity:.45">
+          <div class="ci-icon">🔴</div>
+          <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
+          <div class="ci-info">NI CHECK-IN DANES</div>
+        </div>`;
+      }).join('')}
+      </div>
     </div>`;
-  }).join('');
 }
 
-function aggMuscleRPEForClient(name) {
-  const cutoff = Date.now() - 7*86400000;
-  const map = {};
-  (allLogs[name]||[]).forEach(l => {
-    const d = parseDate(l.date);
-    if (!d||d<cutoff) return;
-    const m = detectMuscle(l.exercise||l.vaja);
-    if (!m) return;
-    const rpe = parseFloat(l.rpe)||0;
-    if (!map[m]) map[m]=[];
-    map[m].push(rpe);
-  });
-  const out={};
-  for (const [m,arr] of Object.entries(map)) out[m]=arr.reduce((a,b)=>a+b,0)/arr.length;
-  return out;
-}
+function renderCenterClient(name){
+  const idx=CLIENTS.findIndex(c=>c.name===name);
+  const col=CCOLORS[idx]||'var(--teal)';
+  document.getElementById('center-title').textContent=`ATHLETE: ${name.toUpperCase()}`;
 
-function renderCenterClient(name) {
-  const idx = CLIENTS.findIndex(c=>c.name===name);
-  const col = CCOLORS[idx]||'var(--teal)';
-  document.getElementById('center-title').textContent = `${name.toUpperCase()} // ATHLETE DATA`;
-  document.getElementById('rpe-legend').style.display = 'none';
+  const rpe=aggMuscleRPE(name);
+  const cf=m=>rpeColor(rpe[m]);
+  const mere=(allMere[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0))[0]||{};
+  const cis=(allCheckins[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  const lastCI=cis[0]||null;
 
-  const rpe  = aggMuscleRPEForClient(name);
-  const cf   = m => rpeColor(rpe[m]);
-  const mere = (allMere[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0))[0]||{};
-  const cis  = (allCheckins[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
-  const lastCI = cis[0]||null;
+  const bf=mere.bf||mere.bf_percent||null;
+  const wb=lastCI?(lastCI.wellbeing||lastCI.pocutje||null):null;
+  const recovPct=wb?(Math.round((parseFloat(wb)/10)*100)):null;
 
-  const bodySVG = `<svg width="90" height="200" viewBox="0 0 110 230" style="filter:drop-shadow(0 0 8px ${col}44)">
-    <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="${col}44" stroke-width="1"/>
-    <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="${col}44" stroke-width="1"/>
-    <ellipse cx="20" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}44" stroke-width="1"/>
-    <ellipse cx="90" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}44" stroke-width="1"/>
-    <path d="M28,50 Q55,44 82,50 L80,88 Q55,93 30,88 Z" fill="${cf('chest')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="7" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="88" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="5" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}44" stroke-width="1" opacity=".8"/>
-    <rect x="92" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}44" stroke-width="1" opacity=".8"/>
-    <path d="M32,88 Q55,93 78,88 L76,130 Q55,135 34,130 Z" fill="${cf('core')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="32" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="57" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}44" stroke-width="1"/>
-    <rect x="34" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}44" stroke-width="1" opacity=".75"/>
-    <rect x="59" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}44" stroke-width="1" opacity=".75"/>
-    ${mere.waist||mere.pas ? `<line x1="28" y1="109" x2="2" y2="100" stroke="${col}" stroke-width="0.7" opacity=".7"/>` : ''}
-    ${mere.hip||mere.boki  ? `<line x1="32" y1="132" x2="2" y2="145" stroke="${col}" stroke-width="0.7" opacity=".7"/>` : ''}
+  const bodyFront=`<svg width="100" height="210" viewBox="0 0 110 230" style="filter:drop-shadow(0 0 8px ${col}44)">
+    <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0a1220" stroke="${col}33" stroke-width="1"/>
+    <rect x="48" y="37" width="14" height="13" fill="#0a1220" stroke="${col}33" stroke-width="1"/>
+    <ellipse cx="20" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}33" stroke-width="0.8"/>
+    <ellipse cx="90" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}33" stroke-width="0.8"/>
+    <path d="M28,50 Q55,44 82,50 L80,88 Q55,93 30,88 Z" fill="${cf('chest')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="7" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="88" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="5" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}33" stroke-width="0.8" opacity=".8"/>
+    <rect x="92" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}33" stroke-width="0.8" opacity=".8"/>
+    <path d="M32,88 Q55,93 78,88 L76,130 Q55,135 34,130 Z" fill="${cf('core')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="32" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="57" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}33" stroke-width="0.8"/>
+    <rect x="34" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}33" stroke-width="0.8" opacity=".75"/>
+    <rect x="59" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}33" stroke-width="0.8" opacity=".75"/>
+    <line x1="30" y1="109" x2="0" y2="96" stroke="${col}" stroke-width="0.6" opacity=".5" stroke-dasharray="2,2"/>
+    <line x1="32" y1="132" x2="0" y2="148" stroke="${col}" stroke-width="0.6" opacity=".5" stroke-dasharray="2,2"/>
   </svg>`;
 
-  const mRow = (lbl,val,unit) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
-    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:1px">${lbl}</span>
-    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${val&&val!=='—'?col:'var(--dim)'};font-weight:600">${val||'—'}${val&&val!=='—'?unit:''}</span>
+  const annotations=`<div class="body-annotations">
+    <div class="annot-block" style="border-color:${col}">
+      <div class="annot-label">BODY COMP</div>
+      <div class="annot-value" style="color:${col};text-shadow:0 0 12px ${col}66;font-size:18px">${bf?bf+'%':'—'}</div>
+      <div class="annot-sub">BF% ${bf?'(Target: 12%)':''}</div>
+    </div>
+    <div class="annot-block" style="border-color:${recovPct?'#27ff12':'var(--border)'}">
+      <div class="annot-label">RECOVERY</div>
+      <div class="annot-value" style="color:${recovPct?'#27ff12':'var(--dim)'};text-shadow:${recovPct?'0 0 12px #27ff1266':'none'}">${recovPct?recovPct+'%':'—'}</div>
+      <div class="recovery-bar"><div class="recovery-fill" style="width:${recovPct||0}%;background:${recovPct>70?'#27ff12':recovPct>40?'#ffcc00':'#ff2244'}"></div></div>
+    </div>
+    <div style="margin-top:auto">
+      <a href="${CLIENTS[idx].file}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${col};text-decoration:none;border:1px solid ${col}55;padding:5px 12px;border-radius:2px;letter-spacing:1px;display:inline-block">↗ ODPRI PROFIL</a>
+    </div>
   </div>`;
 
-  const merePanel = `<div style="flex:1;min-width:90px">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:${col};letter-spacing:2px;margin-bottom:8px">MERE</div>
-    ${mere.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:6px">📅 ${mere.date}</div>`:''}
-    ${mRow('TEŽA',  mere.weight||mere.teza||mere.kg,'kg')}
-    ${mRow('BF%',   mere.bf||mere.bf_percent,'%')}
-    ${mRow('PAS',   mere.waist||mere.pas,'cm')}
-    ${mRow('BOKI',  mere.hip||mere.boki,'cm')}
-    ${mRow('PRSA',  mere.chest||mere.prsa,'cm')}
-    ${mRow('ROKE',  mere.arms||mere.roke,'cm')}
-  </div>`;
-
-  let ciPanel;
-  if (lastCI) {
-    const sleep  = lastCI.sleep||lastCI.spanec||'—';
-    const wb     = lastCI.wellbeing||lastCI.pocutje||'—';
-    const energy = lastCI.energy||lastCI.energija||'—';
-    const note   = lastCI.note||lastCI.opomba||'';
-    ciPanel = `<div style="flex:1;min-width:90px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal2);letter-spacing:2px;margin-bottom:8px">LAST CHECK-IN</div>
-      ${lastCI.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:6px">📅 ${lastCI.date}</div>`:''}
-      ${mRow('😴 SPANEC', sleep,'/10')}
-      ${mRow('💪 POČUTJE', wb,'/10')}
-      ${energy!=='—'?mRow('⚡ ENERGIJA',energy,'/10'):''}
-      ${note?`<div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);border-left:2px solid ${col};padding-left:8px">"${note}"</div>`:''}
-      <div style="margin-top:10px">
-        <a href="${CLIENTS[idx].file}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${col};text-decoration:none;border:1px solid ${col}44;padding:4px 10px;border-radius:2px;letter-spacing:1px;transition:all .2s">↗ ODPRI PROFIL</a>
+  document.getElementById('center-content').innerHTML=`
+    <div class="body-display">
+      <div class="body-svgs">
+        <div><div class="body-label">FRONT</div>${bodyFront}</div>
       </div>
-    </div>`;
-  } else {
-    ciPanel = `<div style="flex:1;min-width:90px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal2);letter-spacing:2px;margin-bottom:8px">LAST CHECK-IN</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)">NI PODATKOV</div>
-      <div style="margin-top:10px">
-        <a href="${CLIENTS[idx].file}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${col};text-decoration:none;border:1px solid ${col}44;padding:4px 10px;border-radius:2px;letter-spacing:1px">↗ ODPRI PROFIL</a>
-      </div>
-    </div>`;
-  }
-
-  document.getElementById('center-content').innerHTML = `
-    <div style="display:flex;gap:14px;align-items:flex-start">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:${col};letter-spacing:2px">FRONT</div>
-        ${bodySVG}
-      </div>
-      ${merePanel}
-      ${ciPanel}
+      ${annotations}
     </div>`;
 }
 
-/* ══════════════════════════════════════════════════
-   RENDER: HEATMAP
-══════════════════════════════════════════════════ */
-function buildHmSel() {
-  const sel = document.getElementById('hmap-sel');
-  sel.innerHTML = CLIENTS.map(c =>
-    `<button class="hmap-btn ${c.name===hmClient?'active':''}" id="hmbtn-${c.name}" onclick="selectHm('${c.name}')">${c.name.toUpperCase()}</button>`
-  ).join('');
-}
-
-function selectHm(name) {
-  hmClient = name;
-  CLIENTS.forEach(c => {
-    const b = document.getElementById('hmbtn-'+c.name);
-    if (b) b.className = 'hmap-btn' + (c.name===name?' active':'');
+/* ══════════════════════════════════════════════
+   RENDER: METRICS (top center)
+══════════════════════════════════════════════ */
+function renderMetrics(){
+  const cutoff=Date.now()-7*86400000;
+  const rpes=[];
+  let sessions=0;
+  CLIENTS.forEach(c=>{
+    (allLogs[c.name]||[]).forEach(l=>{
+      const d=parseDate(l.date); if(!d||d<cutoff)return;
+      sessions++;
+      if(l.rpe)rpes.push(parseFloat(l.rpe));
+    });
   });
+  const avgRpe=rpes.length?(rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1):'—';
+  document.getElementById('m-rpe').textContent=avgRpe;
+  document.getElementById('m-sub').textContent=`${sessions} treningov · 7 dni`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER: WORKOUT INTENSITY
+══════════════════════════════════════════════ */
+function renderIntensity(){
+  // Last session max RPE across all clients
+  let maxRpe=0, lastDate=null, lastClient='';
+  CLIENTS.forEach(c=>{
+    const logs=allLogs[c.name]||[];
+    const sorted=logs.filter(l=>parseDate(l.date)&&l.rpe).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+    if(sorted.length){
+      const d=parseDate(sorted[0].date);
+      if(!lastDate||d>lastDate){
+        lastDate=d;
+        maxRpe=sorted.reduce((mx,l)=>parseDate(l.date)&&d-parseDate(l.date)<86400000?Math.max(mx,parseFloat(l.rpe)||0):mx,0);
+        lastClient=c.name;
+      }
+    }
+  });
+  const score=maxRpe?(maxRpe/10*10).toFixed(1):null;
+  document.getElementById('intensity-val').textContent=score?score+'/10':'—';
+  document.getElementById('intensity-sub').textContent=lastClient?`LAST: ${lastClient.toUpperCase()}`:'LAST SESSION';
+  document.getElementById('intensity-fill').style.width=maxRpe?(maxRpe/10*100)+'%':'0%';
+}
+
+/* ══════════════════════════════════════════════
+   RENDER: HEATMAP
+══════════════════════════════════════════════ */
+function buildHmSel(){
+  const sel=document.getElementById('hmap-sel');
+  sel.innerHTML=CLIENTS.map(c=>`<button class="hmap-btn ${c.name===hmClient?'active':''}" id="hmbtn-${c.name}" onclick="selectHm('${c.name}')">${c.name.toUpperCase()}</button>`).join('');
+}
+function selectHm(name){
+  hmClient=name;
+  CLIENTS.forEach(c=>{const b=document.getElementById('hmbtn-'+c.name);if(b)b.className='hmap-btn'+(c.name===name?' active':'');});
   renderHeatmap();
 }
-
-function renderHeatmap() {
-  const grid = document.getElementById('hmap-grid');
-  const logs = allLogs[hmClient] || [];
-  const drpe = {};
-  logs.forEach(l => {
-    const d = parseDate(l.date);
-    if (!d) return;
-    const k = d.toISOString().slice(0,10);
-    const rpe = parseFloat(l.rpe) || 5;
-    if (!drpe[k] || rpe > drpe[k]) drpe[k] = rpe;
-  });
-
-  const days = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  const now = new Date();
-  let html = '<div></div>' + days.map(d => `<div class="hmap-day">${d}</div>`).join('');
-
-  for (let w = 3; w >= 0; w--) {
-    html += `<div class="hmap-wlabel">${w===0?'NOW':'-'+w+'W'}</div>`;
-    for (let d = 0; d < 7; d++) {
-      const ago = w*7 + (6-d);
-      const dt = new Date(now - ago*86400000);
-      const k = dt.toISOString().slice(0,10);
-      const rpe = drpe[k];
-      const future = dt > now;
-      let bg = '#0d1520', glow = 'none';
-      if (!future && rpe) {
-        if (rpe <= 5)   { bg='#00e5ff22'; glow='0 0 4px #00e5ff44'; }
-        else if (rpe<=7){ bg='#00e5ff66'; glow='0 0 5px #00e5ff66'; }
-        else if (rpe<=8.5){bg='#ff8c0088';glow='0 0 5px #ff8c0066';}
-        else             { bg='#ff3355aa'; glow='0 0 6px #ff335588'; }
+function renderHeatmap(){
+  const grid=document.getElementById('hmap-grid');
+  const logs=allLogs[hmClient]||[];
+  const drpe={};
+  logs.forEach(l=>{const d=parseDate(l.date);if(!d)return;const k=d.toISOString().slice(0,10);const rpe=parseFloat(l.rpe)||5;if(!drpe[k]||rpe>drpe[k])drpe[k]=rpe;});
+  const days=['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const now=new Date();
+  let html='<div></div>'+days.map(d=>`<div class="hmap-day">${d}</div>`).join('');
+  for(let w=3;w>=0;w--){
+    html+=`<div class="hmap-wlabel">${w===0?'NOW':'-'+w+'W'}</div>`;
+    for(let d=0;d<7;d++){
+      const ago=w*7+(6-d);
+      const dt=new Date(now-ago*86400000);
+      const k=dt.toISOString().slice(0,10);
+      const rpe=drpe[k];
+      const future=dt>now;
+      let bg='#0a1220',glow='none';
+      if(!future&&rpe){
+        if(rpe<=5){bg='#00e5ff22';glow='0 0 4px #00e5ff44';}
+        else if(rpe<=7){bg='#00e5ff66';glow='0 0 5px #00e5ff66';}
+        else if(rpe<=8.5){bg='#ff8c0088';glow='0 0 5px #ff8c0066';}
+        else{bg='#ff2244aa';glow='0 0 6px #ff224488';}
       }
-      html += `<div class="hmap-cell" style="background:${future?'transparent':bg};border:${future?'none':'1px solid var(--border)'};box-shadow:${glow};" title="${k}${rpe?' — RPE '+rpe:''}"></div>`;
+      html+=`<div class="hmap-cell" style="background:${future?'transparent':bg};border:${future?'none':'1px solid var(--border)'};box-shadow:${glow};" title="${k}${rpe?' — RPE '+rpe:''}"></div>`;
     }
   }
-  grid.innerHTML = html;
+  grid.innerHTML=html;
 }
 
-/* ══════════════════════════════════════════════════
-   RENDER: TOP PERFORMERS
-══════════════════════════════════════════════════ */
-function renderTopPerf() {
-  const cutoff = Date.now() - 7*86400000;
-  const sorted = CLIENTS.map((c,i) => {
-    const logs = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && d>=cutoff; });
-    const vol = logs.reduce((s,l) => s + (parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0), 0);
-    return { ...c, vol, sessions:logs.length, st:clientStatus(c.name), col:CCOLORS[i] };
-  }).sort((a,b) => b.vol - a.vol);
-
-  document.getElementById('top-perf').innerHTML = sorted.map((c, r) => {
-    const dot = c.st.color==='green'?'#39ff14':c.st.color==='yellow'?'#ffcc00':'#ff3355';
-    const v = c.vol>1000 ? (c.vol/1000).toFixed(1)+'k' : Math.round(c.vol)||0;
-    return `<div class="perf-row" style="border-left:2px solid ${c.col}" onclick="window.open('${c.file}','_blank')">
-      <div class="perf-rank" style="color:${c.col}">${r+1}</div>
-      <div style="flex:1">
-        <div class="perf-name">${c.name}</div>
-        <div class="perf-meta">${c.sessions} trening · ${v} kg vol</div>
-      </div>
-      <div class="perf-dot" style="background:${dot};box-shadow:0 0 6px ${dot}"></div>
-    </div>`;
-  }).join('');
-}
-
-/* ══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════
    RENDER: VOLUME CHART
-══════════════════════════════════════════════════ */
-function renderVolChart() {
-  const ctx = document.getElementById('vol-chart').getContext('2d');
-  const cutoff = Date.now() - 7*86400000;
-  const muscleKeys  = ['chest','shoulders','back','arms','legs','core'];
-  const muscleLabels= ['CHEST','SHLD','BACK','ARMS','LEGS','CORE'];
-
-  const datasets = CLIENTS.map((c,i) => {
-    const logs = (allLogs[c.name]||[]).filter(l => { const d=parseDate(l.date); return d && d>=cutoff; });
-    return {
-      label: c.name,
-      data: muscleKeys.map(m => logs.filter(l => detectMuscle(l.exercise||l.vaja)===m).reduce((s,l) => s+(parseInt(l.sets)||1), 0)),
-      backgroundColor: CCOLORS[i] + '77',
-      borderColor: CCOLORS[i],
-      borderWidth: 1
+══════════════════════════════════════════════ */
+function renderVolChart(){
+  const ctx=document.getElementById('vol-chart').getContext('2d');
+  const cutoff=Date.now()-30*86400000;
+  const muscleKeys=['chest','shoulders','back','arms','legs','core'];
+  const muscleLabels=['CHEST','SHLD','BACK','ARMS','LEGS','CORE'];
+  const datasets=CLIENTS.map((c,i)=>{
+    const logs=(allLogs[c.name]||[]).filter(l=>{const d=parseDate(l.date);return d&&d>=cutoff;});
+    return{
+      label:c.name,
+      data:muscleKeys.map(m=>logs.filter(l=>detectMuscle(l.exercise||l.vaja)===m).reduce((s,l)=>s+(parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0),0)),
+      backgroundColor:CCOLORS[i]+'66',
+      borderColor:CCOLORS[i],
+      borderWidth:1
     };
   });
-
-  if (volChart) volChart.destroy();
-  volChart = new Chart(ctx, {
+  if(volChart)volChart.destroy();
+  volChart=new Chart(ctx,{
     type:'bar',
-    data: { labels:muscleLabels, datasets },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend: { labels:{ color:'#5a7a8a', font:{family:'JetBrains Mono',size:10}, padding:10 } },
-        tooltip: { backgroundColor:'#0d1520', borderColor:'#00e5ff33', borderWidth:1, titleColor:'#00e5ff', bodyColor:'#c8e8f0', titleFont:{family:'JetBrains Mono',size:10} }
+    data:{labels:muscleLabels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#4a6a7a',font:{family:'JetBrains Mono',size:9},padding:8}},
+        tooltip:{backgroundColor:'#080e1a',borderColor:'#00e5ff33',borderWidth:1,titleColor:'#00e5ff',bodyColor:'#bdd8e8',titleFont:{family:'JetBrains Mono',size:9}}
       },
-      scales: {
-        x: { stacked:true, grid:{color:'#1a2d4020'}, ticks:{color:'#5a7a8a',font:{family:'JetBrains Mono',size:9}} },
-        y: { stacked:true, grid:{color:'#1a2d4030'}, ticks:{color:'#5a7a8a',font:{family:'JetBrains Mono',size:9}} }
+      scales:{
+        x:{stacked:true,grid:{color:'#16203010'},ticks:{color:'#4a6a7a',font:{family:'JetBrains Mono',size:8}}},
+        y:{stacked:true,grid:{color:'#16203020'},ticks:{color:'#4a6a7a',font:{family:'JetBrains Mono',size:8}}}
       }
     }
   });
 }
 
-/* ══════════════════════════════════════════════════
-   RENDER: RECENT ACTIVITY
-══════════════════════════════════════════════════ */
-function renderRecent() {
-  const all = [];
-  CLIENTS.forEach((c,i) => {
-    (allLogs[c.name]||[]).forEach(l => all.push({...l, cn:c.name, cc:CCOLORS[i]}));
-  });
-  all.sort((a,b) => (parseDate(b.date)||0) - (parseDate(a.date)||0));
-
-  const el = document.getElementById('recent-act');
-  if (!all.length) { el.innerHTML = '<div style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--dim);text-align:center;padding:20px">NO DATA</div>'; return; }
-
-  el.innerHTML = all.slice(0,10).map(l => {
-    const d = parseDate(l.date);
-    const ds = d ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}` : '—';
-    const ex = l.exercise || l.vaja || '—';
-    const parts = [l.weight?l.weight+'kg':'', l.sets&&l.reps?l.sets+'×'+l.reps:'', l.rpe?'RPE'+l.rpe:''].filter(Boolean);
-    return `<div class="act-row" style="border-left:2px solid ${l.cc}">
-      <div class="act-date">${ds}</div>
-      <div style="flex:1;min-width:0">
-        <div class="act-client" style="color:${l.cc}">${l.cn}</div>
-        <div class="act-ex">${ex}</div>
-      </div>
-      <div class="act-meta">${parts.join(' · ')}</div>
+/* ══════════════════════════════════════════════
+   RENDER: TOP PERFORMERS
+══════════════════════════════════════════════ */
+function renderTopPerf(){
+  const cutoff=Date.now()-7*86400000;
+  const sorted=CLIENTS.map((c,i)=>{
+    const logs=(allLogs[c.name]||[]).filter(l=>{const d=parseDate(l.date);return d&&d>=cutoff;});
+    const vol=logs.reduce((s,l)=>s+(parseInt(l.sets)||1)*(parseInt(l.reps)||1)*(parseFloat(l.weight)||0),0);
+    return{...c,vol,sessions:logs.length,st:clientStatus(c.name),col:CCOLORS[i]};
+  }).sort((a,b)=>b.vol-a.vol);
+  document.getElementById('top-perf').innerHTML=sorted.map((c,r)=>{
+    const dot=c.st.color==='green'?'#27ff12':c.st.color==='yellow'?'#ffcc00':'#ff2244';
+    const v=c.vol>1000?(c.vol/1000).toFixed(1)+'k':Math.round(c.vol)||0;
+    return`<div class="perf-row" style="border-left:2px solid ${c.col}" onclick="selectClient('${c.name}')">
+      <div class="perf-rank" style="color:${c.col}">${r+1}</div>
+      <div style="flex:1"><div class="perf-name">${c.name}</div><div class="perf-meta">${c.sessions} · ${v} kg</div></div>
+      <div class="perf-dot" style="background:${dot};box-shadow:0 0 5px ${dot}"></div>
     </div>`;
   }).join('');
 }
 
-/* ══════════════════════════════════════════════════
-   REFRESH + INIT
-══════════════════════════════════════════════════ */
-function renderAll() {
+/* ══════════════════════════════════════════════
+   RENDER: RECENT ACTIVITY
+══════════════════════════════════════════════ */
+function renderRecent(){
+  const all=[];
+  CLIENTS.forEach((c,i)=>{(allLogs[c.name]||[]).forEach(l=>all.push({...l,cn:c.name,cc:CCOLORS[i]}));});
+  all.sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  const el=document.getElementById('recent-act');
+  if(!all.length){el.innerHTML='<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:var(--dim);text-align:center;padding:12px">NO DATA</div>';return;}
+  el.innerHTML=all.slice(0,8).map(l=>{
+    const d=parseDate(l.date);
+    const ds=d?`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}`:'—';
+    const ex=l.exercise||l.vaja||'—';
+    return`<div class="act-row" style="border-left:2px solid ${l.cc}">
+      <div class="act-client" style="color:${l.cc}">${l.cn}</div>
+      <div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--bright);font-size:10px">${ex}</div>
+      <div class="act-date">${ds}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════
+   RENDER ALL + REFRESH + INIT
+══════════════════════════════════════════════ */
+function renderAll(){
   renderMetrics();
   renderHexGrid();
   renderCenter();
@@ -937,29 +843,28 @@ function renderAll() {
   renderVolChart();
   renderTopPerf();
   renderRecent();
-  document.getElementById('sys-info').textContent = `${CLIENTS.length} CLIENTS LOADED // LAST SYNC: ${new Date().toLocaleTimeString('sl-SI')}`;
+  renderIntensity();
+  document.getElementById('sys-info').textContent=`${CLIENTS.length} CLIENTS LOADED // LAST SYNC: ${new Date().toLocaleTimeString('sl-SI')}`;
 }
 
-async function refreshAll() {
-  const ss = document.getElementById('sys-status');
-  ss.textContent = '⟳ SYNCING...';
-  ss.style.color = 'var(--yellow)';
+async function refreshAll(){
+  const ss=document.getElementById('sys-status');
+  ss.textContent='⟳ SYNCING...'; ss.style.color='var(--yellow)';
   await loadAll();
   renderAll();
-  ss.textContent = '● ACTIVE';
-  ss.style.color = 'var(--green)';
+  ss.textContent='● ACTIVE'; ss.style.color='var(--green)';
 }
 
-async function init() {
+async function init(){
   buildWaveform();
-  setLoad(5, 'INITIALIZING J.A.R.V.I.S...');
-  await new Promise(r => setTimeout(r, 350));
+  setLoad(5,'INITIALIZING J.A.R.V.I.S...');
+  await new Promise(r=>setTimeout(r,300));
   await loadAll();
-  setLoad(93, 'RENDERING HUD...');
-  await new Promise(r => setTimeout(r, 150));
+  setLoad(93,'RENDERING HUD...');
+  await new Promise(r=>setTimeout(r,120));
   renderAll();
-  setLoad(100, 'SYSTEM READY.');
-  await new Promise(r => setTimeout(r, 280));
+  setLoad(100,'SYSTEM READY.');
+  await new Promise(r=>setTimeout(r,250));
   hideLoad();
 }
 
