@@ -96,7 +96,7 @@ body::before {
 .cstat-pill { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); background:var(--s2); border:1px solid var(--border); padding:2px 8px; border-radius:2px; }
 
 /* ─── MID GRID ─── */
-.mid-grid { display:grid; grid-template-columns:280px 1fr 240px; gap:12px; }
+.mid-grid { display:grid; grid-template-columns:340px 1fr 230px; gap:12px; }
 
 /* ─── BODY SILHOUETTE ─── */
 .body-wrap { display:flex; gap:20px; justify-content:center; align-items:flex-start; }
@@ -178,6 +178,20 @@ body::before {
 
 @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 .panel { animation:fadeUp .4s ease forwards; }
+
+/* ─── HEX ACTIVE ─── */
+.hex-item.hex-active { transform:scale(1.06); }
+.hex-item.hex-active .hex-name { color:var(--teal); text-shadow:var(--gt); }
+
+/* ─── CHECK-IN ROWS ─── */
+.checkin-row { display:flex; align-items:center; gap:10px; padding:7px 10px; background:var(--s2); border:1px solid var(--border); border-radius:2px; margin-bottom:4px; transition:border-color .2s; }
+.checkin-row:hover { border-color:var(--teal2); }
+.ci-status { font-size:13px; flex-shrink:0; }
+.ci-name { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; min-width:58px; }
+.ci-data { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--dim); flex:1; }
+
+/* ─── MCARD CHECKIN ─── */
+.checkin-card-inner { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--dim); text-align:left; line-height:1.6; }
 </style>
 </head>
 <body>
@@ -211,7 +225,10 @@ body::before {
     <div class="mcard"><div class="mval" id="m-active">—</div><div class="mlabel">Aktivni klienti</div></div>
     <div class="mcard"><div class="mval" id="m-sessions">—</div><div class="mlabel">Treningi (7 dni)</div></div>
     <div class="mcard"><div class="mval" id="m-volume">—</div><div class="mlabel">Skupni volumen kg</div></div>
-    <div class="mcard"><div class="mval" id="m-rpe">—</div><div class="mlabel">Avg RPE (zadnji)</div></div>
+    <div class="mcard" style="text-align:left;">
+      <div class="mlabel" style="margin-bottom:6px">LAST CHECK-IN</div>
+      <div class="checkin-card-inner" id="checkin-mini">— IZBERITE STRANKO —</div>
+    </div>
   </div>
 
   <!-- CLIENT OVERVIEW -->
@@ -223,11 +240,11 @@ body::before {
   <!-- MID ROW -->
   <div class="mid-grid">
 
-    <!-- BIOMETRICS -->
+    <!-- CENTER DYNAMIC PANEL -->
     <div class="panel">
-      <div class="stitle">BIOMETRICS // RPE MUSCLE MAP</div>
-      <div class="body-wrap" id="body-wrap"></div>
-      <div class="rpe-legend" id="rpe-legend"></div>
+      <div class="stitle" id="center-title">CHECK-IN STATUS // DANES</div>
+      <div id="center-content"></div>
+      <div class="rpe-legend" id="rpe-legend" style="display:none"></div>
     </div>
 
     <!-- HEATMAP -->
@@ -307,8 +324,11 @@ const CLIENTS = [
 const CCOLORS = ['#00e5ff','#39ff14','#a78bfa','#ff6b35','#ff3385','#ffcc00'];
 
 let allLogs = {};
+let allCheckins = {};
+let allMere = {};
 let volChart = null;
 let hmClient = 'Eli';
+let selectedClient = null;
 
 /* ── CLOCK ── */
 function tick() {
@@ -365,11 +385,32 @@ async function fetchLogs(name) {
   }
 }
 
+async function fetchCheckins(name) {
+  try {
+    const r = await fetch(`${API}?action=getCheckins&client=${encodeURIComponent(name)}`);
+    const d = await r.json();
+    return (d && d.checkins) ? d.checkins : [];
+  } catch { return []; }
+}
+
+async function fetchMere(name) {
+  try {
+    const r = await fetch(`${API}?action=getMeasurements&client=${encodeURIComponent(name)}`);
+    const d = await r.json();
+    return (d && d.measurements) ? d.measurements : [];
+  } catch { return []; }
+}
+
 async function loadAll() {
   setLoad(8, 'CONNECTING TO GOOGLE SHEETS...');
   await Promise.all(CLIENTS.map(async (c, i) => {
     allLogs[c.name] = await fetchLogs(c.name);
-    setLoad(10 + (i+1)*13, `LOADED: ${c.name.toUpperCase()}`);
+    setLoad(10 + (i+1)*10, `LOADED: ${c.name.toUpperCase()}`);
+  }));
+  setLoad(75, 'LOADING CHECK-INS...');
+  await Promise.all(CLIENTS.map(async c => {
+    allCheckins[c.name] = await fetchCheckins(c.name);
+    allMere[c.name]     = await fetchMere(c.name);
   }));
 }
 
@@ -468,14 +509,17 @@ function renderHexGrid() {
     const yDot = st.color==='yellow' ? `fill:#ffcc00;filter:drop-shadow(0 0 4px #ffcc00)` : `fill:#222214`;
     const rDot = st.color==='red'    ? `fill:#ff3355;filter:drop-shadow(0 0 4px #ff3355)` : `fill:#221418`;
 
-    return `<div class="hex-item" onclick="window.open('${c.file}','_blank')">
+    const isActive = selectedClient === c.name;
+    const activeRing = isActive ? 'var(--teal)' : ring;
+    const nameFS = c.name.length <= 4 ? 22 : c.name.length <= 5 ? 19 : 16;
+    return `<div class="hex-item${isActive?' hex-active':''}" id="hex-${c.name}" onclick="selectClient('${c.name}')">
       <svg viewBox="0 0 130 152" width="130" height="152">
         <polygon points="65,4 124,38 124,114 65,148 6,114 6,38"
-          fill="#0d1828" stroke="${ring}" stroke-width="1.8"
-          style="filter:drop-shadow(0 0 7px ${ring}55)"/>
+          fill="#0d1828" stroke="${activeRing}" stroke-width="${isActive?2.5:1.8}"
+          style="filter:drop-shadow(0 0 ${isActive?14:7}px ${activeRing}${isActive?'99':'55'})"/>
         <text x="65" y="68" text-anchor="middle" dominant-baseline="middle"
-          font-family="Bebas Neue,sans-serif" font-size="30" fill="${col}"
-          style="filter:drop-shadow(0 0 5px ${col}88)">${c.av}</text>
+          font-family="Bebas Neue,sans-serif" font-size="${nameFS}" fill="${isActive?'var(--teal)':col}"
+          style="filter:drop-shadow(0 0 5px ${col}88)">${c.name.toUpperCase()}</text>
         <text x="65" y="93" text-anchor="middle" dominant-baseline="middle"
           font-family="JetBrains Mono,monospace" font-size="9.5" fill="${ring}" letter-spacing="1">${st.label}</text>
         <text x="65" y="112" text-anchor="middle" dominant-baseline="middle"
@@ -569,6 +613,165 @@ function renderBody() {
     ['rgba(255,140,0,0.58)','High 8'],
     ['rgba(255,51,85,0.62)','Max 9+']
   ].map(([bg,lbl]) => `<div class="legend-item"><div class="legend-swatch" style="background:${bg}"></div>${lbl}</div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   SELECT CLIENT
+══════════════════════════════════════════════════ */
+function selectClient(name) {
+  selectedClient = (selectedClient === name) ? null : name;
+  renderHexGrid();
+  renderCenter();
+  renderCheckinCard();
+}
+
+function renderCheckinCard() {
+  const el = document.getElementById('checkin-mini');
+  if (!selectedClient) { el.innerHTML = '— IZBERITE STRANKO —'; return; }
+  const cis = (allCheckins[selectedClient]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  if (!cis.length) { el.innerHTML = 'NI PODATKOV'; return; }
+  const last = cis[0];
+  const sleep = last.sleep||last.spanec||'—';
+  const wb    = last.wellbeing||last.pocutje||'—';
+  const note  = last.note||last.opomba||'';
+  el.innerHTML = `<span style="color:var(--teal)">😴 ${sleep}/10</span> &nbsp; <span style="color:var(--green)">💪 ${wb}/10</span>`
+    + (note ? `<br><span style="font-size:9px;color:var(--dim)">"${note.slice(0,48)}${note.length>48?'…':''}"</span>` : '');
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER: CENTER PANEL (dynamic)
+══════════════════════════════════════════════════ */
+function renderCenter() {
+  if (!selectedClient) renderCenterDefault();
+  else renderCenterClient(selectedClient);
+}
+
+function renderCenterDefault() {
+  document.getElementById('center-title').textContent = 'CHECK-IN STATUS // DANES';
+  document.getElementById('rpe-legend').style.display = 'none';
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('center-content').innerHTML = CLIENTS.map((c,i) => {
+    const cis = allCheckins[c.name]||[];
+    const todayCI = cis.find(ci => { const d=parseDate(ci.date); return d&&d.toISOString().slice(0,10)===today; });
+    const col = CCOLORS[i];
+    if (todayCI) {
+      const sleep = todayCI.sleep||todayCI.spanec||'?';
+      const wb    = todayCI.wellbeing||todayCI.pocutje||'?';
+      const note  = todayCI.note||todayCI.opomba||'';
+      return `<div class="checkin-row" style="border-left:2px solid ${col}">
+        <div class="ci-status">✅</div>
+        <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
+        <div class="ci-data">😴 ${sleep}/10 &nbsp; 💪 ${wb}/10${note?` &nbsp; <span style="color:var(--bright)">"${note.slice(0,36)}${note.length>36?'…':''}"</span>`:''}</div>
+      </div>`;
+    }
+    return `<div class="checkin-row" style="border-left:2px solid ${col};opacity:.45">
+      <div class="ci-status">🔴</div>
+      <div class="ci-name" style="color:${col}">${c.name.toUpperCase()}</div>
+      <div class="ci-data">NI CHECK-IN DANES</div>
+    </div>`;
+  }).join('');
+}
+
+function aggMuscleRPEForClient(name) {
+  const cutoff = Date.now() - 7*86400000;
+  const map = {};
+  (allLogs[name]||[]).forEach(l => {
+    const d = parseDate(l.date);
+    if (!d||d<cutoff) return;
+    const m = detectMuscle(l.exercise||l.vaja);
+    if (!m) return;
+    const rpe = parseFloat(l.rpe)||0;
+    if (!map[m]) map[m]=[];
+    map[m].push(rpe);
+  });
+  const out={};
+  for (const [m,arr] of Object.entries(map)) out[m]=arr.reduce((a,b)=>a+b,0)/arr.length;
+  return out;
+}
+
+function renderCenterClient(name) {
+  const idx = CLIENTS.findIndex(c=>c.name===name);
+  const col = CCOLORS[idx]||'var(--teal)';
+  document.getElementById('center-title').textContent = `${name.toUpperCase()} // ATHLETE DATA`;
+  document.getElementById('rpe-legend').style.display = 'none';
+
+  const rpe  = aggMuscleRPEForClient(name);
+  const cf   = m => rpeColor(rpe[m]);
+  const mere = (allMere[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0))[0]||{};
+  const cis  = (allCheckins[name]||[]).sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  const lastCI = cis[0]||null;
+
+  const bodySVG = `<svg width="90" height="200" viewBox="0 0 110 230" style="filter:drop-shadow(0 0 8px ${col}44)">
+    <ellipse cx="55" cy="19" rx="17" ry="20" fill="#0d1828" stroke="${col}44" stroke-width="1"/>
+    <rect x="48" y="37" width="14" height="13" fill="#0d1828" stroke="${col}44" stroke-width="1"/>
+    <ellipse cx="20" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}44" stroke-width="1"/>
+    <ellipse cx="90" cy="62" rx="13" ry="17" fill="${cf('shoulders')}" stroke="${col}44" stroke-width="1"/>
+    <path d="M28,50 Q55,44 82,50 L80,88 Q55,93 30,88 Z" fill="${cf('chest')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="7" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="88" y="77" width="15" height="36" rx="7" fill="${cf('arms')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="5" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}44" stroke-width="1" opacity=".8"/>
+    <rect x="92" y="111" width="13" height="32" rx="6" fill="${cf('arms')}" stroke="${col}44" stroke-width="1" opacity=".8"/>
+    <path d="M32,88 Q55,93 78,88 L76,130 Q55,135 34,130 Z" fill="${cf('core')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="32" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="57" y="133" width="21" height="52" rx="8" fill="${cf('legs')}" stroke="${col}44" stroke-width="1"/>
+    <rect x="34" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}44" stroke-width="1" opacity=".75"/>
+    <rect x="59" y="183" width="17" height="40" rx="7" fill="${cf('legs')}" stroke="${col}44" stroke-width="1" opacity=".75"/>
+    ${mere.waist||mere.pas ? `<line x1="28" y1="109" x2="2" y2="100" stroke="${col}" stroke-width="0.7" opacity=".7"/>` : ''}
+    ${mere.hip||mere.boki  ? `<line x1="32" y1="132" x2="2" y2="145" stroke="${col}" stroke-width="0.7" opacity=".7"/>` : ''}
+  </svg>`;
+
+  const mRow = (lbl,val,unit) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);letter-spacing:1px">${lbl}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${val&&val!=='—'?col:'var(--dim)'};font-weight:600">${val||'—'}${val&&val!=='—'?unit:''}</span>
+  </div>`;
+
+  const merePanel = `<div style="flex:1;min-width:90px">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:${col};letter-spacing:2px;margin-bottom:8px">MERE</div>
+    ${mere.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:6px">📅 ${mere.date}</div>`:''}
+    ${mRow('TEŽA',  mere.weight||mere.teza||mere.kg,'kg')}
+    ${mRow('BF%',   mere.bf||mere.bf_percent,'%')}
+    ${mRow('PAS',   mere.waist||mere.pas,'cm')}
+    ${mRow('BOKI',  mere.hip||mere.boki,'cm')}
+    ${mRow('PRSA',  mere.chest||mere.prsa,'cm')}
+    ${mRow('ROKE',  mere.arms||mere.roke,'cm')}
+  </div>`;
+
+  let ciPanel;
+  if (lastCI) {
+    const sleep  = lastCI.sleep||lastCI.spanec||'—';
+    const wb     = lastCI.wellbeing||lastCI.pocutje||'—';
+    const energy = lastCI.energy||lastCI.energija||'—';
+    const note   = lastCI.note||lastCI.opomba||'';
+    ciPanel = `<div style="flex:1;min-width:90px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal2);letter-spacing:2px;margin-bottom:8px">LAST CHECK-IN</div>
+      ${lastCI.date?`<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);margin-bottom:6px">📅 ${lastCI.date}</div>`:''}
+      ${mRow('😴 SPANEC', sleep,'/10')}
+      ${mRow('💪 POČUTJE', wb,'/10')}
+      ${energy!=='—'?mRow('⚡ ENERGIJA',energy,'/10'):''}
+      ${note?`<div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);border-left:2px solid ${col};padding-left:8px">"${note}"</div>`:''}
+      <div style="margin-top:10px">
+        <a href="${CLIENTS[idx].file}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${col};text-decoration:none;border:1px solid ${col}44;padding:4px 10px;border-radius:2px;letter-spacing:1px;transition:all .2s">↗ ODPRI PROFIL</a>
+      </div>
+    </div>`;
+  } else {
+    ciPanel = `<div style="flex:1;min-width:90px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--teal2);letter-spacing:2px;margin-bottom:8px">LAST CHECK-IN</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)">NI PODATKOV</div>
+      <div style="margin-top:10px">
+        <a href="${CLIENTS[idx].file}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${col};text-decoration:none;border:1px solid ${col}44;padding:4px 10px;border-radius:2px;letter-spacing:1px">↗ ODPRI PROFIL</a>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('center-content').innerHTML = `
+    <div style="display:flex;gap:14px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:${col};letter-spacing:2px">FRONT</div>
+        ${bodySVG}
+      </div>
+      ${merePanel}
+      ${ciPanel}
+    </div>`;
 }
 
 /* ══════════════════════════════════════════════════
@@ -725,7 +928,8 @@ function renderRecent() {
 function renderAll() {
   renderMetrics();
   renderHexGrid();
-  renderBody();
+  renderCenter();
+  renderCheckinCard();
   buildHmSel();
   renderHeatmap();
   renderVolChart();
