@@ -493,7 +493,6 @@ function renderMetrics() {
   document.getElementById('m-active').textContent   = active;
   document.getElementById('m-sessions').textContent = sessions;
   document.getElementById('m-volume').textContent   = volume > 1000 ? (volume/1000).toFixed(1)+'k' : Math.round(volume)||'—';
-  document.getElementById('m-rpe').textContent      = rpes.length ? (rpes.reduce((a,b)=>a+b,0)/rpes.length).toFixed(1) : '—';
 }
 
 /* ══════════════════════════════════════════════════
