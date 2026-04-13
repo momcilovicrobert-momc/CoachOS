@@ -623,102 +623,77 @@ function renderBody(){
   const recovPct=wb?Math.round(wb/10*100):null;
 
   /* body SVG — holographic glowing figure */
-  const gc = '#00e5ff';
-  const S=`<svg width="140" height="310" viewBox="0 0 110 245"
-    style="filter:drop-shadow(0 0 8px ${gc}) drop-shadow(0 0 18px ${gc}88) drop-shadow(0 0 35px ${gc}44)">
+  const gc = '#00d8f8';
+  const fillC = '#020c18';
+  const S=`<svg width="155" height="370" viewBox="0 0 160 390"
+    style="filter:drop-shadow(0 0 8px ${gc}) drop-shadow(0 0 22px ${gc}77) drop-shadow(0 0 45px ${gc}33)">
     <defs>
-      <radialGradient id="bg${idx}" cx="50%" cy="60%" r="55%">
-        <stop offset="0%" stop-color="${gc}" stop-opacity="0.07"/>
-        <stop offset="100%" stop-color="${gc}" stop-opacity="0"/>
-      </radialGradient>
-      <filter id="glow${idx}">
-        <feGaussianBlur stdDeviation="1.5" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <filter id="gf${idx}" x="-40%" y="-5%" width="180%" height="115%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    <!-- ambient body glow -->
-    <ellipse cx="55" cy="130" rx="52" ry="110" fill="url(#bg${idx})"/>
+
     <!-- ground glow -->
-    <ellipse cx="55" cy="238" rx="38" ry="5" fill="${gc}" opacity="0.18"/>
+    <ellipse cx="80" cy="384" rx="42" ry="5" fill="${gc}" opacity="0.14"/>
 
-    <!-- HEAD -->
-    <ellipse cx="55" cy="20" rx="14" ry="17"
-      fill="rgba(0,229,255,0.08)" stroke="${gc}" stroke-width="1.2"
-      filter="url(#glow${idx})"/>
-    <!-- neck -->
-    <rect x="50" y="36" width="10" height="9" rx="2"
-      fill="rgba(0,229,255,0.06)" stroke="${gc}" stroke-width="0.9"/>
+    <!-- BODY OUTLINE — dark fill + glowing stroke -->
+    <g filter="url(#gf${idx})" fill="${fillC}" stroke="${gc}" stroke-width="1.4" stroke-linejoin="round">
+      <ellipse cx="80" cy="26" rx="18" ry="22"/>
+      <path d="M73,47 L71,62 Q80,67 89,62 L87,47 Z"/>
+      <ellipse cx="36" cy="76" rx="13" ry="16"/>
+      <ellipse cx="124" cy="76" rx="13" ry="16"/>
+      <path d="M46,68 Q80,62 114,68 L112,200 Q80,210 48,200 Z"/>
+      <path d="M50,198 Q80,210 110,198 L108,226 Q80,235 52,226 Z"/>
+      <path d="M25,85 C18,108 14,146 16,176 C17,186 22,190 27,188 C32,186 35,182 35,172 L38,128 L42,88"/>
+      <path d="M17,172 C13,204 15,238 17,254 C19,264 23,268 28,266 C33,264 36,260 35,250 L36,172"/>
+      <path d="M135,85 C142,108 146,146 144,176 C143,186 138,190 133,188 C128,186 125,182 125,172 L122,128 L118,88"/>
+      <path d="M143,172 C147,204 145,238 143,254 C141,264 137,268 132,266 C127,264 124,260 125,250 L124,172"/>
+      <path d="M54,224 C48,262 46,294 48,316 C50,326 55,330 60,328 C65,326 68,322 68,312 L70,272 L70,226"/>
+      <path d="M49,314 C47,344 47,366 49,376 C51,382 58,384 64,382 C69,380 70,374 70,368 L70,316"/>
+      <path d="M45,378 Q55,388 68,384 Q74,380 70,374 L66,382 Q56,385 47,380 Z"/>
+      <path d="M106,224 C112,262 114,294 112,316 C110,326 105,330 100,328 C95,326 92,322 92,312 L90,272 L90,226"/>
+      <path d="M111,314 C113,344 113,366 111,376 C109,382 102,384 96,382 C91,380 90,374 90,368 L90,316"/>
+      <path d="M115,378 Q105,388 92,384 Q86,380 90,374 L94,382 Q104,385 113,380 Z"/>
+    </g>
 
-    <!-- TORSO outline -->
-    <path d="M22,55 Q55,48 88,55 L86,125 Q55,132 24,125 Z"
-      fill="rgba(0,229,255,0.07)" stroke="${gc}" stroke-width="1.2"
-      filter="url(#glow${idx})"/>
-    <!-- chest muscle lines -->
-    <path d="M36,68 Q55,64 74,68 L73,92 Q55,96 37,92 Z"
-      fill="${cf('chest')}" stroke="${gc}" stroke-width="0.7" opacity="0.85"/>
-    <!-- abs lines -->
-    <line x1="55" y1="96" x2="55" y2="124" stroke="${gc}" stroke-width="0.6" opacity="0.3"/>
-    <line x1="40" y1="103" x2="70" y2="103" stroke="${gc}" stroke-width="0.5" opacity="0.25"/>
-    <line x1="40" y1="113" x2="70" y2="113" stroke="${gc}" stroke-width="0.5" opacity="0.25"/>
-    <!-- core highlight -->
-    <path d="M37,96 Q55,100 73,96 L72,124 Q55,129 38,124 Z"
-      fill="${cf('core')}" stroke="${gc}" stroke-width="0.7" opacity="0.7"/>
+    <!-- MUSCLE HIGHLIGHTS -->
+    <ellipse cx="36"  cy="76"  rx="11" ry="14" fill="${cf('shoulders')}" opacity="0.62" stroke="none"/>
+    <ellipse cx="124" cy="76"  rx="11" ry="14" fill="${cf('shoulders')}" opacity="0.62" stroke="none"/>
+    <path d="M50,76 Q65,70 80,72 L79,114 Q65,118 50,112 Z"  fill="${cf('chest')}" opacity="0.58" stroke="none"/>
+    <path d="M80,72 Q95,70 110,76 L110,112 Q95,118 81,114 Z" fill="${cf('chest')}" opacity="0.58" stroke="none"/>
+    <path d="M54,112 Q80,118 106,112 L104,196 Q80,204 56,196 Z" fill="${cf('core')}" opacity="0.45" stroke="none"/>
+    <ellipse cx="27"  cy="148" rx="9"  ry="24" fill="${cf('arms')}" opacity="0.55" stroke="none"/>
+    <ellipse cx="133" cy="148" rx="9"  ry="24" fill="${cf('arms')}" opacity="0.55" stroke="none"/>
+    <ellipse cx="60"  cy="278" rx="10" ry="30" fill="${cf('legs')}" opacity="0.50" stroke="none"/>
+    <ellipse cx="100" cy="278" rx="10" ry="30" fill="${cf('legs')}" opacity="0.50" stroke="none"/>
 
-    <!-- LEFT SHOULDER -->
-    <ellipse cx="17" cy="62" rx="10" ry="13"
-      fill="${cf('shoulders')}" stroke="${gc}" stroke-width="0.9"/>
-    <!-- RIGHT SHOULDER -->
-    <ellipse cx="93" cy="62" rx="10" ry="13"
-      fill="${cf('shoulders')}" stroke="${gc}" stroke-width="0.9"/>
+    <!-- MUSCLE DETAIL LINES -->
+    <g stroke="${gc}" stroke-width="0.5" opacity="0.18" fill="none">
+      <line x1="80" y1="68" x2="80" y2="198"/>
+      <path d="M54,94  Q80,90  106,94"/>
+      <path d="M54,114 Q80,110 106,114"/>
+      <path d="M56,134 Q80,130 104,134"/>
+      <path d="M56,154 Q80,150 104,154"/>
+      <path d="M57,174 Q80,170 103,174"/>
+    </g>
 
-    <!-- LEFT UPPER ARM -->
-    <path d="M10,73 Q6,90 8,110 Q10,116 14,116 Q18,116 19,110 L20,73"
-      fill="${cf('arms')}" stroke="${gc}" stroke-width="0.9"/>
-    <!-- LEFT LOWER ARM -->
-    <path d="M9,113 Q7,130 9,148 Q11,153 14,153 Q17,153 18,148 L19,113"
-      fill="${cf('arms')}" stroke="${gc}" stroke-width="0.8" opacity="0.85"/>
-    <!-- RIGHT UPPER ARM -->
-    <path d="M100,73 Q104,90 102,110 Q100,116 96,116 Q92,116 91,110 L90,73"
-      fill="${cf('arms')}" stroke="${gc}" stroke-width="0.9"/>
-    <!-- RIGHT LOWER ARM -->
-    <path d="M101,113 Q103,130 101,148 Q99,153 96,153 Q93,153 92,148 L91,113"
-      fill="${cf('arms')}" stroke="${gc}" stroke-width="0.8" opacity="0.85"/>
-
-    <!-- HIPS -->
-    <path d="M26,124 Q55,131 84,124 L82,148 Q55,154 28,148 Z"
-      fill="rgba(0,229,255,0.09)" stroke="${gc}" stroke-width="1"/>
-
-    <!-- LEFT THIGH -->
-    <path d="M28,147 Q24,170 26,195 Q28,202 33,202 Q38,202 40,195 L42,147"
-      fill="${cf('legs')}" stroke="${gc}" stroke-width="0.9"/>
-    <!-- LEFT SHIN -->
-    <path d="M27,198 Q25,215 27,232 Q29,237 33,237 Q37,237 38,232 L39,198"
-      fill="${cf('legs')}" stroke="${gc}" stroke-width="0.8" opacity="0.85"/>
-    <!-- RIGHT THIGH -->
-    <path d="M68,147 Q72,170 70,195 Q68,202 63,202 Q58,202 60,195 L62,147"
-      fill="${cf('legs')}" stroke="${gc}" stroke-width="0.9"/>
-    <!-- RIGHT SHIN -->
-    <path d="M68,198 Q70,215 68,232 Q66,237 62,237 Q58,237 57,232 L58,198"
-      fill="${cf('legs')}" stroke="${gc}" stroke-width="0.8" opacity="0.85"/>
-
-    <!-- FEET -->
-    <ellipse cx="33" cy="238" rx="11" ry="4" fill="rgba(0,229,255,0.1)" stroke="${gc}" stroke-width="0.8"/>
-    <ellipse cx="63" cy="238" rx="11" ry="4" fill="rgba(0,229,255,0.1)" stroke="${gc}" stroke-width="0.8"/>
-
-    <!-- JOINT DOTS — glowing nodes -->
-    <circle cx="55" cy="37" r="2.5" fill="${gc}" opacity="0.7"/>
-    <circle cx="17" cy="55" r="3"   fill="${gc}" opacity="0.85"/>
-    <circle cx="93" cy="55" r="3"   fill="${gc}" opacity="0.85"/>
-    <circle cx="9"  cy="113" r="2.5" fill="${gc}" opacity="0.7"/>
-    <circle cx="101" cy="113" r="2.5" fill="${gc}" opacity="0.7"/>
-    <circle cx="9"  cy="153" r="2"  fill="${gc}" opacity="0.6"/>
-    <circle cx="101" cy="153" r="2" fill="${gc}" opacity="0.6"/>
-    <circle cx="35" cy="147" r="2.5" fill="${gc}" opacity="0.75"/>
-    <circle cx="65" cy="147" r="2.5" fill="${gc}" opacity="0.75"/>
-    <circle cx="33" cy="200" r="2.5" fill="${gc}" opacity="0.7"/>
-    <circle cx="63" cy="200" r="2.5" fill="${gc}" opacity="0.7"/>
-    <circle cx="33" cy="233" r="2"  fill="${gc}" opacity="0.55"/>
-    <circle cx="63" cy="233" r="2"  fill="${gc}" opacity="0.55"/>
+    <!-- JOINT DOTS -->
+    <g fill="${gc}">
+      <circle cx="80"  cy="48"  r="2.5" opacity="0.70"/>
+      <circle cx="36"  cy="66"  r="3.0" opacity="0.88"/>
+      <circle cx="124" cy="66"  r="3.0" opacity="0.88"/>
+      <circle cx="19"  cy="172" r="2.5" opacity="0.72"/>
+      <circle cx="141" cy="172" r="2.5" opacity="0.72"/>
+      <circle cx="17"  cy="252" r="2.0" opacity="0.60"/>
+      <circle cx="143" cy="252" r="2.0" opacity="0.60"/>
+      <circle cx="55"  cy="224" r="2.5" opacity="0.78"/>
+      <circle cx="105" cy="224" r="2.5" opacity="0.78"/>
+      <circle cx="50"  cy="314" r="2.5" opacity="0.72"/>
+      <circle cx="110" cy="314" r="2.5" opacity="0.72"/>
+      <circle cx="50"  cy="376" r="2.0" opacity="0.58"/>
+      <circle cx="110" cy="376" r="2.0" opacity="0.58"/>
+    </g>
   </svg>`;
 
   const sidebar=`<div class="body-sidebar">
