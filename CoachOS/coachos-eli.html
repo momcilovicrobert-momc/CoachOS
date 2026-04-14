@@ -780,16 +780,12 @@ function selectEnergy(el, emoji, label) {
 // SAVE CHECKIN
 async function saveCheckin() {
   const entry = {
-    action: 'logWorkout',
-    client: CLIENT + '_checkin',
-    session: 'Dnevni check-in',
-    exercise: 'Check-in',
-    sets: '',
-    reps: '',
-    weight: document.getElementById('sleep-slider').value,
-    rpe: selectedEnergy,
-    notes: document.getElementById('checkin-note').value,
-    date: checkinDateStr
+    action:    'logCheckin',
+    client:    CLIENT,
+    sleep:     document.getElementById('sleep-slider').value,
+    wellbeing: selectedEnergy,
+    note:      document.getElementById('checkin-note').value,
+    date:      checkinDateStr
   };
 
   const local = {
@@ -1109,7 +1105,7 @@ async function saveMeasurements() {
   };
   measurements.unshift(entry);
   localStorage.setItem('eli_measurements', JSON.stringify(measurements));
-  const mPayload = { action:'logWorkout', client: CLIENT+'_mere', session:'Mere', exercise:'Telesne mere', sets: entry.waist, reps: entry.hips, weight: entry.chest, rpe: entry.thigh, notes:'', date: todayStr };
+  const mPayload = { action:'logMeasurements', client: CLIENT, waist: entry.waist, hips: entry.hips, chest: entry.chest, thigh: entry.thigh, date: todayStr };
   try {
     await fetch(API, { method:'POST', body: JSON.stringify(mPayload) });
   } catch(e) {
